@@ -63,6 +63,7 @@ class IngredientsTableSeeder extends Seeder
             ['nosaukums' => 'Vistas desa', 'kategorija' => 'Proteīni'],
             ['nosaukums' => 'Jēra gaļa', 'kategorija' => 'Proteīni'],
             ['nosaukums' => 'Vistas fileja', 'kategorija' => 'Proteīni'],
+            ['nosaukums' => 'Maltā gaļa', 'kategorija' => 'Proteīni'],
 
             // Graudu produkti
             ['nosaukums' => 'Rīsi', 'kategorija' => 'Graudu produkti'],
@@ -76,6 +77,7 @@ class IngredientsTableSeeder extends Seeder
             ['nosaukums' => 'Griķi', 'kategorija' => 'Graudu produkti'],
             ['nosaukums' => 'Kukurūza', 'kategorija' => 'Graudu produkti'],
             ['nosaukums' => 'Milti', 'kategorija' => 'Graudu produkti'],
+            ['nosaukums' => 'Lēcas', 'kategorija' => 'Graudu produkti'],
 
             // Piena produkti
             ['nosaukums' => 'Siers', 'kategorija' => 'Piena produkti'],
@@ -119,6 +121,7 @@ class IngredientsTableSeeder extends Seeder
             ['nosaukums' => 'Mineralūdens', 'kategorija' => 'Šķidrumi'],
             ['nosaukums' => 'Kombuča', 'kategorija' => 'Šķidrumi'],
             ['nosaukums' => 'Kokosriekstu ūdens', 'kategorija' => 'Šķidrumi'],
+            ['nosaukums' => 'Kokosriekstu piens', 'kategorija' => 'Šķidrumi'],
             ['nosaukums' => 'Vīns', 'kategorija' => 'Šķidrumi'],
 
             // Citi

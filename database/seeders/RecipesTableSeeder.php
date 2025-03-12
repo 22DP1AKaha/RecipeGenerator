@@ -59,7 +59,7 @@ class RecipesTableSeeder extends Seeder
             ],
             [
                 'nosaukums' => 'Banānu pankūkas',
-                'apraksts' => 'Pūkainas pankūkas ar banāniem un medu.',
+                'apraksts' => 'Pūkainas pankūkas ar banāniem.',
                 'gatavosanas_laiks' => 20,
                 'grutibas_pakape' => 'Viegls',
                 'edienreize' => 'Brokastis',
@@ -72,7 +72,7 @@ class RecipesTableSeeder extends Seeder
             ],
             [
                 'nosaukums' => 'Auzu pārslas ar āboliem un kanēli',
-                'apraksts' => 'Auzu pārslas ar svaigiem āboliem, kanēli un medu.',
+                'apraksts' => 'Auzu pārslas ar svaigiem āboliem, kanēli un kļavu sīrupu.',
                 'gatavosanas_laiks' => 10,
                 'grutibas_pakape' => 'Viegls',
                 'edienreize' => 'Brokastis',
