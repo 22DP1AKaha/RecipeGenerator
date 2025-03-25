@@ -5,47 +5,46 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create()
     {
-        return Inertia::render('Auth/Register');
+        return inertia('Auth/Register');
     }
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
+        // Validate the incoming request
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,epasts'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Create the user with the validated input
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'epasts' => $request->email,
+            'parole_hash' => Hash::make($request->password),
+            'registracijas_datums' => now()->toDateString(),
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // Log the user in immediately after registration
+        auth()->login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect to the login page or the dashboard
+        return redirect()->route('home');
     }
 }
+
+

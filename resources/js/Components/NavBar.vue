@@ -8,7 +8,7 @@
         <li><Link href="/">Sākums</Link></li>
         <li><Link href="/receptes">Receptes</Link></li>
         <li><Link href="/aireceptes">Ģenerēšana</Link></li>
-        <li><Link href="/ienakt">Ienākt</Link></li>
+        <li><Link href="/login">Ienākt</Link></li>
       </ul>
       <div class="hamburger" :class="{ 'hamburger-active': menuActive }" @click="toggleNav">
         <span class="line"></span>
@@ -21,7 +21,7 @@
       <ul>
         <li><Link href="/" @click="toggleNav">Sākums</Link></li>
         <li><Link href="/receptes" @click="toggleNav">Receptes</Link></li>
-        <li><Link href="/ienakt" @click="toggleNav">Ienākt</Link></li>
+        <li><Link href="/login" @click="toggleNav">Ienākt</Link></li>
       </ul>
     </div>
   </template>

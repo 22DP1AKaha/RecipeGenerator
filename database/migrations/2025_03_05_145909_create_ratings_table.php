@@ -13,14 +13,21 @@ return new class extends Migration
     {
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('lietotaja_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('receptes_id')->constrained('recipes')->onDelete('cascade');
-            $table->integer('vertejums')->check('vertejums BETWEEN 1 AND 5');
+        
+            // Explicitly define foreign key for 'users' table using user_id
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+        
+            // Explicitly define foreign key for 'recipes' table
+            $table->unsignedBigInteger('receptes_id');
+            $table->foreign('receptes_id')->references('id')->on('recipes')->onDelete('cascade');
+        
+            $table->integer('vertejums');
             $table->text('komentars')->nullable();
+            
             $table->timestamps();
         });
     }
-
 
     /**
      * Reverse the migrations.
