@@ -13,21 +13,19 @@ return new class extends Migration
     {
         // 1) USERS (LIETOTAJS) TABLE
         Schema::create('users', function (Blueprint $table) {
-            // Primary key changed to user_id
-            $table->id('user_id'); // Ensure this matches the model primary key
-
-            // Your custom columns
-            $table->string('epasts')->unique();
-            $table->string('parole_hash');
+            $table->id('user_id');
+            $table->string('vards');
+            $table->string('email')->unique();
+            $table->string('password');
             $table->date('registracijas_datums');
             $table->dateTime('pedeja_pieteiksanas')->nullable();
-            $table->json('dietas_ierobezojumi')->nullable();
-            $table->json('alergijas')->nullable();
-
-            // Laravel-specific columns
+            
+            // Removed both dietas_ierobezojumi and alergijas JSON fields
+            
             $table->rememberToken();
             $table->timestamps();
         });
+        
 
         // 2) PASSWORD RESET TOKENS TABLE
         Schema::create('password_reset_tokens', function (Blueprint $table) {

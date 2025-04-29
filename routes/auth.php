@@ -10,18 +10,22 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
+    // Register
+    Route::get('registreties', fn() => Inertia::render('Auth/Register'))
+         ->name('register');
+    Route::post('registreties', [RegisteredUserController::class, 'store'])
+         ->name('register.post');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    // Login
+    Route::get('ienakt', fn() => Inertia::render('Auth/Login'))
+         ->name('login');
+    Route::post('ienakt', [AuthenticatedSessionController::class, 'store'])
+         ->name('login.post');
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
-
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
-
+    // Password Reset routes (keep these in English as they're less visible)
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
@@ -36,6 +40,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Profile route
+    Route::get('profils', fn() => Inertia::render('Profile'))
+         ->name('profile');
+
+    // Email Verification routes (keep these in English)
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 
@@ -47,13 +56,16 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:6,1')
         ->name('verification.send');
 
+    // Confirm Password route
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
+    // Password Update route
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+    // Logout route
+    Route::post('iziet', [AuthenticatedSessionController::class, 'destroy'])
+         ->name('logout');
 });

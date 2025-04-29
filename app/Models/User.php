@@ -10,44 +10,51 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Specify the table name (optional if it follows Laravel's naming conventions)
+    // Table & primary key
     protected $table = 'users';
-
-    // Tell Laravel that `user_id` is the primary key
-    protected $primaryKey = 'user_id'; // Corrected the column name for the primary key
-
-    // Laravel expects auto-incremented IDs by default, so we keep this as true
+    protected $primaryKey = 'user_id';
     public $incrementing = true;
-
-    // Define the primary key type
     protected $keyType = 'int';
 
-    // Specify fillable fields to match your users table
+    // Mass assignable fields
     protected $fillable = [
-        'epasts',               // Matches `users` table column
-        'parole_hash',          // Matches `users` table column
-        'registracijas_datums', // Registration date
-        'pedeja_pieteiksanas',  // Last login datetime
-        'dietas_ierobezojumi',  // Dietary restrictions (JSON)
-        'alergijas',            // Allergies (JSON)
+        'vards',
+        'email',
+        'password',
+        'registracijas_datums',
+        'pedeja_pieteiksanas',
     ];
 
-    // Hide sensitive attributes
+    // Hide sensitive fields
     protected $hidden = [
-        'parole_hash',
+        'password',
         'remember_token',
     ];
 
-    // Define attribute casting for JSON fields
+    // Cast fields to appropriate types
     protected $casts = [
-        'pedeja_pieteiksanas' => 'datetime', // Cast to a datetime object
-        'dietas_ierobezojumi' => 'array',    // Cast as an array
-        'alergijas' => 'array',              // Cast as an array
+        'registracijas_datums' => 'date',
+        'pedeja_pieteiksanas'  => 'datetime',
     ];
 
-    // Optionally, we can define the method for auth identifier
-    public function getAuthIdentifierName()
+    // Relationships
+    public function dietasIerobezojumi()
     {
-        return 'epasts';  // Use epasts for login, as email is stored in `epasts` column
+        return $this->belongsToMany(
+            \App\Models\DietasIerobezojumi::class,
+            'dietas_ierobezojumi_user',
+            'user_id',
+            'dietas_ierobezojumi_id'
+        );
+    }
+
+    public function alergijas()
+    {
+        return $this->belongsToMany(
+            \App\Models\Alergijas::class,
+            'alergijas_user',
+            'user_id',
+            'alergijas_id'
+        );
     }
 }

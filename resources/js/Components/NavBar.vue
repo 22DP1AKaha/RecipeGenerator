@@ -1,58 +1,73 @@
 <template>
-    <nav v-if="!hideNav">
-      <div class="logo">
-        <img src="/foodyML_logo.png" alt="logo" />
-        <h1>FOODYML</h1>
-      </div>
-      <ul>
-        <li><Link href="/">Sākums</Link></li>
-        <li><Link href="/receptes">Receptes</Link></li>
-        <li><Link href="/aireceptes">Ģenerēšana</Link></li>
-        <li><Link href="/login">Ienākt</Link></li>
-      </ul>
-      <div class="hamburger" :class="{ 'hamburger-active': menuActive }" @click="toggleNav">
-        <span class="line"></span>
-        <span class="line"></span>
-        <span class="line"></span>
-      </div>
-    </nav>
-    
-    <div class="menubar" :class="{ active: menuActive }">
-      <ul>
-        <li><Link href="/" @click="toggleNav">Sākums</Link></li>
-        <li><Link href="/receptes" @click="toggleNav">Receptes</Link></li>
-        <li><Link href="/login" @click="toggleNav">Ienākt</Link></li>
-      </ul>
+  <nav v-if="!hideNav">
+    <Link :href="route('home')" class="logo">
+      <img src="/foodyML_logo.png" alt="FoodyML Logo" />
+      <h1>FOODYML</h1>
+    </Link>
+
+    <ul class="desktop-menu">
+      <li><Link :href="route('home')">Sākums</Link></li>
+      <li><Link :href="route('receptes')">Receptes</Link></li>
+      <li><Link :href="route('aireceptes')">Ģenerēšana</Link></li>
+      <li v-if="isUserLoggedIn">
+        <Link :href="route('profile')">Profils</Link>
+      </li>
+      <li v-else>
+        <Link :href="route('login')">Ienākt</Link>
+      </li>
+    </ul>
+
+    <div class="hamburger" :class="{ 'hamburger-active': menuActive }" @click="toggleNav">
+      <span class="line"></span>
+      <span class="line"></span>
+      <span class="line"></span>
     </div>
-  </template>
-  
-  <script>
-  import { Link } from '@inertiajs/inertia-vue3';
-  
-  export default {
-    name: "Navbar",
-    components: { Link },
-    data() {
-      return {
-        menuActive: false,
-      };
+  </nav>
+
+  <div class="menubar" :class="{ active: menuActive }">
+    <ul>
+      <li><Link :href="route('home')" @click="toggleNav">Sākums</Link></li>
+      <li><Link :href="route('receptes')" @click="toggleNav">Receptes</Link></li>
+      <li><Link :href="route('aireceptes')" @click="toggleNav">Ģenerēšana</Link></li>
+      <li v-if="isUserLoggedIn">
+        <Link :href="route('profile')" @click="toggleNav">Profils</Link>
+      </li>
+      <li v-else>
+        <Link :href="route('login')" @click="toggleNav">Ienākt</Link>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script>
+import { Link } from '@inertiajs/inertia-vue3';
+
+export default {
+  name: "Navbar",
+  components: { Link },
+  data() {
+    return {
+      menuActive: false,
+    };
+  },
+  computed: {
+    hideNav() {
+      // hide on login / register pages
+      const url = this.$page.url;
+      return url.startsWith("/ienakt") || url.startsWith("/registreties");
     },
-    computed: {
-      // Use Inertia's $page object to access the current URL
-      hideNav() {
-        // Adjust the paths as needed for your logic
-        return this.$page.url.startsWith("/ienakt") || this.$page.url.startsWith("/registreties");
-      },
+    isUserLoggedIn() {
+      return this.$page.props.auth.user !== null;
     },
-    methods: {
-      toggleNav() {
-        this.menuActive = !this.menuActive;
-      },
+  },
+  methods: {
+    toggleNav() {
+      this.menuActive = !this.menuActive;
     },
-  };
-  </script>
-  
- 
+  },
+};
+</script>
+
 <style scoped>
 *{
   font-family: monospace;
@@ -63,25 +78,27 @@ nav {
   justify-content: space-between;
   align-items: center;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
-    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   z-index: 1;
-
 }
-nav .logo {
+.logo {
   display: flex;
   align-items: center;
+  text-decoration: none;
+  cursor: pointer;
 }
-nav .logo img {
+.logo img {
   height: 35px;
   width: auto;
   margin-right: 10px;
 }
-nav .logo h1 {
+.logo h1 {
   font-size: 1.5rem;
   background: linear-gradient(to right, #b927fc 0%, #2c64fc 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  margin: 0;
 }
 
 nav ul {
@@ -95,7 +112,6 @@ nav ul li a {
   text-decoration: none;
   color: #000;
   font-size: 1.2rem;
-
   padding: 4px 8px;
   border-radius: 5px;
 }
@@ -181,10 +197,10 @@ nav ul li a:hover {
 }
 @media screen and (max-width: 790px) {
   .hamburger {
-    display: block;
+      display: block;
   }
   nav ul {
-    display: none;
+      display: none;
   }
 }
 </style>

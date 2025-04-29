@@ -8,6 +8,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Log;
 
 class RegisteredUserController extends Controller
 {
@@ -24,27 +25,32 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
-        $request->validate([
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,epasts'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        try {
+            $validated = $request->validate([
+                'vards' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            ]);
 
-        // Create the user with the validated input
-        $user = User::create([
-            'epasts' => $request->email,
-            'parole_hash' => Hash::make($request->password),
-            'registracijas_datums' => now()->toDateString(),
-        ]);
+            $user = User::create([
+                'vards' => $validated['vards'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'registracijas_datums' => now()->toDateString(),
+                'pedeja_pieteiksanas' => now(), // initial login time
+            ]);
 
-        event(new Registered($user));
+            event(new Registered($user));
 
-        // Log the user in immediately after registration
-        auth()->login($user);
+            auth()->login($user);
 
-        // Redirect to the login page or the dashboard
-        return redirect()->route('home');
+            return redirect()->route('home');
+        } catch (\Exception $e) {
+            Log::error('Registration error: ' . $e->getMessage());
+
+            return back()->withErrors([
+                'error' => 'Radās kļūda reģistrācijas laikā. Lūdzu, mēģiniet vēlreiz.',
+            ]);
+        }
     }
 }
-
-

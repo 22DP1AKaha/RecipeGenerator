@@ -2,58 +2,79 @@
 import { Head, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
+  email: '',     // stays as email
+  password: '',  // stays as password
+  remember: false,
 });
 
 const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
+  form.post(route('login.post'), {
+    onFinish: () => form.reset('password'),
+  });
 };
 </script>
 
 <template>
-    <div class="login-page">
-        <Head title="Log in" />
-        <div class="login-container">
-            <!-- Logo -->
-            <div class="logo-container">
-                <img src="/foodyML_logo.png" alt="FoodyML Logo" />
-                <h1>FOODYML</h1>
-            </div>
+  <div class="login-page">
+    <Head title="Log in" />
+    <div class="login-container">
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="/foodyML_logo.png" alt="FoodyML Logo" />
+        <h1>FOODYML</h1>
+      </div>
 
-            <!-- Login Form -->
-            <form @submit.prevent="submit" class="login-form">
-                <div class="input-group">
-                    <label for="email">E-pasts</label>
-                    <input type="email" id="email" v-model="form.email" placeholder="Ievadiet e-pastu" required />
-                    <p v-if="form.errors.email" class="input-error">{{ form.errors.email }}</p>
-                </div>
-    
-                <div class="input-group">
-                    <label for="password">Parole</label>
-                    <input type="password" id="password" v-model="form.password" placeholder="Ievadiet paroli" required />
-                    <p v-if="form.errors.password" class="input-error">{{ form.errors.password }}</p>
-                </div>
-    
-                <div class="form-actions">
-                    <label class="remember-me">
-                        <input type="checkbox" v-model="form.remember" />
-                        Atcerēties mani
-                    </label>
-                    <button type="submit" class="login-btn" :class="{ 'opacity-50': form.processing }" :disabled="form.processing">
-                        Ienākt
-                    </button>
-                </div>
-            </form>
-    
-            <p class="signup-link">
-                Nav konta? <a :href="route('register')">Reģistrējies</a>
-            </p>
+      <!-- Login Form -->
+      <form @submit.prevent="submit" class="login-form">
+        <div class="input-group">
+          <label for="email">E-pasts</label>
+          <input
+            type="email"
+            id="email"
+            v-model="form.email"
+            placeholder="Ievadiet e-pastu"
+            required
+          />
+          <p v-if="form.errors.email" class="input-error">
+            {{ form.errors.email[0] }}
+          </p>
         </div>
+
+        <div class="input-group">
+          <label for="password">Parole</label>
+          <input
+            type="password"
+            id="password"
+            v-model="form.password"
+            placeholder="Ievadiet paroli"
+            required
+          />
+          <p v-if="form.errors.password" class="input-error">
+            {{ form.errors.password[0] }}
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <label class="remember-me">
+            <input type="checkbox" v-model="form.remember" />
+            Atcerēties mani
+          </label>
+          <button
+            type="submit"
+            class="login-btn"
+            :class="{ 'opacity-50': form.processing }"
+            :disabled="form.processing"
+          >
+            Ienākt
+          </button>
+        </div>
+      </form>
+
+      <p class="signup-link">
+        Nav konta? <a :href="route('register')">Reģistrējies</a>
+      </p>
     </div>
+  </div>
 </template>
 
 <style scoped>

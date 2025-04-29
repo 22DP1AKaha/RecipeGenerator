@@ -56,7 +56,7 @@ import axios from 'axios';
     methods: {
       showRecipe(id) {
         console.log("Navigating to recipe with ID:", id);
-        this.$inertia.visit(`/recepte/${id}`);
+        this.$inertia.visit(route('recepte', { id }));
       },
       async fetchRecipes() {
         try {

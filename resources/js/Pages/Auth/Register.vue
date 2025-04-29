@@ -1,81 +1,102 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-// Create the form using useForm from Inertia
 const form = useForm({
-    email: '',
-    password: '',
-    password_confirmation: '',
+  vards: '',
+  email: '',                // ← was epasts
+  password: '',             // ← was parole
+  password_confirmation: '',// ← was parole_confirmation
 });
 
-// Function to handle form submission
 const submit = () => {
-    form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
-    });
+  form.post(route('register.post'), {
+    onSuccess: () => form.reset('password', 'password_confirmation'),
+  });
 };
 </script>
 
 <template>
-    <div class="register-page">
-        <div class="register-container">
-            <!-- Logo -->
-            <div class="logo-container">
-                <img src="/foodyML_logo.png" alt="FoodyML Logo" />
-                <h1>FOODYML</h1>
-            </div>
+  <div class="register-page">
+    <div class="register-container">
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="/foodyML_logo.png" alt="FoodyML Logo" />
+        <h1>FOODYML</h1>
+      </div>
 
-            <Head title="Register" />
-            <form @submit.prevent="submit" class="register-form">
-                <div class="input-group">
-                    <label for="email">E-pasts</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        v-model="form.email" 
-                        placeholder="Ievadiet e-pastu" 
-                        required 
-                    />
-                    <!-- Display error message if it exists -->
-                    <span v-if="form.errors.email" class="error-message">{{ form.errors.email[0] }}</span>
-                </div>
+      <Head title="Register" />
 
-                <div class="input-group">
-                    <label for="password">Parole</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        v-model="form.password" 
-                        placeholder="Ievadiet paroli" 
-                        required 
-                    />
-                    <!-- Display error message if it exists -->
-                    <span v-if="form.errors.password" class="error-message">{{ form.errors.password[0] }}</span>
-                </div>
-
-                <div class="input-group">
-                    <label for="password_confirmation">Apstipriniet paroli</label>
-                    <input 
-                        type="password" 
-                        id="password_confirmation" 
-                        v-model="form.password_confirmation" 
-                        placeholder="Apstipriniet paroli" 
-                        required 
-                    />
-                    <!-- Display error message if it exists -->
-                    <span v-if="form.errors.password_confirmation" class="error-message">{{ form.errors.password_confirmation[0] }}</span>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="register-btn">Reģistrēties</button>
-                </div>
-            </form>
-
-            <p class="login-link">
-                Jau ir konts? <Link :href="route('login')">Ienākt</Link>
-            </p>
+      <form @submit.prevent="submit" class="register-form">
+        <!-- Vārds -->
+        <div class="input-group">
+          <label for="vards">Vārds</label>
+          <input
+            type="text"
+            id="vards"
+            v-model="form.vards"
+            placeholder="Ievadiet savu vārdu"
+            required
+          />
+          <span v-if="form.errors.vards" class="error-message">
+            {{ form.errors.vards[0] }}
+          </span>
         </div>
+
+        <!-- E-pasts -->
+        <div class="input-group">
+          <label for="email">E-pasts</label>
+          <input
+            type="email"
+            id="email"
+            v-model="form.email"
+            placeholder="Ievadiet e-pastu"
+            required
+          />
+          <span v-if="form.errors.email" class="error-message">
+            {{ form.errors.email[0] }}
+          </span>
+        </div>
+
+        <!-- Parole -->
+        <div class="input-group">
+          <label for="password">Parole</label>
+          <input
+            type="password"
+            id="password"
+            v-model="form.password"
+            placeholder="Ievadiet paroli"
+            required
+          />
+          <span v-if="form.errors.password" class="error-message">
+            {{ form.errors.password[0] }}
+          </span>
+        </div>
+
+        <!-- Apstipriniet paroli -->
+        <div class="input-group">
+          <label for="password_confirmation">Apstipriniet paroli</label>
+          <input
+            type="password"
+            id="password_confirmation"
+            v-model="form.password_confirmation"
+            placeholder="Apstipriniet paroli"
+            required
+          />
+          <span v-if="form.errors.password_confirmation" class="error-message">
+            {{ form.errors.password_confirmation[0] }}
+          </span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="register-btn">Reģistrēties</button>
+        </div>
+      </form>
+
+      <p class="login-link">
+        Jau ir konts? <Link :href="route('login')">Ienākt</Link>
+      </p>
     </div>
+  </div>
 </template>
 
 <style scoped>
