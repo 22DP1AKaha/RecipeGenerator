@@ -10,7 +10,7 @@
       <li><Link :href="route('receptes')">Receptes</Link></li>
       <li><Link :href="route('aireceptes')">Ģenerēšana</Link></li>
       <li v-if="isUserLoggedIn">
-        <Link :href="route('profile')">Profils</Link>
+        <Link :href="route('profile.edit')">Profils</Link>
       </li>
       <li v-else>
         <Link :href="route('login')">Ienākt</Link>
@@ -30,7 +30,7 @@
       <li><Link :href="route('receptes')" @click="toggleNav">Receptes</Link></li>
       <li><Link :href="route('aireceptes')" @click="toggleNav">Ģenerēšana</Link></li>
       <li v-if="isUserLoggedIn">
-        <Link :href="route('profile')" @click="toggleNav">Profils</Link>
+        <Link :href="route('profile.edit')" @click="toggleNav">Profils</Link>
       </li>
       <li v-else>
         <Link :href="route('login')" @click="toggleNav">Ienākt</Link>

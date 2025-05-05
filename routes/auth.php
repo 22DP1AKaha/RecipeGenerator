@@ -41,8 +41,11 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     // Profile route
-    Route::get('profils', fn() => Inertia::render('Profile'))
-         ->name('profile');
+    // Profile edit and update
+    Route::get('profils', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('profils', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('profils', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+
 
     // Email Verification routes (keep these in English)
     Route::get('verify-email', EmailVerificationPromptController::class)

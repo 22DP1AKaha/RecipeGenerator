@@ -45,7 +45,7 @@ class User extends Authenticatable
             'dietas_ierobezojumi_user',
             'user_id',
             'dietas_ierobezojumi_id'
-        );
+        )->withTimestamps(); // Add this
     }
 
     public function alergijas()
@@ -55,6 +55,6 @@ class User extends Authenticatable
             'alergijas_user',
             'user_id',
             'alergijas_id'
-        );
+        )->withTimestamps(); // Add this
     }
 }

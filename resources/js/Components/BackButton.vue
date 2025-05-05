@@ -25,6 +25,6 @@
   }
   
   .back-btn:hover {
-    background-color: dimgrey;
+    transform: scale(1.1);
   }
   </style>

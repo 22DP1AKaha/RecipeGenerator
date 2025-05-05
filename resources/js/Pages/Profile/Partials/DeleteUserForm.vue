@@ -17,7 +17,6 @@ const form = useForm({
 
 const confirmUserDeletion = () => {
     confirmingUserDeletion.value = true;
-
     nextTick(() => passwordInput.value.focus());
 };
 
@@ -32,46 +31,42 @@ const deleteUser = () => {
 
 const closeModal = () => {
     confirmingUserDeletion.value = false;
-
-    form.clearErrors();
     form.reset();
+    form.clearErrors();
 };
 </script>
 
 <template>
-    <section class="space-y-6">
+    <section class="delete-section">
         <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Delete Account
+            <h2 class="section-title">
+                Dzēst Kontu
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Once your account is deleted, all of its resources and data will
-                be permanently deleted. Before deleting your account, please
-                download any data or information that you wish to retain.
+            <p class="warning-text">
+                Pēc konta dzēšanas visi dati tiks neatgriezeniski izdzēsti.
+                Lūdzu, lejupielādējiet visus saglabājamos datus pirms turpināšanas.
             </p>
         </header>
 
-        <DangerButton @click="confirmUserDeletion">Delete Account</DangerButton>
+        <DangerButton @click="confirmUserDeletion">
+            Dzēst Kontu
+        </DangerButton>
 
         <Modal :show="confirmingUserDeletion" @close="closeModal">
-            <div class="p-6">
-                <h2
-                    class="text-lg font-medium text-gray-900 dark:text-gray-100"
-                >
-                    Are you sure you want to delete your account?
+            <div class="modal-content">
+                <h2 class="modal-title">
+                    Vai tiešām vēlaties dzēst savu kontu?
                 </h2>
 
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Please enter your password to
-                    confirm you would like to permanently delete your account.
+                <p class="modal-warning">
+                    Lūdzu, ievadiet savu paroli, lai apstiprinātu konta dzēšanu.
                 </p>
 
-                <div class="mt-6">
+                <div class="password-input">
                     <InputLabel
                         for="password"
-                        value="Password"
+                        value="Parole"
                         class="sr-only"
                     />
 
@@ -80,29 +75,104 @@ const closeModal = () => {
                         ref="passwordInput"
                         v-model="form.password"
                         type="password"
-                        class="mt-1 block w-3/4"
-                        placeholder="Password"
+                        class="password-field"
+                        placeholder="Parole"
                         @keyup.enter="deleteUser"
                     />
 
-                    <InputError :message="form.errors.password" class="mt-2" />
+                    <InputError :message="form.errors.password" class="error-message" />
                 </div>
 
-                <div class="mt-6 flex justify-end">
+                <div class="button-container">
                     <SecondaryButton @click="closeModal">
-                        Cancel
+                        Atcelt
                     </SecondaryButton>
 
                     <DangerButton
-                        class="ms-3"
+                        class="confirm-button"
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing"
                         @click="deleteUser"
                     >
-                        Delete Account
+                        Dzēst Kontu
                     </DangerButton>
                 </div>
             </div>
         </Modal>
     </section>
 </template>
+
+<style scoped>
+.delete-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #FFF5E1, #FFE4B5);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.warning-text {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-content {
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    color: #e74c3c;
+    margin-bottom: 1rem;
+}
+
+.modal-warning {
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+}
+
+.password-input {
+    margin: 1.5rem 0;
+}
+
+.password-field {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e74c3c;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.button-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.confirm-button {
+    background: #e74c3c;
+    padding: 0.8rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.confirm-button:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+</style>

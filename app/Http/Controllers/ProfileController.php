@@ -18,9 +18,20 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'user' => [
+                'vards' => $user->vards,
+                'email' => $user->email,
+                // Specify table names to avoid ambiguous columns
+                'dietas_ierobezojumi' => $user->dietasIerobezojumi()->pluck('dietas_ierobezojumi.dietas_ierobezojumi_id'),
+                'alergijas' => $user->alergijas()->pluck('alergijas.alergijas_id'),
+            ],
+            'dietas' => \App\Models\DietasIerobezojumi::all(['dietas_ierobezojumi_id', 'nosaukums']),
+            'alergijas' => \App\Models\Alergijas::all(['alergijas_id', 'nosaukums']),
         ]);
     }
 
@@ -29,16 +40,20 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user = $request->user();
+        $user->fill($request->validated());
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
+        $user->save();
 
-        $request->user()->save();
+        // Now sync will actually pick up the IDs in the request
+        $user->dietasIerobezojumi()->sync($request->input('dietas_ierobezojumi', []));
+        $user->alergijas()->sync($request->input('alergijas', []));
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('status','profils-atjauninats');
     }
+
 
     /**
      * Delete the user's account.
