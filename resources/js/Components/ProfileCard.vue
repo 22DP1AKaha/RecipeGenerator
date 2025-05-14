@@ -26,6 +26,10 @@
                 disabled
               />
             </div>
+
+            <div class="password-update-section">
+              <UpdatePasswordForm />
+            </div>
   
             <!-- Dietary Restrictions -->
             <div class="form-group">
@@ -85,6 +89,7 @@
   import CustomButton from '@/Components/CustomButton.vue';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm.vue';
+import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm.vue';
 import { useForm } from '@inertiajs/vue3';
   
   const props = defineProps({

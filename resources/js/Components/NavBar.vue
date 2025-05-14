@@ -9,8 +9,12 @@
       <li><Link :href="route('home')">Sākums</Link></li>
       <li><Link :href="route('receptes')">Receptes</Link></li>
       <li><Link :href="route('aireceptes')">Ģenerēšana</Link></li>
-      <li v-if="isUserLoggedIn">
-        <Link :href="route('profile.edit')">Profils</Link>
+      <li v-if="isUserLoggedIn" class="dropdown">
+        <a class="dropbtn">Profils</a>
+        <div class="dropdown-content">
+          <Link :href="route('profile.edit')">Profils</Link>
+          <Link :href="route('logout')" method="post">Iziet</Link>
+        </div>
       </li>
       <li v-else>
         <Link :href="route('login')">Ienākt</Link>
@@ -29,8 +33,12 @@
       <li><Link :href="route('home')" @click="toggleNav">Sākums</Link></li>
       <li><Link :href="route('receptes')" @click="toggleNav">Receptes</Link></li>
       <li><Link :href="route('aireceptes')" @click="toggleNav">Ģenerēšana</Link></li>
-      <li v-if="isUserLoggedIn">
-        <Link :href="route('profile.edit')" @click="toggleNav">Profils</Link>
+      <li v-if="isUserLoggedIn" class="mobile-dropdown">
+        <a @click="mobileDropdownOpen = !mobileDropdownOpen">Profils</a>
+        <div class="mobile-dropdown-content" v-show="mobileDropdownOpen">
+          <Link :href="route('profile.edit')" @click="toggleNav; mobileDropdownOpen = false">Profils</Link>
+          <Link :href="route('logout')" method="post" @click="toggleNav; mobileDropdownOpen = false">Iziet</Link>
+        </div>
       </li>
       <li v-else>
         <Link :href="route('login')" @click="toggleNav">Ienākt</Link>
@@ -48,11 +56,11 @@ export default {
   data() {
     return {
       menuActive: false,
+      mobileDropdownOpen: false,
     };
   },
   computed: {
     hideNav() {
-      // hide on login / register pages
       const url = this.$page.url;
       return url.startsWith("/ienakt") || url.startsWith("/registreties");
     },
@@ -63,6 +71,7 @@ export default {
   methods: {
     toggleNav() {
       this.menuActive = !this.menuActive;
+      this.mobileDropdownOpen = false;
     },
   },
 };
@@ -201,6 +210,60 @@ nav ul li a:hover {
   }
   nav ul {
       display: none;
+  }
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  min-width: 160px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 5px;
+  z-index: 3;
+  top: 100%;
+  left: 0;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-content a {
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+  display: block;
+  font-size: 1rem;
+}
+
+.dropdown-content a:hover {
+  background-color: rgb(243, 213, 170);
+}
+
+/* Mobile dropdown styles */
+.mobile-dropdown-content {
+  padding-left: 20px;
+}
+
+.mobile-dropdown-content a {
+  display: block;
+  padding: 8px 0;
+  font-size: 1rem;
+}
+
+@media screen and (max-width: 790px) {
+  .dropdown {
+    display: none;
+  }
+  
+  .mobile-dropdown {
+    display: block;
   }
 }
 </style>
