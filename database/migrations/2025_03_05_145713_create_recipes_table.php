@@ -18,8 +18,9 @@ return new class extends Migration
             $table->integer('gatavosanas_laiks');
             $table->string('grutibas_pakape');
             $table->string('edienreize');
+            $table->string('uzturs');
             $table->string('dietas_tips');
-            $table->string('galvenais_olbaltumvielu_avots');
+            $table->string('galvenais_olbaltumvielu_avots')->nullable();
             $table->string('attels')->nullable();  // Changed from text to string
             $table->timestamp('datums_izveidots')->useCurrent();
             $table->timestamp('datums_atjauninats')->useCurrent();

@@ -11,41 +11,60 @@ class RecipeController extends Controller
     // Fetch all recipes (already exists)
     public function index()
     {
-        $recipes = Recipe::select('id', 'nosaukums as title', 'attels as image')->get();
+        $recipes = Recipe::select(
+            'id',
+            'nosaukums as title',
+            'attels as image',
+            'edienreize',
+            'uzturs',
+            'dietas_tips',
+            'galvenais_olbaltumvielu_avots'
+        )->get();
+        
         return response()->json($recipes);
+    }
+
+    public function getFilters()
+    {
+        return response()->json([
+            'mealTimes' => Recipe::distinct()->pluck('edienreize')->filter()->values(),
+            'nutritionTypes' => Recipe::distinct()->pluck('uzturs')->filter()->values(),
+            'dietTypes' => Recipe::distinct()->pluck('dietas_tips')->filter()->values(),
+            'proteinSources' => Recipe::distinct()->pluck('galvenais_olbaltumvielu_avots')->filter()->values()
+        ]);
     }
 
     // Fetch a single recipe with instructions
     public function show($id)
-{
-    // Fetch the recipe with its instructions and ingredients (including pivot data)
-    $recipe = Recipe::with(['instructions', 'ingredients'])->find($id);
+    {
+        // Fetch the recipe with its instructions and ingredients (including pivot data)
+        $recipe = Recipe::with(['instructions', 'ingredients'])->find($id);
 
-    if (!$recipe) {
-        return response()->json(['message' => 'Recepte nav atrasta!'], 404);
+        if (!$recipe) {
+            return response()->json(['message' => 'Recepte nav atrasta!'], 404);
+        }
+
+        return response()->json([
+            'id' => $recipe->id,
+            'nosaukums' => $recipe->nosaukums,
+            'attels' => $recipe->attels,
+            'gatavosanas_laiks' => $recipe->gatavosanas_laiks,
+            'grutibas_pakape' => $recipe->grutibas_pakape,
+            'apraksts' => $recipe->apraksts,
+            'instructions' => $recipe->instructions->map(function ($instruction) {
+                return [
+                    'solis_numurs' => $instruction->solis_numurs,
+                    'apraksts' => $instruction->apraksts
+                ];
+            }),
+            'ingredients' => $recipe->ingredients->map(function ($ingredient) {
+                return [
+                    'id' => $ingredient->id,
+                    'nosaukums' => $ingredient->nosaukums,
+                    'daudzums' => $ingredient->pivot->daudzums, // Pivot data
+                    'piezimes' => $ingredient->pivot->piezimes // Pivot data
+                ];
+            })
+        ]);
     }
-
-    return response()->json([
-        'id' => $recipe->id,
-        'nosaukums' => $recipe->nosaukums,
-        'attels' => $recipe->attels,
-        'gatavosanas_laiks' => $recipe->gatavosanas_laiks,
-        'grutibas_pakape' => $recipe->grutibas_pakape,
-        'apraksts' => $recipe->apraksts,
-        'instructions' => $recipe->instructions->map(function ($instruction) {
-            return [
-                'solis_numurs' => $instruction->solis_numurs,
-                'apraksts' => $instruction->apraksts
-            ];
-        }),
-        'ingredients' => $recipe->ingredients->map(function ($ingredient) {
-            return [
-                'id' => $ingredient->id,
-                'nosaukums' => $ingredient->nosaukums,
-                'daudzums' => $ingredient->pivot->daudzums, // Pivot data
-                'piezimes' => $ingredient->pivot->piezimes // Pivot data
-            ];
-        })
-    ]);
-}
 }

@@ -16,11 +16,12 @@ Route::get('/receptes', fn() => Inertia::render('Receptes'))->name('receptes');
 // AI generation
 Route::get('/aireceptes', fn() => Inertia::render('AIReceptes'))->name('aireceptes');
 
-// API route for fetching recipes
-Route::get('/api/recipes', [RecipeController::class, 'index']);
-
-// API route for fetching a single recipe
-Route::get('/api/recipes/{id}', [RecipeController::class, 'show']);
+// API routes
+Route::prefix('api')->group(function () {
+    Route::get('/recipes', [RecipeController::class, 'index']);
+    Route::get('/recipes/{id}', [RecipeController::class, 'show']);
+    Route::get('/recipe-filters', [RecipeController::class, 'getFilters']); // New filter endpoint
+});
 
 // Route for viewing a single recipe page
 Route::get('/recepte/{id}', fn($id) => Inertia::render('RecepteDyn', ['id' => $id]))

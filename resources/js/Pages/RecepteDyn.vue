@@ -171,6 +171,16 @@ export default {
   padding: 3px 0;
 }
 
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FFE4B5;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto;
+}
+
 @media (max-width: 600px) {
   .recipe-content {
       flex-direction: column;
