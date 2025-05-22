@@ -1,19 +1,12 @@
 <?php
+namespace Database\Seeders;
 
-// app/Models/Alergijas.php
-namespace App\Models;
+use Illuminate\Database\Seeder;
+use App\Models\Alergijas;
+use App\Models\Ingredient;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Alergijas extends Model
+class AllergyIngredientsSeeder extends Seeder
 {
-    protected $table = 'alergijas';
-    protected $primaryKey = 'alergijas_id';
-    public $incrementing = true;
-    protected $keyType = 'int';
-    protected $fillable = ['nosaukums'];
-
-
     public function run()
     {
         $allergies = [
@@ -65,26 +58,10 @@ class Alergijas extends Model
         ];
 
         foreach ($allergies as $allergyName => $ingredients) {
-            $allergy = Alergijas::firstOrCreate(['nosaukums' => $allergyName]);
+            $allergy = Alergijas::where('nosaukums', $allergyName)->first();
             $allergy->allergicIngredients()->sync(
                 Ingredient::whereIn('nosaukums', $ingredients)->pluck('id')
             );
         }
     }
-
-    public function users()
-    {
-        return $this->belongsToMany(
-            \app\Models\User::class,
-            'alergijas_user',            // Pivot table
-            'alergijas_id',              // Foreign key in the pivot table
-            'user_id'                    // Related foreign key
-        );
-    }
-
-    public function allergicIngredients()
-    {
-        return $this->belongsToMany(Ingredient::class, 'alergijas_ingredient', 'alergijas_id', 'ingredient_id');
-    }
-
 }

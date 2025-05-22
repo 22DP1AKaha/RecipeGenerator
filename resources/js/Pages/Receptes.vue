@@ -31,6 +31,14 @@
           <button @click="clearFilters" class="clear-filters">Notīrīt filtrus</button>
         </div>
 
+        <!-- Preference Filter -->
+        <div v-if="isUserLoggedIn" class="preference-filter">
+          <label>
+            <input type="checkbox" v-model="filterByPreferences" />
+            Parādīt tikai manam uzturam atbilstošas receptes
+          </label>
+        </div>
+
         <!-- Loading Spinner -->
         <div v-if="loading" class="spinner"></div>
 
@@ -53,7 +61,7 @@
             <h2>{{ recipe.title }}</h2>
             <div class="recipe-tags">
               <span class="tag">{{ recipe.edienreize }}</span>
-              <span class="tag">{{ recipe.uzturs }}</span>
+              <span class="tag">{{ recipe.dietas_tips }}</span>
             </div>
           </div>
         </div>
@@ -83,19 +91,33 @@ export default {
         proteinSources: []
       },
       loading: true,
+      filterByPreferences: false,
     };
   },
   computed: {
     filteredRecipes() {
       return this.recipes.filter(recipe => {
+        // Base filters
         const searchMatch = recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase());
         const mealMatch = this.selectedMealTime ? recipe.edienreize === this.selectedMealTime : true;
         const nutritionMatch = this.selectedNutritionType ? recipe.uzturs === this.selectedNutritionType : true;
         const proteinMatch = this.selectedProteinSource ? 
           recipe.galvenais_olbaltumvielu_avots === this.selectedProteinSource : true;
-        
-        return searchMatch && mealMatch && nutritionMatch && proteinMatch;
+
+        // Dietary preference filter
+        let preferenceMatch = true;
+        if (this.filterByPreferences && this.isUserLoggedIn) {
+          const user = this.$page.props.auth.user;
+          const forbiddenIngredients = this.getForbiddenIngredients(user);
+          const recipeIngredients = recipe.ingredients; // Directly use the array
+          preferenceMatch = !this.hasForbiddenIngredients(recipeIngredients, forbiddenIngredients);
+        }
+
+        return searchMatch && mealMatch && nutritionMatch && proteinMatch && preferenceMatch;
       });
+    },
+    isUserLoggedIn() {
+      return this.$page.props.auth.user !== null;
     },
   },
   methods: {
@@ -126,6 +148,19 @@ export default {
     showRecipe(id) {
       this.$inertia.visit(route('recepte', { id }));
     },
+    getForbiddenIngredients(user) {
+      return [
+        ...user.dietas_ierobezojumi.flatMap(d => 
+          d.restricted_ingredients.map(i => i.id)
+        ),
+        ...user.alergijas.flatMap(a => 
+          a.allergic_ingredients.map(i => i.id)
+        )
+      ];
+    },
+    hasForbiddenIngredients(recipeIngredients, forbidden) {
+      return recipeIngredients.some(id => forbidden.includes(id));
+    }
   },
   mounted() {
     this.fetchData();
@@ -133,9 +168,30 @@ export default {
 };
 </script>
 
-<!-- Keep your existing styles unchanged -->
-
 <style scoped>
+/* Add preference filter styles */
+.preference-filter {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preference-filter label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+.preference-filter input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* Existing styles remain unchanged */
 .recipe-page {
   font-family: monospace;
   text-align: center;

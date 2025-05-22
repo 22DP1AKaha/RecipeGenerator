@@ -11,16 +11,30 @@ class RecipeController extends Controller
     // Fetch all recipes (already exists)
     public function index()
     {
-        $recipes = Recipe::select(
-            'id',
-            'nosaukums as title',
-            'attels as image',
-            'edienreize',
-            'uzturs',
-            'dietas_tips',
-            'galvenais_olbaltumvielu_avots'
-        )->get();
-        
+        $recipes = Recipe::with(['ingredients:id']) // Eager load ingredients
+            ->select(
+                'id',
+                'nosaukums as title',
+                'attels as image',
+                'edienreize',
+                'uzturs',
+                'dietas_tips',
+                'galvenais_olbaltumvielu_avots'
+            )
+            ->get()
+            ->map(function ($recipe) {
+                return [
+                    'id' => $recipe->id,
+                    'title' => $recipe->title,
+                    'image' => $recipe->image,
+                    'edienreize' => $recipe->edienreize,
+                    'uzturs' => $recipe->uzturs,
+                    'dietas_tips' => $recipe->dietas_tips,
+                    'galvenais_olbaltumvielu_avots' => $recipe->galvenais_olbaltumvielu_avost,
+                    'ingredients' => $recipe->ingredients->pluck('id') // Return array of ingredient IDs
+                ];
+            });
+
         return response()->json($recipes);
     }
 

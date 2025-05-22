@@ -17,7 +17,6 @@ class AlergijasSeeder extends Seeder
         // Insert predefined data
         DB::table('alergijas')->insert([
             ['nosaukums' => 'Rieksti'],
-            ['nosaukums' => 'Zemesrieksti'],
             ['nosaukums' => 'Piens'],
             ['nosaukums' => 'Olas'],
             ['nosaukums' => 'Soja'],

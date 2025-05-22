@@ -1,33 +1,12 @@
 <?php
+namespace Database\Seeders;
 
-// app/Models/DietasIerobezojumi.php
-namespace App\Models;
+use Illuminate\Database\Seeder;
+use App\Models\DietasIerobezojumi;
+use App\Models\Ingredient;
 
-use Illuminate\Database\Eloquent\Model;
-
-class DietasIerobezojumi extends Model
+class DietRestrictionIngredientsSeeder extends Seeder
 {
-    protected $table = 'dietas_ierobezojumi';
-    protected $primaryKey = 'dietas_ierobezojumi_id';
-    public $incrementing = true;
-    protected $keyType = 'int';
-    protected $fillable = ['nosaukums'];
-
-    public function users()
-    {
-        return $this->belongsToMany(
-            \app\Models\User::class,
-            'dietas_ierobezojumi_user', // Pivot table
-            'dietas_ierobezojumi_id',    // Foreign key in the pivot table
-            'user_id'                    // Related foreign key
-        );
-    }
-
-    public function restrictedIngredients()
-    {
-        return $this->belongsToMany(Ingredient::class, 'dietas_ierobezojumi_ingredient', 'dietas_ierobezojumi_id', 'ingredient_id');
-    }
-
     public function run()
     {
         $diets = [
@@ -116,4 +95,3 @@ class DietasIerobezojumi extends Model
         }
     }
 }
-

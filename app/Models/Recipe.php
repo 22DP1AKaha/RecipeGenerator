@@ -17,6 +17,6 @@ class Recipe extends Model
     public function ingredients()
     {
         return $this->belongsToMany(Ingredient::class, 'recipe_ingredients', 'receptes_id', 'sastavdalas_id')
-                    ->withPivot('daudzums'); // Include pivot table columns
+                    ->withPivot('daudzums');
     }
 }
