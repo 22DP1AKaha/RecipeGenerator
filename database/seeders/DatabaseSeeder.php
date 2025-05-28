@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
             InstructionTableSeeder::class,
             DietasIerobezojumiSeeder::class,
             AlergijasSeeder::class,
+            DietRestrictionIngredientsSeeder::class,
+            AllergyIngredientsSeeder::class,
         ]);
     }
 }

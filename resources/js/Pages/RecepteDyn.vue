@@ -9,6 +9,22 @@
               <p>⭐ Sarežģītība: {{ recipe.grutibas_pakape }}</p>
           </div>
 
+          <div class="rating-bar">
+            <span
+              v-for="star in 5"
+              :key="star"
+              class="star"
+              :class="{
+                filled: star <= hover || (!hover && star <= recipe.average_rating),
+                'user-rated': star <= recipe.user_rating
+              }"
+              @mouseover="hover = star"
+              @mouseleave="hover = 0"
+              @click="rateRecipe(star)"
+            >★</span>
+            <div class="average-text">{{ recipe.average_rating.toFixed(1) }} / 5</div>
+          </div>
+
           <img :src="recipe.attels" alt="Recipe Image" class="recipe-image" v-if="recipe.attels" />
 
           <p class="description"><strong>Apraksts:</strong> {{ recipe.apraksts }}</p>
@@ -56,7 +72,7 @@ export default {
       id: {
           type: [String, Number],
           required: true,
-      },
+      }
   },
   data() {
       return {
@@ -65,6 +81,7 @@ export default {
           recipe: null,
           baseIngredients: [],
           loading: true,
+          hover: 0,
       };
   },
   methods: {
@@ -85,6 +102,38 @@ export default {
       },
       updateServings(newServings) {
           this.servings = parseInt(newServings);
+      },
+      async rateRecipe(star) {
+          try {
+              // Submit rating directly
+              const response = await axios.post('/ratings', {
+                  receptes_id: this.recipe.id,
+                  vertejums: star,
+                  komentars: null // Explicitly set to null
+              }, {
+                  withCredentials: true
+              });
+              
+              // Update the recipe data with new ratings
+              this.recipe.user_rating = star;
+              this.recipe.average_rating = response.data.average;
+          } catch (error) {
+              if (error.response && error.response.status === 401) {
+                  // Unauthenticated - redirect to login
+                  window.location.href = '/ienakt';
+              } else {
+                  console.error('Rating failed:', error);
+                  let errorMessage = 'Vērtējums neizdevās. Lūdzu mēģiniet vēlreiz.';
+                  
+                  if (error.response?.data?.message) {
+                      errorMessage = error.response.data.message;
+                  } else if (error.message) {
+                      errorMessage = error.message;
+                  }
+                  
+                  alert(errorMessage);
+              }
+          }
       }
   },
   created() {
@@ -181,6 +230,40 @@ export default {
   margin: 2rem auto;
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.star {
+  font-size: 24px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: gold;
+}
+
+.star.user-rated {
+  color: orange;
+}
+
+.average-text {
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
 @media (max-width: 600px) {
   .recipe-content {
       flex-direction: column;
@@ -189,6 +272,17 @@ export default {
 
   .recipe-ingredients {
       max-width: 100%;
+  }
+  
+  .rating-bar {
+      flex-wrap: wrap;
+      justify-content: center;
+  }
+  
+  .average-text {
+      width: 100%;
+      text-align: center;
+      margin-top: 10px;
   }
 }
 </style>

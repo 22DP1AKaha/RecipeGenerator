@@ -5,80 +5,106 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Recipe;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class RecipeController extends Controller
 {
-    // Fetch all recipes (already exists)
     public function index()
     {
-        $recipes = Recipe::with(['ingredients:id']) // Eager load ingredients
-            ->select(
-                'id',
-                'nosaukums as title',
-                'attels as image',
-                'edienreize',
-                'uzturs',
-                'dietas_tips',
-                'galvenais_olbaltumvielu_avots'
-            )
-            ->get()
-            ->map(function ($recipe) {
-                return [
-                    'id' => $recipe->id,
-                    'title' => $recipe->title,
-                    'image' => $recipe->image,
-                    'edienreize' => $recipe->edienreize,
-                    'uzturs' => $recipe->uzturs,
-                    'dietas_tips' => $recipe->dietas_tips,
-                    'galvenais_olbaltumvielu_avots' => $recipe->galvenais_olbaltumvielu_avost,
-                    'ingredients' => $recipe->ingredients->pluck('id') // Return array of ingredient IDs
-                ];
-            });
+        try {
+            $recipes = Recipe::with('ingredients')
+                ->withAvg('ratings as average_rating', 'vertejums') // Add average rating
+                ->select(
+                    'id',
+                    'nosaukums as title',
+                    'attels as image',
+                    'edienreize',
+                    'uzturs',
+                    'dietas_tips',
+                    'galvenais_olbaltumvielu_avots'
+                )
+                ->get()
+                ->map(function ($recipe) {
+                    return [
+                        'id'                         => $recipe->id,
+                        'title'                      => $recipe->title,
+                        'image'                      => $recipe->image,
+                        'edienreize'                 => $recipe->edienreize,
+                        'uzturs'                     => $recipe->uzturs,
+                        'dietas_tips'                => $recipe->dietas_tips,
+                        'galvenais_olbaltumvielu_avots' => $recipe->galvenais_olbaltumvielu_avots,
+                        'ingredients'                => $recipe->ingredients->pluck('id')->toArray(),
+                        'average_rating'             => $recipe->average_rating ? (float) number_format($recipe->average_rating, 1) : 0, // Format rating
+                    ];
+                });
 
-        return response()->json($recipes);
+            return response()->json($recipes);
+        } catch (\Exception $e) {
+            Log::error('Recipe fetch error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error'], 500);
+        }
     }
 
     public function getFilters()
     {
-        return response()->json([
-            'mealTimes' => Recipe::distinct()->pluck('edienreize')->filter()->values(),
-            'nutritionTypes' => Recipe::distinct()->pluck('uzturs')->filter()->values(),
-            'dietTypes' => Recipe::distinct()->pluck('dietas_tips')->filter()->values(),
-            'proteinSources' => Recipe::distinct()->pluck('galvenais_olbaltumvielu_avots')->filter()->values()
-        ]);
+        try {
+            return response()->json([
+                'mealTimes' => Recipe::distinct()->pluck('edienreize')->filter()->values(),
+                'nutritionTypes' => Recipe::distinct()->pluck('uzturs')->filter()->values(),
+                'proteinSources' => Recipe::distinct()->pluck('galvenais_olbaltumvielu_avots')->filter()->values()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Filter fetch error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error'], 500);
+        }
     }
 
-    // Fetch a single recipe with instructions
     public function show($id)
     {
-        // Fetch the recipe with its instructions and ingredients (including pivot data)
-        $recipe = Recipe::with(['instructions', 'ingredients'])->find($id);
+        try {
+            $recipe = Recipe::with(['instructions', 'ingredients'])
+                ->withAvg('ratings as average_rating', 'vertejums') // Add average rating
+                ->find($id);
 
-        if (!$recipe) {
-            return response()->json(['message' => 'Recepte nav atrasta!'], 404);
+            if (!$recipe) {
+                return response()->json(['message' => 'Recepte nav atrasta!'], 404);
+            }
+
+            $userRating = 0;
+            if (Auth::check()) {
+                // Get authenticated user's rating if exists
+                $userRating = $recipe->ratings()
+                    ->where('user_id', Auth::id())
+                    ->value('vertejums') ?? 0;
+            }
+
+            return response()->json([
+                'id' => $recipe->id,
+                'nosaukums' => $recipe->nosaukums,
+                'attels' => $recipe->attels,
+                'gatavosanas_laiks' => $recipe->gatavosanas_laiks,
+                'grutibas_pakape' => $recipe->grutibas_pakape,
+                'apraksts' => $recipe->apraksts,
+                'average_rating' => $recipe->average_rating ? (float) number_format($recipe->average_rating, 1) : 0,
+                'user_rating' => (int) $userRating,
+                'instructions' => $recipe->instructions->map(function ($instruction) {
+                    return [
+                        'solis_numurs' => $instruction->solis_numurs,
+                        'apraksts' => $instruction->apraksts
+                    ];
+                }),
+                'ingredients' => $recipe->ingredients->map(function ($ingredient) {
+                    return [
+                        'id' => $ingredient->ingredient_id,
+                        'nosaukums' => $ingredient->nosaukums,
+                        'daudzums' => $ingredient->pivot->daudzums,
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Recipe detail error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error'], 500);
         }
-
-        return response()->json([
-            'id' => $recipe->id,
-            'nosaukums' => $recipe->nosaukums,
-            'attels' => $recipe->attels,
-            'gatavosanas_laiks' => $recipe->gatavosanas_laiks,
-            'grutibas_pakape' => $recipe->grutibas_pakape,
-            'apraksts' => $recipe->apraksts,
-            'instructions' => $recipe->instructions->map(function ($instruction) {
-                return [
-                    'solis_numurs' => $instruction->solis_numurs,
-                    'apraksts' => $instruction->apraksts
-                ];
-            }),
-            'ingredients' => $recipe->ingredients->map(function ($ingredient) {
-                return [
-                    'id' => $ingredient->id,
-                    'nosaukums' => $ingredient->nosaukums,
-                    'daudzums' => $ingredient->pivot->daudzums, // Pivot data
-                    'piezimes' => $ingredient->pivot->piezimes // Pivot data
-                ];
-            })
-        ]);
     }
 }

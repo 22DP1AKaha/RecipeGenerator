@@ -1,72 +1,104 @@
 <template>
-    <MainLayout>
-      <div class="recipe-page">
-        <h1>Recepšu Meklētājs</h1>
+  <MainLayout>
+    <div class="recipe-page">
+      <h1>Recepšu Meklētājs</h1>
 
-        <!-- Search Bar -->
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Meklēt recepti..."
-          class="search-bar"
-        />
+      <!-- Search Bar -->
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Meklēt recepti..."
+        class="search-bar"
+      />
 
-        <!-- Filters -->
-        <div class="filters">
-          <select v-model="selectedMealTime" class="filter-dropdown">
-            <option value="">Visas edienreizes</option>
-            <option v-for="time in filterOptions.mealTimes" :key="time" :value="time">{{ time }}</option>
-          </select>
-
-          <select v-model="selectedNutritionType" class="filter-dropdown">
-            <option value="">Visi uztura veidi</option>
-            <option v-for="nutrition in filterOptions.nutritionTypes" :key="nutrition" :value="nutrition">{{ nutrition }}</option>
-          </select>
-
-          <select v-model="selectedProteinSource" class="filter-dropdown">
-            <option value="">Visi olbaltumvielu avoti</option>
-            <option v-for="source in filterOptions.proteinSources" :key="source" :value="source">{{ source }}</option>
-          </select>
-
-          <button @click="clearFilters" class="clear-filters">Notīrīt filtrus</button>
-        </div>
-
-        <!-- Preference Filter -->
-        <div v-if="isUserLoggedIn" class="preference-filter">
-          <label>
-            <input type="checkbox" v-model="filterByPreferences" />
-            Parādīt tikai manam uzturam atbilstošas receptes
-          </label>
-        </div>
-
-        <!-- Loading Spinner -->
-        <div v-if="loading" class="spinner"></div>
-
-        <!-- Recipe Grid -->
-        <div v-else class="recipe-grid">
-          <div 
-            v-if="filteredRecipes.length === 0"
-            class="no-results"
+      <!-- Filters -->
+      <div class="filters">
+        <select v-model="selectedMealTime" class="filter-dropdown">
+          <option value="">Visas edienreizes</option>
+          <option
+            v-for="time in filterOptions.mealTimes"
+            :key="time"
+            :value="time"
           >
-            Nav atrastas receptes atbilstoši filtriem!
+            {{ time }}
+          </option>
+        </select>
+
+        <select v-model="selectedNutritionType" class="filter-dropdown">
+          <option value="">Visi uztura veidi</option>
+          <option
+            v-for="nutrition in filterOptions.nutritionTypes"
+            :key="nutrition"
+            :value="nutrition"
+          >
+            {{ nutrition }}
+          </option>
+        </select>
+
+        <select v-model="selectedProteinSource" class="filter-dropdown">
+          <option value="">Visi olbaltumvielu avoti</option>
+          <option
+            v-for="source in filterOptions.proteinSources"
+            :key="source"
+            :value="source"
+          >
+            {{ source }}
+          </option>
+        </select>
+
+        <button @click="clearFilters" class="clear-filters">
+          Notīrīt filtrus
+        </button>
+      </div>
+
+      <!-- Preference Filter -->
+      <div v-if="isUserLoggedIn" class="preference-filter">
+        <label>
+          <input type="checkbox" v-model="filterByPreferences" />
+          Parādīt tikai manam uzturam atbilstošas receptes
+        </label>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div v-if="loading" class="spinner"></div>
+
+      <!-- Recipe Grid -->
+      <div v-else class="recipe-grid">
+        <div v-if="filteredRecipes.length === 0" class="no-results">
+          Nav atrastas receptes atbilstoši filtriem!
+        </div>
+
+        <div
+          v-for="recipe in filteredRecipes"
+          :key="recipe.id"
+          class="recipe-card"
+          @click="showRecipe(recipe.id)"
+        >
+          <!-- Recipe Image with Rating Overlay -->
+          <div class="image-container">
+            <img :src="recipe.image" :alt="recipe.title" />
+            <div class="rating-overlay">
+              <div class="rating-stars">
+                <span
+                  v-for="star in 5"
+                  :key="star"
+                  class="star"
+                  :class="{ filled: star <= recipe.average_rating }"
+                >★</span>
+              </div>
+              <div class="rating-number">{{ recipe.average_rating.toFixed(1) }}</div>
+            </div>
           </div>
           
-          <div
-            v-for="recipe in filteredRecipes"
-            :key="recipe.id"
-            class="recipe-card"
-            @click="showRecipe(recipe.id)"
-          >
-            <img :src="recipe.image" :alt="recipe.title" />
-            <h2>{{ recipe.title }}</h2>
-            <div class="recipe-tags">
-              <span class="tag">{{ recipe.edienreize }}</span>
-              <span class="tag">{{ recipe.dietas_tips }}</span>
-            </div>
+          <h2>{{ recipe.title }}</h2>
+          <div class="recipe-tags">
+            <span class="tag">{{ recipe.edienreize }}</span>
+            <span class="tag">{{ recipe.dietas_tips }}</span>
           </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
+  </MainLayout>
 </template>
 
 <script>
@@ -96,21 +128,19 @@ export default {
   },
   computed: {
     filteredRecipes() {
+      const forbidden = this.$page.props.auth.forbidden_ingredients || [];
+
       return this.recipes.filter(recipe => {
         // Base filters
         const searchMatch = recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase());
         const mealMatch = this.selectedMealTime ? recipe.edienreize === this.selectedMealTime : true;
         const nutritionMatch = this.selectedNutritionType ? recipe.uzturs === this.selectedNutritionType : true;
-        const proteinMatch = this.selectedProteinSource ? 
-          recipe.galvenais_olbaltumvielu_avots === this.selectedProteinSource : true;
+        const proteinMatch = this.selectedProteinSource ? recipe.galvenais_olbaltumvielu_avots === this.selectedProteinSource : true;
 
         // Dietary preference filter
         let preferenceMatch = true;
         if (this.filterByPreferences && this.isUserLoggedIn) {
-          const user = this.$page.props.auth.user;
-          const forbiddenIngredients = this.getForbiddenIngredients(user);
-          const recipeIngredients = recipe.ingredients; // Directly use the array
-          preferenceMatch = !this.hasForbiddenIngredients(recipeIngredients, forbiddenIngredients);
+          preferenceMatch = !forbidden.some(id => recipe.ingredients.includes(id));
         }
 
         return searchMatch && mealMatch && nutritionMatch && proteinMatch && preferenceMatch;
@@ -122,12 +152,13 @@ export default {
   },
   methods: {
     async fetchData() {
+      this.loading = true;
       try {
         const [recipesResponse, filtersResponse] = await Promise.all([
-          axios.get('http://localhost:8000/api/recipes'),
-          axios.get('http://localhost:8000/api/recipe-filters')
+          axios.get('/api/recipes', { withCredentials: true }),
+          axios.get('/api/recipe-filters', { withCredentials: true })
         ]);
-        
+
         this.recipes = recipesResponse.data;
         this.filterOptions = {
           mealTimes: filtersResponse.data.mealTimes,
@@ -136,6 +167,7 @@ export default {
         };
       } catch (error) {
         console.error('Kļūda ielādējot datus:', error);
+        alert('Radās kļūda ielādējot receptes. Lūdzu, pārbaudiet savienojumu un mēģiniet vēlreiz.');
       } finally {
         this.loading = false;
       }
@@ -147,19 +179,6 @@ export default {
     },
     showRecipe(id) {
       this.$inertia.visit(route('recepte', { id }));
-    },
-    getForbiddenIngredients(user) {
-      return [
-        ...user.dietas_ierobezojumi.flatMap(d => 
-          d.restricted_ingredients.map(i => i.id)
-        ),
-        ...user.alergijas.flatMap(a => 
-          a.allergic_ingredients.map(i => i.id)
-        )
-      ];
-    },
-    hasForbiddenIngredients(recipeIngredients, forbidden) {
-      return recipeIngredients.some(id => forbidden.includes(id));
     }
   },
   mounted() {
@@ -191,7 +210,6 @@ export default {
   height: 1.2rem;
 }
 
-/* Existing styles remain unchanged */
 .recipe-page {
   font-family: monospace;
   text-align: center;
@@ -281,17 +299,73 @@ h1 {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.recipe-card img {
+.image-container {
+  position: relative;
   width: 100%;
   height: 180px;
-  object-fit: cover;
+  overflow: hidden;
   border-radius: 8px;
   margin-bottom: 0.5rem;
 }
 
-.recipe-card h2 {
-  font-size: 1.5rem;
-  margin: 0.5rem 0;
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Default style for rating overlay - hidden */
+.rating-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  pointer-events: none; /* Allow clicking through the overlay */
+}
+
+.rating-stars {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.star {
+  font-size: 20px;
+  color: #ddd;
+  margin: 0 1px;
+}
+
+.star.filled {
+  color: #ffd700;
+}
+
+.rating-number {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* Computer-only hover effects */
+@media (hover: hover) and (pointer: fine) {
+  .image-container img {
+    transition: filter 0.3s ease;
+  }
+  
+  .recipe-card:hover .image-container img {
+    filter: brightness(0.7);
+  }
+  
+  .recipe-card:hover .rating-overlay {
+    opacity: 1;
+  }
 }
 
 .recipe-tags {
@@ -299,6 +373,7 @@ h1 {
   gap: 0.5rem;
   justify-content: center;
   flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
 .tag {
@@ -329,6 +404,11 @@ h1 {
   
   .search-bar {
     width: 80%;
+  }
+  
+  .recipe-card {
+    width: 100%;
+    max-width: 300px;
   }
 }
 

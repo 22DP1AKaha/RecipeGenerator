@@ -29,13 +29,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user() ? $request->user()->load([
-                    'dietasIerobezojumi.restrictedIngredients',
-                    'alergijas.allergicIngredients'
-                ]) : null,
+                'user' => $user
+                    ? $user->load([
+                        'dietasIerobezojumi.restrictedIngredients',
+                        'alergijas.allergicIngredients'
+                    ])
+                    : null,
+                'forbidden_ingredients' => $user
+                    ? $user->getForbiddenIngredientIds()
+                    : [],
             ],
         ];
     }

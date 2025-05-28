@@ -41,20 +41,31 @@ class User extends Authenticatable
     public function dietasIerobezojumi()
     {
         return $this->belongsToMany(
-            \App\Models\DietasIerobezojumi::class,
+            DietasIerobezojumi::class,
             'dietas_ierobezojumi_user',
             'user_id',
             'dietas_ierobezojumi_id'
-        )->withTimestamps(); // Add this
+        )->with(['restrictedIngredients']); // Eager load ingredients
     }
 
     public function alergijas()
     {
         return $this->belongsToMany(
-            \App\Models\Alergijas::class,
+            Alergijas::class,
             'alergijas_user',
             'user_id',
             'alergijas_id'
-        )->withTimestamps(); // Add this
+        )->with(['allergicIngredients']); // Eager load ingredients
+    }
+
+    public function getForbiddenIngredientIds()
+    {
+        $dietIngredients = $this->dietasIerobezojumi
+            ->flatMap(fn($diet) => $diet->restrictedIngredients->pluck('id')); // Changed to 'id'
+        
+        $allergyIngredients = $this->alergijas
+            ->flatMap(fn($allergy) => $allergy->allergicIngredients->pluck('id')); // Changed to 'id'
+        
+        return $dietIngredients->merge($allergyIngredients)->unique()->values()->toArray();
     }
 }

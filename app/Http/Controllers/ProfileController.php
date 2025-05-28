@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DietasIerobezojumi;
+use App\Models\Alergijas;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +20,10 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
-        $user = $request->user();
+        $user = $request->user()->load([
+            'dietasIerobezojumi.restrictedIngredients',
+            'alergijas.allergicIngredients'
+        ]);
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
@@ -26,12 +31,12 @@ class ProfileController extends Controller
             'user' => [
                 'vards' => $user->vards,
                 'email' => $user->email,
-                // Specify table names to avoid ambiguous columns
-                'dietas_ierobezojumi' => $user->dietasIerobezojumi()->pluck('dietas_ierobezojumi.dietas_ierobezojumi_id'),
-                'alergijas' => $user->alergijas()->pluck('alergijas.alergijas_id'),
+                'forbidden_ingredients' => $user->getForbiddenIngredientIds(),
+                'dietas_ierobezojumi' => $user->dietasIerobezojumi->pluck('dietas_ierobezojumi_id'),
+                'alergijas' => $user->alergijas->pluck('alergijas_id'),
             ],
-            'dietas' => \App\Models\DietasIerobezojumi::all(['dietas_ierobezojumi_id', 'nosaukums']),
-            'alergijas' => \App\Models\Alergijas::all(['alergijas_id', 'nosaukums']),
+            'dietas' => DietasIerobezojumi::all(['dietas_ierobezojumi_id', 'nosaukums']),
+            'alergijas' => Alergijas::all(['alergijas_id', 'nosaukums']),
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\RatingController; // UPDATED IMPORT PATH
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
@@ -20,11 +21,14 @@ Route::get('/aireceptes', fn() => Inertia::render('AIReceptes'))->name('airecept
 Route::prefix('api')->group(function () {
     Route::get('/recipes', [RecipeController::class, 'index']);
     Route::get('/recipes/{id}', [RecipeController::class, 'show']);
-    Route::get('/recipe-filters', [RecipeController::class, 'getFilters']); // New filter endpoint
+    Route::get('/recipe-filters', [RecipeController::class, 'getFilters']);
 });
 
 // Route for viewing a single recipe page
 Route::get('/recepte/{id}', fn($id) => Inertia::render('RecepteDyn', ['id' => $id]))
     ->name('recepte');
+
+// UPDATED CONTROLLER REFERENCE
+Route::middleware('auth:sanctum')->post('/ratings', [RatingController::class, 'store']);
 
 require __DIR__.'/auth.php';
