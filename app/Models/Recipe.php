@@ -10,7 +10,7 @@ class Recipe extends Model
     // Relationship with instructions
     public function instructions()
     {
-        return $this->hasMany(Instruction::class, 'receptes_id'); // Specify the custom foreign key
+        return $this->hasMany(Instruction::class, 'receptes_id');
     }
 
     // Many-to-many relationship with ingredients
@@ -18,9 +18,9 @@ class Recipe extends Model
     {
         return $this->belongsToMany(
             Ingredient::class,
-            'recipe_ingredients',    // pivot table
-            'receptes_id',           // this model’s FK on the pivot
-            'sastavdalas_id'         // related model’s FK on the pivot
+            'recipe_ingredients',
+            'receptes_id',
+            'sastavdalas_id'
         )
         ->withPivot(['daudzums'])
         ->withTimestamps();
@@ -46,5 +46,17 @@ class Recipe extends Model
     public function getUserRatingAttribute()
     {
         return $this->userRating()->value('vertejums') ?: 0;
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'receptes_id');
+    }
+
+    public function isFavoritedByUser()
+    {
+        if (!auth()->check()) return false;
+        // FIXED: Use correct primary key for user comparison
+        return $this->favorites()->where('user_id', auth()->user()->user_id)->exists();
     }
 }

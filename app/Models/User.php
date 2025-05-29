@@ -45,7 +45,7 @@ class User extends Authenticatable
             'dietas_ierobezojumi_user',
             'user_id',
             'dietas_ierobezojumi_id'
-        )->with(['restrictedIngredients']); // Eager load ingredients
+        )->with(['restrictedIngredients']);
     }
 
     public function alergijas()
@@ -55,16 +55,32 @@ class User extends Authenticatable
             'alergijas_user',
             'user_id',
             'alergijas_id'
-        )->with(['allergicIngredients']); // Eager load ingredients
+        )->with(['allergicIngredients']);
+    }
+    
+    // Add favorites relationship
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'user_id');
+    }
+
+    public function favoriteRecipes()
+    {
+        return $this->belongsToMany(
+            Recipe::class,
+            'favorites',
+            'user_id',
+            'receptes_id'
+        );
     }
 
     public function getForbiddenIngredientIds()
     {
         $dietIngredients = $this->dietasIerobezojumi
-            ->flatMap(fn($diet) => $diet->restrictedIngredients->pluck('id')); // Changed to 'id'
+            ->flatMap(fn($diet) => $diet->restrictedIngredients->pluck('id'));
         
         $allergyIngredients = $this->alergijas
-            ->flatMap(fn($allergy) => $allergy->allergicIngredients->pluck('id')); // Changed to 'id'
+            ->flatMap(fn($allergy) => $allergy->allergicIngredients->pluck('id'));
         
         return $dietIngredients->merge($allergyIngredients)->unique()->values()->toArray();
     }
