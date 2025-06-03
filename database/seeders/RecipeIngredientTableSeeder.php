@@ -57,11 +57,11 @@ class RecipeIngredientTableSeeder extends Seeder
             'Tomātu zupa' => [
                 'Tomāts' => '500g',
                 'Sīpols' => '1 gab.',
-                'Ķiploki' => '2 gab.',
+                'Ķiploks' => '2 gab.',
                 'Olīveļļa' => '10g',
                 'Sāls' => '5g',
                 'Pipari' => '2g',
-                'Krējums' => '100g',
+                'Skābais krējums' => '100g',
                 'Ūdens' => '240ml',
             ],
             'Burkānu un ingvera zupa' => [
@@ -72,7 +72,7 @@ class RecipeIngredientTableSeeder extends Seeder
                 'Sāls' => '5g',
                 'Pipari' => '2g',
                 'Ūdens' => '240ml',
-                'Krējums' => '100g',
+                'Skābais krējums' => '100g',
             ],
             'Kāpostu un kartupeļu zupa' => [
                 'Kāposts' => '300g',
@@ -87,7 +87,7 @@ class RecipeIngredientTableSeeder extends Seeder
             ],
             'Vistas un rīsu zupa' => [
                 'Rīsi'          => '100g',
-                'Vistas gaļa'   => '200g',
+                'Vistas fileja'   => '200g',
                 'Sīpols'        => '1 gab.',
                 'Burkāns'       => '1 gab.',
                 'Ūdens'         => '1l',

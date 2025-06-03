@@ -63,7 +63,7 @@ class IngredientsTableSeeder extends Seeder
             ['nosaukums' => 'Mango', 'kategorija' => 'Augļi'],
             ['nosaukums' => 'Bumbieris', 'kategorija' => 'Augļi'],
             ['nosaukums' => 'Vīnogas', 'kategorija' => 'Augļi'],
-            ['nosaukums' => 'Avokado', 'kategorija' => 'Augļi'],
+            ['nosaukums' => 'Avakado', 'kategorija' => 'Augļi'],
             ['nosaukums' => 'Persiks', 'kategorija' => 'Augļi'],
             ['nosaukums' => 'Nektarīns', 'kategorija' => 'Augļi'],
             ['nosaukums' => 'Plūme', 'kategorija' => 'Augļi'],
@@ -119,6 +119,7 @@ class IngredientsTableSeeder extends Seeder
 
             // Gaļa
             ['nosaukums' => 'Vistas fileja', 'kategorija' => 'Gaļas'],
+            ['nosaukums' => 'Vistas gaļa', 'kategorija' => 'Gaļas'],
             ['nosaukums' => 'Cūkgaļa', 'kategorija' => 'Gaļas'],
             ['nosaukums' => 'Liellopa gaļa', 'kategorija' => 'Gaļas'],
             ['nosaukums' => 'Maltā gaļa', 'kategorija' => 'Gaļas'],
@@ -195,6 +196,7 @@ class IngredientsTableSeeder extends Seeder
             ['nosaukums' => 'Cietais siers', 'kategorija' => 'Piena produkti un olas'],
             ['nosaukums' => 'Kausētais siers', 'kategorija' => 'Piena produkti un olas'],
             ['nosaukums' => 'Feta siers', 'kategorija' => 'Piena produkti un olas'],
+            ['nosaukums' => 'Siers', 'kategorija' => 'Piena produkti un olas'],
             ['nosaukums' => 'Mozarella', 'kategorija' => 'Piena produkti un olas'],
             ['nosaukums' => 'Parmezāns', 'kategorija' => 'Piena produkti un olas'],
             ['nosaukums' => 'Sviests', 'kategorija' => 'Piena produkti un olas'],

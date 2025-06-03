@@ -148,52 +148,40 @@ export default {
 }
 
 .recipe-details {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 1rem;
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
   text-align: center;
 }
 
-.recipe-details h1 {
-  font-size: 1.8rem;
-  margin-bottom: 0.8rem;
-  color: #4a3f35;
-}
-
 .recipe-info {
-  font-size: 1rem;
-  margin: 8px 0;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  font-size: 18px;
+  margin: 10px 0;
 }
 
 .recipe-image {
   width: 100%;
-  max-width: 350px;
-  border-radius: 8px;
-  margin: 15px 0;
+  max-width: 400px;
+  border-radius: 10px;
+  margin: 20px 0;
 }
 
 .description {
-  font-size: 1rem;
-  margin-bottom: 12px;
-  text-align: left;
-  line-height: 1.4;
+  font-size: 18px;
+  margin-bottom: 15px;
 }
 
 .recipe-content {
   display: flex;
   justify-content: space-between;
-  gap: 30px;
   text-align: left;
-  margin-top: 15px;
+  margin-top: 20px;
+  gap: 40px;
 }
 
 .recipe-ingredients {
   flex: 1;
-  max-width: 250px;
+  max-width: 300px;
 }
 
 .recipe-instructions {
@@ -201,16 +189,16 @@ export default {
   min-width: 0;
 }
 
-/* Ingredients row tweaks */
+/* Jaunie stili sastāvdaļām */
 :deep(.ingredient-row) {
   display: flex;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 15px;
+  margin-bottom: 8px;
   align-items: baseline;
 }
 
 :deep(.ingredient-quantity) {
-  flex: 0 0 60px;
+  flex: 0 0 70px;
   text-align: right;
   font-weight: bold;
   white-space: nowrap;
@@ -224,22 +212,22 @@ export default {
 
 :deep(ul) {
   padding-left: 0;
-  margin-top: 12px;
+  margin-top: 15px;
 }
 
 :deep(li) {
   list-style: none;
-  padding: 2px 0;
+  padding: 3px 0;
 }
 
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #FFE4B5;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   animation: spin 1s linear infinite;
-  margin: 1.5rem auto;
+  margin: 2rem auto;
 }
 
 @keyframes spin {
@@ -250,14 +238,13 @@ export default {
 .rating-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   justify-content: center;
-  margin: 12px 0;
-  flex-wrap: wrap;
+  margin: 15px 0;
 }
 
 .star {
-  font-size: 22px;
+  font-size: 24px;
   color: #ccc;
   cursor: pointer;
   transition: color 0.2s;
@@ -272,113 +259,30 @@ export default {
 }
 
 .average-text {
-  margin-left: 6px;
-  font-size: 0.85rem;
+  margin-left: 10px;
+  font-size: 14px;
   font-weight: bold;
 }
 
-/* Media queries */
-
-/* Tablet and up (≤800px) */
-@media (max-width: 800px) {
+@media (max-width: 600px) {
   .recipe-content {
-    flex-direction: column;
-    gap: 20px;
+      flex-direction: column;
+      gap: 20px;
   }
 
   .recipe-ingredients {
-    max-width: 100%;
+      max-width: 100%;
   }
-
-  .recipe-instructions {
-    min-width: 100%;
-  }
-}
-
-/* Small phones (≤600px) */
-@media (max-width: 600px) {
-  .recipe-details {
-    padding: 0.8rem;
-  }
-
-  .recipe-details h1 {
-    font-size: 1.6rem;
-  }
-
-  .recipe-info {
-    font-size: 0.95rem;
-    gap: 0.6rem;
-  }
-
-  .recipe-image {
-    max-width: 100%;
-    margin: 12px 0;
-  }
-
-  .description {
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-  }
-
+  
   .rating-bar {
-    gap: 3px;
+      flex-wrap: wrap;
+      justify-content: center;
   }
-
-  .star {
-    font-size: 20px;
-  }
-
+  
   .average-text {
-    font-size: 0.8rem;
-    margin-left: 4px;
-  }
-}
-
-/* Extra small phones (≤480px) */
-@media (max-width: 480px) {
-  .recipe-details {
-    padding: 0.6rem;
-  }
-
-  .recipe-details h1 {
-    font-size: 1.4rem;
-    margin-bottom: 0.6rem;
-  }
-
-  .recipe-info {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .recipe-info p {
-    margin: 2px 0;
-  }
-
-  .recipe-image {
-    border-radius: 6px;
-  }
-
-  .description {
-    font-size: 0.9rem;
-    margin-bottom: 8px;
-  }
-
-  .recipe-content {
-    gap: 15px;
-  }
-
-  .rating-bar {
-    justify-content: center;
-    gap: 2px;
-  }
-
-  .star {
-    font-size: 18px;
-  }
-
-  .average-text {
-    font-size: 0.75rem;
-    margin-left: 2px;
+      width: 100%;
+      text-align: center;
+      margin-top: 10px;
   }
 }
 </style>

@@ -37,7 +37,7 @@ class DietRestrictionIngredientsSeeder extends Seeder
                 'Maltā gaļa', 'Siers', 'Piens',
                 'Jogurts', 'Krējums', 'Biezpiens',
                 'Sviests', 'Kefīrs', 'Saldais krējums',
-                'Siera krems', 'Medus'
+                'Siera krems', 'Medus', 'Skābais krējums'
             ],
 
             'Zema ogļhidrātu' => [
