@@ -51,6 +51,20 @@
         </button>
       </div>
 
+      <div class="sorting">
+        <select v-model="sortBy" class="sort-dropdown">
+          <option value="">Kārtot pēc...</option>
+          <option value="rating">Vērtējuma</option>
+          <option value="difficulty">Grūtības pakāpes</option>
+          <option value="cooking_time">Gatavošanas laika</option>
+        </select>
+        
+        <select v-model="sortDirection" class="sort-dropdown">
+          <option value="asc">Augoši (A-Z)</option>
+          <option value="desc">Dilstoši (Z-A)</option>
+        </select>
+      </div>
+
       <!-- Preference Filter -->
       <div v-if="isUserLoggedIn" class="preference-filter">
         <label>
@@ -150,7 +164,9 @@ export default {
       },
       loading: true,
       filterByPreferences: false,
-      showFavoritesOnly: false, // New toggle state
+      showFavoritesOnly: false, 
+      sortBy: '',
+      sortDirection: 'asc',
     };
   },
   computed: {
@@ -184,8 +200,13 @@ export default {
     async fetchData() {
       this.loading = true;
       try {
+        const params = {
+          sort_by: this.sortBy,
+          sort_direction: this.sortDirection
+        };
+
         const [recipesResponse, filtersResponse] = await Promise.all([
-          axios.get('/api/recipes', { withCredentials: true }),
+          axios.get('/api/recipes', { params, withCredentials: true }),
           axios.get('/api/recipe-filters', { withCredentials: true })
         ]);
 
@@ -269,6 +290,14 @@ export default {
   mounted() {
     this.fetchData();
   },
+  watch:  {
+    sortBy() {
+      this.fetchData();
+    },
+    sortDirection() {
+      this.fetchData();
+    }
+  }
 };
 </script>
 
@@ -352,6 +381,23 @@ export default {
 /* Slight shrink on click for tactile feedback */
 .favorites-button:active {
   transform: scale(0.97);
+}
+
+.sorting {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.sort-dropdown {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+  min-width: 200px;
 }
 
 /* Responsive tweaks */

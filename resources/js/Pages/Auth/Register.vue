@@ -26,6 +26,11 @@ const submit = () => {
 
       <Head title="Register" />
 
+      <!-- General error -->
+      <div v-if="form.errors.error" class="error-message general-error">
+        {{ form.errors.error }}
+      </div>
+
       <form @submit.prevent="submit" class="register-form">
         <!-- Vārds -->
         <div class="input-group">
@@ -38,7 +43,7 @@ const submit = () => {
             required
           />
           <span v-if="form.errors.vards" class="error-message">
-            {{ form.errors.vards[0] }}
+            {{ form.errors.vards }}
           </span>
         </div>
 
@@ -53,11 +58,11 @@ const submit = () => {
             required
           />
           <span v-if="form.errors.email" class="error-message">
-            {{ form.errors.email[0] }}
+            {{ form.errors.email }}
           </span>
         </div>
 
-        <!-- Parole -->
+        <!-- Parole - Fixed display -->
         <div class="input-group">
           <label for="password">Parole</label>
           <input
@@ -67,8 +72,9 @@ const submit = () => {
             placeholder="Ievadiet paroli"
             required
           />
+          <!-- Changed to simple span -->
           <span v-if="form.errors.password" class="error-message">
-            {{ form.errors.password[0] }}
+            {{ Array.isArray(form.errors.password) ? form.errors.password[0] : form.errors.password }}
           </span>
         </div>
 
@@ -83,12 +89,19 @@ const submit = () => {
             required
           />
           <span v-if="form.errors.password_confirmation" class="error-message">
-            {{ form.errors.password_confirmation[0] }}
+            {{ form.errors.password_confirmation }}
           </span>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="register-btn">Reģistrēties</button>
+          <button 
+            type="submit" 
+            class="register-btn"
+            :disabled="form.processing"
+          >
+            <span v-if="!form.processing">Reģistrēties</span>
+            <span v-else>Reģistrē...</span>
+          </button>
         </div>
       </form>
 
@@ -194,10 +207,31 @@ h1 {
     text-decoration: underline;
 }
 
-/* Error Message Styling */
+.general-error {
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.register-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Ensure error messages don't show bullets */
 .error-message {
-    color: red;
-    font-size: 0.9rem;
-    margin-top: 5px;
+  color: red;
+  display: block;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-message li {
+  display: block;
 }
 </style>

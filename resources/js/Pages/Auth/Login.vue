@@ -26,6 +26,11 @@ const submit = () => {
 
       <!-- Login Form -->
       <form @submit.prevent="submit" class="login-form">
+        <!-- Combined error message -->
+        <div v-if="form.errors.email" class="input-error" style="margin-bottom: 15px; text-align: center;">
+          {{ form.errors.email }}
+        </div>
+
         <div class="input-group">
           <label for="email">E-pasts</label>
           <input
@@ -34,10 +39,8 @@ const submit = () => {
             v-model="form.email"
             placeholder="Ievadiet e-pastu"
             required
+            :class="{ 'error-border': form.errors.email }"
           />
-          <p v-if="form.errors.email" class="input-error">
-            {{ form.errors.email[0] }}
-          </p>
         </div>
 
         <div class="input-group">
@@ -49,9 +52,6 @@ const submit = () => {
             placeholder="Ievadiet paroli"
             required
           />
-          <p v-if="form.errors.password" class="input-error">
-            {{ form.errors.password[0] }}
-          </p>
         </div>
 
         <div class="form-actions">
@@ -183,5 +183,18 @@ const submit = () => {
 
 .signup-link a:hover {
     text-decoration: underline;
+}
+
+.error-border {
+  border: 2px solid red !important;
+}
+
+.input-error {
+  color: red;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 8px;
+  background-color: #ffeeee;
+  border-radius: 4px;
 }
 </style>

@@ -29,14 +29,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Validate credentials
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ]);
 
+        // Attempt authentication
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            // Throw error on the email field
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => 'Nepareizs e-pasts vai parole',
             ]);
         }
 

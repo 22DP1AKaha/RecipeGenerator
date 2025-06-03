@@ -54,6 +54,8 @@
 
       <!-- Recipe Results -->
       <div class="recipe-results">
+        
+        
         <div v-if="generatedRecipe" class="recipe-output">
           <h2 class="recipe-title">{{ recipeTitle }}</h2>
           
@@ -70,11 +72,20 @@
               <li v-for="(step, index) in recipeInstructions" :key="index">{{ step }}</li>
             </ol>
           </div>
+
+          <div class="ai-warning">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="warning-icon">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <p>Šī recepte ir ģenerēta, izmantojot mākslīgo intelektu. Lūdzu, pārbaudiet recepti pirms tās pagatavošanas.</p>
+          </div>
         </div>
         
         <div v-else-if="error" class="error-message">
           {{ error }}
         </div>
+
+        <div v-else-if="generating" class="spinner"></div>
         
         <div v-else class="placeholder">
           <div class="placeholder-icon">
@@ -128,12 +139,10 @@ export default {
     },
 
     toggleIngredient(ingredient) {
-      const index = this.selectedIngredients.findIndex(i => i.id === ingredient.id);
-      if (index > -1) {
-        this.selectedIngredients.splice(index, 1);
-      } else {
-        this.selectedIngredients.push(ingredient);
-      }
+      const exists = this.selectedIngredients.some(i => i.id === ingredient.id);
+      this.selectedIngredients = exists
+        ? this.selectedIngredients.filter(i => i.id !== ingredient.id)
+        : [...this.selectedIngredients, ingredient];
     },
 
     isSelected(ingredient) {
@@ -565,6 +574,42 @@ h1 {
   padding: 2rem;
   font-style: italic;
   color: #666;
+}
+
+.ai-warning {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #fff8e1;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: fadeIn 0.8s ease;
+}
+
+.ai-warning p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #5d4037;
+}
+
+.warning-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  fill: #ff9800;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FFE4B5;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto;
 }
 
 @media (max-width: 1024px) {

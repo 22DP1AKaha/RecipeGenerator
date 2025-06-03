@@ -21,7 +21,7 @@ class DeepSeekRecipeController extends Controller
                 throw new \Exception('DeepSeek API key is not configured');
             }
             
-            $prompt = "Īsa recepte latviski ar: {$request->ingredients}. Iekļaut: 1) Nosaukums, 2) Sastāvdaļas, 3) Īsas instrukcijas.";
+            $prompt = "Izveido vienu īsu recepti no šiem produktiem (nav obligāti jāizmanto visas sastāvdaļas): {$request->ingredients} (Nav pieejama neviena cita sastāvdaļa). Iekļaut: 1) Nosaukums, 2) Sastāvdaļas, 3) Īsas instrukcijas. (raksti parastā tekstā bez markdown vai citiem formātiem).";
             
             $response = Http::timeout(60)
                 ->retry(2, 1000)
@@ -29,7 +29,7 @@ class DeepSeekRecipeController extends Controller
                     'Authorization' => 'Bearer ' . $apiKey,
                     'Content-Type'  => 'application/json',
                 ])->post('https://api.deepseek.com/chat/completions', [
-                    'model' => 'deepseek-chat',
+                    'model' => 'deepseek-reasoner',
                     'messages' => [
                         [
                             'role' => 'system', 

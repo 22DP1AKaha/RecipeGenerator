@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RecipeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             // Get user's favorite recipe IDs
@@ -22,7 +22,7 @@ class RecipeController extends Controller
                     ->toArray();
             }
 
-            $recipes = Recipe::with('ingredients')
+            $query = Recipe::with('ingredients')
                 ->withAvg('ratings as average_rating', 'vertejums')
                 ->select(
                     'id',
@@ -31,9 +31,43 @@ class RecipeController extends Controller
                     'edienreize',
                     'uzturs',
                     'dietas_tips',
-                    'galvenais_olbaltumvielu_avots'
-                )
-                ->get();
+                    'galvenais_olbaltumvielu_avots',
+                    'grutibas_pakape',
+                    'gatavosanas_laiks'
+                );
+
+            // Get recipes
+            $recipes = $query->get();
+
+            // Handle sorting in PHP since average_rating is computed
+            if ($request->has('sort_by') && $request->has('sort_direction')) {
+                $sortBy = $request->sort_by;
+                $sortDirection = $request->sort_direction;
+
+                $recipes = $recipes->sortBy(function($recipe) use ($sortBy) {
+                    switch ($sortBy) {
+                        case 'rating':
+                            return (float) $recipe->average_rating;
+                        case 'difficulty':
+                            // Map difficulty to numerical values
+                            $difficultyMap = [
+                                'Viegls' => 1,
+                                'Vidējs' => 2,
+                                'Grūts' => 3
+                            ];
+                            return $difficultyMap[$recipe->grutibas_pakape] ?? 4;
+                        case 'cooking_time':
+                            // Convert cooking time to minutes
+                            $timeParts = explode(':', $recipe->gatavosanas_laiks);
+                            return ($timeParts[0] * 60) + ($timeParts[1] ?? 0);
+                        default:
+                            return 0;
+                    }
+                }, SORT_REGULAR, $sortDirection === 'desc');
+
+                // Reset keys after sorting
+                $recipes = $recipes->values();
+            }
 
             $recipes = $recipes->map(function ($recipe) use ($favoriteIds) {
                 return [
