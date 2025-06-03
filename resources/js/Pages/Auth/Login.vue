@@ -55,10 +55,6 @@ const submit = () => {
         </div>
 
         <div class="form-actions">
-          <label class="remember-me">
-            <input type="checkbox" v-model="form.remember" />
-            Atcerēties mani
-          </label>
           <button
             type="submit"
             class="login-btn"

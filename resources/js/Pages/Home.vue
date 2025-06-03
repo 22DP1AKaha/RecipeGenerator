@@ -47,4 +47,24 @@ export default {
     padding: 0.5rem;
     padding-bottom: 1rem;
 }
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .card-flexbox {
+        margin-top: 2rem; /* Reduced top margin */
+    }
+    
+    .card-container {
+        flex-direction: column; /* Stack cards vertically */
+        align-items: center; /* Center cards horizontally */
+        gap: 1.5rem; /* Increase vertical spacing */
+        padding: 0 1rem 1rem; /* Add horizontal padding */
+    }
+    
+    /* Ensure cards don't get too wide on mobile */
+    .card-container > * {
+        width: 100%;
+        max-width: 320px;
+    }
+}
 </style>

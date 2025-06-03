@@ -337,13 +337,13 @@ export default {
   padding: 0.7rem 1.8rem;
   font-size: 1rem;
   font-weight: 500;
-  color: #4a3f35;                       /* dark charcoal text */
-  background: #ede5db;                  /* soft almond */
+  color: #4a3f35;
+  background: #ede5db;
   border-radius: 50px;
   border: none;
-  box-shadow: 
-    6px 6px 12px rgba(0,0,0,0.1),      /* bottom-right shadow */
-   -6px -6px 12px rgba(255,255,255,0.7);/* top-left highlight */
+  box-shadow:
+    6px 6px 12px rgba(0,0,0,0.1),
+   -6px -6px 12px rgba(255,255,255,0.7);
   cursor: pointer;
   transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
@@ -351,34 +351,30 @@ export default {
 .favorites-button .star-icon {
   width: 20px;
   height: 20px;
-  fill: #7a6a5d;                       /* muted brown icon */
+  fill: #7a6a5d;
   transition: fill 0.2s ease;
 }
 
-/* Hover: lift slightly */
 .favorites-button:hover {
-  box-shadow: 
+  box-shadow:
     4px 4px 8px rgba(0,0,0,0.08),
    -4px -4px 8px rgba(255,255,255,0.8);
   transform: translateY(-1px);
 }
 
-/* Active / toggled: pressed-in effect */
 .favorites-button:active,
 .favorites-button.active {
   box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1),
               inset -4px -4px 8px rgba(255,255,255,0.7);
   transform: none;
-  
-  color: #b4835f;                     /* warm taupe text */
+  color: #b4835f;
 }
 
 .favorites-button:active .star-icon,
 .favorites-button.active .star-icon {
-  fill: #b4835f;                      /* taupe icon */
+  fill: #b4835f;
 }
 
-/* Slight shrink on click for tactile feedback */
 .favorites-button:active {
   transform: scale(0.97);
 }
@@ -388,6 +384,7 @@ export default {
   gap: 1rem;
   justify-content: center;
   margin: 1rem 0;
+  flex-wrap: wrap;
 }
 
 .sort-dropdown {
@@ -397,44 +394,26 @@ export default {
   border-radius: 5px;
   background-color: white;
   cursor: pointer;
-  min-width: 200px;
-}
-
-/* Responsive tweaks */
-@media (max-width: 768px) {
-  .favorites-button {
-    padding: 0.6rem 1.4rem;
-    font-size: 0.9rem;
-  }
-  .favorites-button .star-icon {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .favorites-button {
-    width: 100%;
-    max-width: 280px;
-    justify-content: center;
-  }
+  min-width: 160px;
 }
 
 .recipe-page {
   font-family: monospace;
   text-align: center;
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
-h1 {
-  font-size: 2.5rem;
+.recipe-page h1 {
+  font-size: 2rem;
   margin-bottom: 1rem;
+  color: #4a3f35;
 }
 
 .search-bar {
   width: 50%;
+  max-width: 400px;
   padding: 0.8rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   border: 2px solid #ccc;
   border-radius: 8px;
   outline: none;
@@ -456,7 +435,7 @@ h1 {
   border-radius: 5px;
   background-color: white;
   cursor: pointer;
-  min-width: 200px;
+  min-width: 160px;
 }
 
 .filter-dropdown:hover {
@@ -477,6 +456,7 @@ h1 {
   background-color: #d32f2f;
 }
 
+/* Grid of recipe cards */
 .recipe-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -512,7 +492,7 @@ h1 {
 .image-container {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 160px;
   overflow: hidden;
   border-radius: 8px;
   margin-bottom: 0.5rem;
@@ -524,17 +504,17 @@ h1 {
   object-fit: cover;
 }
 
-/* Heart Icon Styles */
+/* Heart Icon */
 .favorite-heart {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+  right: 8px;
   z-index: 20;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -545,18 +525,16 @@ h1 {
 }
 
 .favorite-heart svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   fill: #555;
   transition: fill 0.3s ease;
 }
 
-/* Show heart on hover */
 .recipe-card:hover .favorite-heart {
   opacity: 1;
 }
 
-/* Saved state - always visible and red */
 .favorite-heart.saved {
   opacity: 1;
   background: rgba(255, 255, 255, 0.9);
@@ -566,7 +544,6 @@ h1 {
   fill: #e74c3c;
 }
 
-/* Hover effects */
 .favorite-heart:hover {
   background: rgba(255, 255, 255, 0.9);
   transform: scale(1.15);
@@ -580,7 +557,6 @@ h1 {
   fill: #c0392b;
 }
 
-
 @media (hover: none) {
   .favorite-heart {
     opacity: 1;
@@ -588,7 +564,7 @@ h1 {
   }
 }
 
-/* Default style for rating overlay - hidden */
+/* Rating overlay */
 .rating-overlay {
   position: absolute;
   top: 0;
@@ -602,7 +578,7 @@ h1 {
   opacity: 0;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 8px;
-  pointer-events: none; /* Allow clicking through the overlay */
+  pointer-events: none;
   transition: opacity 0.3s ease;
 }
 
@@ -612,7 +588,7 @@ h1 {
 }
 
 .star {
-  font-size: 20px;
+  font-size: 18px;
   color: #ddd;
   margin: 0 1px;
 }
@@ -623,21 +599,18 @@ h1 {
 
 .rating-number {
   color: white;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 
-/* Computer-only hover effects */
 @media (hover: hover) and (pointer: fine) {
   .image-container img {
     transition: filter 0.3s ease;
   }
-  
   .recipe-card:hover .image-container img {
     filter: brightness(0.7);
   }
-  
   .recipe-card:hover .rating-overlay {
     opacity: 1;
   }
@@ -658,51 +631,90 @@ h1 {
   font-size: 0.9rem;
 }
 
+/* Medium screens (≤1024px) */
 @media (max-width: 1024px) {
   .recipe-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* Small screens (≤600px) */
 @media (max-width: 600px) {
-  .recipe-grid {
-    grid-template-columns: 1fr;
+  .recipe-page {
+    padding: 1rem;
   }
-  
-  .filters {
-    flex-direction: column;
+
+  .recipe-page h1 {
+    font-size: 1.75rem;
   }
-  
-  .filter-dropdown {
-    width: 100%;
-  }
-  
+
   .search-bar {
     width: 80%;
+    max-width: none;
+    font-size: 1rem;
   }
-  
+
+  .filters {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .filter-dropdown {
+    width: 100%;
+    font-size: 0.95rem;
+  }
+
+  .clear-filters {
+    width: 100%;
+  }
+
+  .sorting {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .sort-dropdown {
+    width: 100%;
+    font-size: 0.95rem;
+  }
+
+  .recipe-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
   .recipe-card {
     width: 100%;
     max-width: 300px;
   }
-  
+
   .favorite-heart {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
   }
-  
+
   .favorite-heart svg {
-    width: 22px;
-    height: 22px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .rating-overlay .star {
+    font-size: 16px;
+  }
+
+  .rating-overlay .rating-number {
+    font-size: 14px;
   }
 }
 
+/* Spinner */
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #FFE4B5;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   animation: spin 1s linear infinite;
   margin: 2rem auto;
 }
@@ -710,5 +722,5 @@ h1 {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-} 
+}
 </style>
