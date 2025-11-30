@@ -7,14 +7,14 @@
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Meklēt recepti..."
+        :placeholder="config.filterLabels.searchPlaceholder"
         class="search-bar"
       />
 
       <!-- Filters -->
       <div class="filters">
         <select v-model="selectedMealTime" class="filter-dropdown">
-          <option value="">Visas edienreizes</option>
+          <option value="">{{ config.filterLabels.allMealTimes }}</option>
           <option
             v-for="time in filterOptions.mealTimes"
             :key="time"
@@ -25,7 +25,7 @@
         </select>
 
         <select v-model="selectedNutritionType" class="filter-dropdown">
-          <option value="">Visi uztura veidi</option>
+          <option value="">{{ config.filterLabels.allNutritionTypes }}</option>
           <option
             v-for="nutrition in filterOptions.nutritionTypes"
             :key="nutrition"
@@ -36,7 +36,7 @@
         </select>
 
         <select v-model="selectedProteinSource" class="filter-dropdown">
-          <option value="">Visi olbaltumvielu avoti</option>
+          <option value="">{{ config.filterLabels.allProteinSources }}</option>
           <option
             v-for="source in filterOptions.proteinSources"
             :key="source"
@@ -47,21 +47,30 @@
         </select>
 
         <button @click="clearFilters" class="clear-filters">
-          Notīrīt filtrus
+          {{ config.filterLabels.clearFilters }}
         </button>
       </div>
 
       <div class="sorting">
         <select v-model="sortBy" class="sort-dropdown">
-          <option value="">Kārtot pēc...</option>
-          <option value="rating">Vērtējuma</option>
-          <option value="difficulty">Grūtības pakāpes</option>
-          <option value="cooking_time">Gatavošanas laika</option>
+          <option value="">{{ config.filterLabels.sortBy }}</option>
+          <option
+            v-for="option in config.sortOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
         </select>
-        
+
         <select v-model="sortDirection" class="sort-dropdown">
-          <option value="asc">Augoši (A-Z)</option>
-          <option value="desc">Dilstoši (Z-A)</option>
+          <option
+            v-for="direction in config.sortDirections"
+            :key="direction.value"
+            :value="direction.value"
+          >
+            {{ direction.label }}
+          </option>
         </select>
       </div>
 
@@ -162,30 +171,36 @@ export default {
         nutritionTypes: [],
         proteinSources: []
       },
+      config: {
+        sortOptions: [],
+        sortDirections: [],
+        filterLabels: {}
+      },
       loading: true,
       filterByPreferences: false,
-      showFavoritesOnly: false, 
+      showFavoritesOnly: false,
       sortBy: '',
       sortDirection: 'asc',
     };
   },
   computed: {
     filteredRecipes() {
-      const forbidden = this.$page.props.auth.forbidden_ingredients || [];
+      const forbidden = this.$page.props.auth.forbidden_ingredients;
 
       return this.recipes.filter(recipe => {
         // Base filters
         const searchMatch = recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase());
-        const mealMatch = this.selectedMealTime ? recipe.edienreize === this.selectedMealTime : true;
-        const nutritionMatch = this.selectedNutritionType ? recipe.uzturs === this.selectedNutritionType : true;
-        const proteinMatch = this.selectedProteinSource ? recipe.galvenais_olbaltumvielu_avots === this.selectedProteinSource : true;
+        const mealMatch = this.selectedMealTime ? recipe.meal_time === this.selectedMealTime : true;
+        const nutritionMatch = this.selectedNutritionType ? recipe.nutrition === this.selectedNutritionType : true;
+        const proteinMatch = this.selectedProteinSource ? recipe.protein_source === this.selectedProteinSource : true;
 
         // Dietary preference filter
         let preferenceMatch = true;
         if (this.filterByPreferences && this.isUserLoggedIn) {
-          preferenceMatch = !forbidden.some(id => recipe.ingredients.includes(id));
+          const ingredientIds = recipe.ingredients.map(ing => ing.id);
+          preferenceMatch = !forbidden.some(id => ingredientIds.includes(id));
         }
-        
+
         // Favorite recipes filter
         const favoriteMatch = this.showFavoritesOnly ? recipe.is_saved : true;
 
@@ -205,20 +220,23 @@ export default {
           sort_direction: this.sortDirection
         };
 
-        const [recipesResponse, filtersResponse] = await Promise.all([
+        const [recipesResponse, filtersResponse, configResponse] = await Promise.all([
           axios.get('/api/recipes', { params, withCredentials: true }),
-          axios.get('/api/recipe-filters', { withCredentials: true })
+          axios.get('/api/recipe-filters', { withCredentials: true }),
+          axios.get('/api/config', { withCredentials: true })
         ]);
 
-        this.recipes = recipesResponse.data;
+        this.recipes = recipesResponse.data.data;
         this.filterOptions = {
           mealTimes: filtersResponse.data.mealTimes,
           nutritionTypes: filtersResponse.data.nutritionTypes,
           proteinSources: filtersResponse.data.proteinSources
         };
-      } catch (error) {
-        console.error('Kļūda ielādējot datus:', error);
-        alert('Radās kļūda ielādējot receptes. Lūdzu, pārbaudiet savienojumu un mēģiniet vēlreiz.');
+        this.config = {
+          sortOptions: configResponse.data.sortOptions,
+          sortDirections: configResponse.data.sortDirections,
+          filterLabels: configResponse.data.filterLabels
+        };
       } finally {
         this.loading = false;
       }

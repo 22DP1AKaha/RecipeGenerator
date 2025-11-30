@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('allergies', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
+        Schema::table('recipes', function (Blueprint $table) {
+            $table->foreignId('image_id')->nullable()->after('protein_source')->constrained('images')->onDelete('set null');
         });
-        
     }
 
     /**
@@ -24,6 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('allergies');
+        Schema::table('recipes', function (Blueprint $table) {
+            $table->dropForeign(['image_id']);
+            $table->dropColumn('image_id');
+        });
     }
 };

@@ -3,65 +3,59 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\AIRecipeGeneratorService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log; // Add logging
+use Illuminate\Support\Facades\Log;
 
 class DeepSeekRecipeController extends Controller
 {
+    private AIRecipeGeneratorService $aiService;
+
+    public function __construct(AIRecipeGeneratorService $aiService)
+    {
+        $this->aiService = $aiService;
+    }
+
     public function generateRecipe(Request $request)
     {
         try {
             $request->validate([
                 'ingredients' => 'required|string',
             ]);
-            
-            $apiKey = env('DEEPSEEK_API_KEY');
-            if (!$apiKey) {
-                throw new \Exception('DeepSeek API key is not configured');
+
+            $options = [];
+
+            if (auth()->check()) {
+                $user = auth()->user()->load(['dietaryRestrictions', 'allergies']);
+
+                if ($user->dietaryRestrictions->isNotEmpty()) {
+                    $options['dietary_restrictions'] = $user->dietaryRestrictions->pluck('name')->toArray();
+                }
+
+                if ($user->allergies->isNotEmpty()) {
+                    $options['allergies'] = $user->allergies->pluck('name')->toArray();
+                }
             }
-            
-            $prompt = "Izveido vienu īsu recepti no šiem produktiem (nav obligāti jāizmanto visas sastāvdaļas): {$request->ingredients} (Nav pieejama neviena cita sastāvdaļa). Iekļaut: 1) Nosaukums, 2) Sastāvdaļas, 3) Īsas instrukcijas. (raksti parastā tekstā bez markdown vai citiem formātiem).";
-            
-            $response = Http::timeout(60)
-                ->retry(2, 1000)
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type'  => 'application/json',
-                ])->post('https://api.deepseek.com/chat/completions', [
-                    'model' => 'deepseek-reasoner',
-                    'messages' => [
-                        [
-                            'role' => 'system', 
-                            'content' => 'Tu esi pavārs. Atbildi tikai latviski.'
-                        ],
-                        [
-                            'role' => 'user', 
-                            'content' => $prompt
-                        ],
-                    ],
-                    'temperature' => 0.7,
-                    'max_tokens' => 1500,
-                ]);
-            
-            if ($response->failed()) {
+
+            $result = $this->aiService->generateRecipe($request->ingredients, $options);
+
+            if (!$result['success']) {
                 return response()->json([
-                    'error' => 'DeepSeek API request failed',
-                    'status' => $response->status(),
-                    'response' => $response->json()
+                    'error' => 'Recipe generation failed',
+                    'message' => $result['error'] ?? 'Unknown error'
                 ], 500);
             }
-            
+
             return response()->json([
-                'recipe' => $response->json('choices.0.message.content', '')
+                'recipe' => $result['recipe']
             ]);
-            
+
         } catch (\Throwable $e) {
-            \Log::error('Recipe generation error', [
+            Log::error('Recipe generation error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'error' => 'Internal server error',
                 'message' => $e->getMessage()

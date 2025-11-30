@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('instructions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('receptes_id')->constrained('recipes')->onDelete('cascade');
-            $table->integer('solis_numurs');
-            $table->text('apraksts');
+            $table->foreignId('recipe_id')->constrained('recipes')->onDelete('cascade');
+            $table->unsignedSmallInteger('step_number');
+            $table->text('description');
             $table->timestamps();
         });
     }

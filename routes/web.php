@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\ConfigController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\FavoriteController; // Ensure correct import
 use App\Http\Controllers\Api\DeepSeekRecipeController;
@@ -22,9 +23,10 @@ Route::get('/aireceptes', fn() => Inertia::render('AIreceptes'))->name('airecept
 
 // API routes
 Route::prefix('api')->group(function () {
-    Route::get('/recipes', [RecipeController::class, 'index']);
-    Route::get('/recipes/{id}', [RecipeController::class, 'show']);
+    Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+    Route::get('/recipes/{id}', [RecipeController::class, 'show'])->name('recipes.show');
     Route::get('/recipe-filters', [RecipeController::class, 'getFilters']);
+    Route::get('/config', [ConfigController::class, 'getAppConfig']);
 
     Route::get('/ingredients', [IngredientController::class, 'index']);
 

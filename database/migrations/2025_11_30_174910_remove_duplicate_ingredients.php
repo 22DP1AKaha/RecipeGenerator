@@ -9,22 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('ingredients', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('category');
-            $table->timestamps();
-        });
+        DB::statement("
+            DELETE i1 FROM ingredients i1
+            INNER JOIN ingredients i2
+            WHERE i1.id > i2.id
+            AND i1.name = i2.name
+        ");
     }
-    
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ingredients');
+        // Cannot reverse deletion
     }
 };

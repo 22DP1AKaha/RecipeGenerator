@@ -3,7 +3,7 @@
       <h2>Kā pagatavot:</h2>
       <ul>
         <li v-for="(instruction, index) in instructions" :key="index">
-          {{ instruction.apraksts }}
+          {{ instruction.description }}
         </li>
       </ul>
     </div>

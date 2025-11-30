@@ -1,62 +1,75 @@
 <?php
 
-// app/Models/Recipe.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Recipe extends Model
 {
-    // Relationship with instructions
+    protected $fillable = [
+        'name',
+        'description',
+        'cooking_time',
+        'difficulty',
+        'meal_time',
+        'nutrition',
+        'diet_type',
+        'protein_source',
+        'image_id',
+        'is_public',
+    ];
+
     public function instructions()
     {
-        return $this->hasMany(Instruction::class, 'receptes_id');
+        return $this->hasMany(Instruction::class, 'recipe_id');
     }
 
-    // Many-to-many relationship with ingredients
     public function ingredients()
     {
         return $this->belongsToMany(
             Ingredient::class,
             'recipe_ingredients',
-            'receptes_id',
-            'sastavdalas_id'
+            'recipe_id',
+            'ingredient_id'
         )
-        ->withPivot(['daudzums'])
+        ->withPivot(['quantity', 'quantity_numeric', 'unit', 'notes'])
         ->withTimestamps();
     }
 
     public function ratings()
     {
-        return $this->hasMany(Rating::class, 'receptes_id');
+        return $this->hasMany(Rating::class, 'recipe_id');
     }
 
     public function userRating()
     {
-        return $this->hasOne(Rating::class, 'receptes_id')
+        return $this->hasOne(Rating::class, 'recipe_id')
             ->where('user_id', auth()->id());
-    }
-
-    // Accessors for easy data access
-    public function getAverageRatingAttribute()
-    {
-        return $this->ratings()->avg('vertejums') ?: 0;
-    }
-
-    public function getUserRatingAttribute()
-    {
-        return $this->userRating()->value('vertejums') ?: 0;
     }
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class, 'receptes_id');
+        return $this->hasMany(Favorite::class, 'recipe_id');
+    }
+
+    public function image()
+    {
+        return $this->belongsTo(Image::class, 'image_id');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->ratings()->avg('rating') ?: 0;
+    }
+
+    public function getUserRatingAttribute()
+    {
+        return $this->userRating()->value('rating') ?: 0;
     }
 
     public function isFavoritedByUser()
     {
         if (!auth()->check()) return false;
-        // FIXED: Use correct primary key for user comparison
         return $this->favorites()->where('user_id', auth()->user()->user_id)->exists();
     }
 }

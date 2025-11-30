@@ -3,14 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Recipe;  // Import Recipe model
 
 class Ingredient extends Model
 {
-    // Many-to-many relationship with recipes
+    protected $fillable = [
+        'name',
+        'category',
+    ];
+
     public function recipes()
     {
-        return $this->belongsToMany(Recipe::class, 'recipe_ingredients', 'sastavdalas_id', 'receptes_id')
-                    ->withPivot('daudzums');
+        return $this->belongsToMany(Recipe::class, 'recipe_ingredients', 'ingredient_id', 'recipe_id')
+                    ->withPivot(['quantity', 'quantity_numeric', 'unit', 'notes']);
+    }
+
+    public function dietaryRestrictions()
+    {
+        return $this->belongsToMany(DietaryRestriction::class, 'dietary_restriction_ingredient', 'ingredient_id', 'dietary_restriction_id');
+    }
+
+    public function allergies()
+    {
+        return $this->belongsToMany(Allergy::class, 'allergy_ingredient', 'ingredient_id', 'allergy_id');
     }
 }

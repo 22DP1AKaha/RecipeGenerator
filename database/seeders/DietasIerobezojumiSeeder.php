@@ -15,16 +15,16 @@ class DietasIerobezojumiSeeder extends Seeder
     public function run()
     {
         // Insert predefined data
-        DB::table('dietas_ierobezojumi')->insert([
-            ['nosaukums' => 'Bezglutēna'],
-            ['nosaukums' => 'Veģetāra'],
-            ['nosaukums' => 'Vegāna'],
-            ['nosaukums' => 'Zema ogļhidrātu'],
-            ['nosaukums' => 'Zema tauku satura'],
-            ['nosaukums' => 'Bez piena produktiem'],
-            ['nosaukums' => 'Ketogēnā'],
-            ['nosaukums' => 'Paleo'],
-            ['nosaukums' => 'Bez cukura'],
+        DB::table('dietary_restrictions')->insert([
+            ['name' => 'Bezglutēna'],
+            ['name' => 'Veģetāra'],
+            ['name' => 'Vegāna'],
+            ['name' => 'Zema ogļhidrātu'],
+            ['name' => 'Zema tauku satura'],
+            ['name' => 'Bez piena produktiem'],
+            ['name' => 'Ketogēnā'],
+            ['name' => 'Paleo'],
+            ['name' => 'Bez cukura'],
         ]);
     }
 }

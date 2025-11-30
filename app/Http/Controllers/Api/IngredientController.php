@@ -9,7 +9,7 @@ class IngredientController extends Controller
 {
     public function index()
     {
-        $ingredients = Ingredient::all()->groupBy('kategorija');
+        $ingredients = Ingredient::all()->groupBy('category');
         return response()->json($ingredients);
     }
 }

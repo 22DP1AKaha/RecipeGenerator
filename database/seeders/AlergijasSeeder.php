@@ -15,16 +15,16 @@ class AlergijasSeeder extends Seeder
     public function run()
     {
         // Insert predefined data
-        DB::table('alergijas')->insert([
-            ['nosaukums' => 'Rieksti'],
-            ['nosaukums' => 'Piens'],
-            ['nosaukums' => 'Olas'],
-            ['nosaukums' => 'Soja'],
-            ['nosaukums' => 'Gliemenes'],
-            ['nosaukums' => 'Kvieši'],
-            ['nosaukums' => 'Zivis'],
-            ['nosaukums' => 'Sezama sēklas'],
-            ['nosaukums' => 'Selerijas'],
+        DB::table('allergies')->insert([
+            ['name' => 'Rieksti'],
+            ['name' => 'Piens'],
+            ['name' => 'Olas'],
+            ['name' => 'Soja'],
+            ['name' => 'Gliemenes'],
+            ['name' => 'Kvieši'],
+            ['name' => 'Zivis'],
+            ['name' => 'Sezama sēklas'],
+            ['name' => 'Selerijas'],
         ]);
     }
 }

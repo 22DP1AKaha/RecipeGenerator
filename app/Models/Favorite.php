@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Favorite extends Model
 {
-    protected $fillable = ['user_id', 'receptes_id'];
-    
+    protected $fillable = ['user_id', 'recipe_id'];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
@@ -17,6 +17,6 @@ class Favorite extends Model
 
     public function recipe()
     {
-        return $this->belongsTo(Recipe::class, 'receptes_id', 'id');
+        return $this->belongsTo(Recipe::class, 'recipe_id', 'id');
     }
 }

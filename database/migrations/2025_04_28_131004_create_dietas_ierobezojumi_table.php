@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dietas_ierobezojumi', function (Blueprint $table) {
-            $table->id('dietas_ierobezojumi_id');
-            $table->string('nosaukums'); 
+        Schema::create('dietary_restrictions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
             $table->timestamps();
         });
         
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dietas_ierobezojumi');
+        Schema::dropIfExists('dietary_restrictions');
     }
 };

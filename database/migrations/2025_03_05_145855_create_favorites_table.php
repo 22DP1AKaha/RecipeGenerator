@@ -13,15 +13,10 @@ return new class extends Migration
     {
         Schema::create('favorites', function (Blueprint $table) {
             $table->id();
-            
-            // Explicitly define the foreign key to match 'user_id' in 'users'
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
-        
-            // Foreign key for recipes remains unchanged
-            $table->unsignedBigInteger('receptes_id');
-            $table->foreign('receptes_id')->references('id')->on('recipes')->onDelete('cascade');
-        
+            $table->unsignedBigInteger('recipe_id');
+            $table->foreign('recipe_id')->references('id')->on('recipes')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -13,18 +13,15 @@ return new class extends Migration
     {
         Schema::create('recipes', function (Blueprint $table) {
             $table->id();
-            $table->string('nosaukums');
-            $table->text('apraksts');
-            $table->integer('gatavosanas_laiks');
-            $table->string('grutibas_pakape');
-            $table->string('edienreize');
-            $table->string('uzturs');
-            $table->string('dietas_tips');
-            $table->string('galvenais_olbaltumvielu_avots')->nullable();
-            $table->string('attels')->nullable();  // Changed from text to string
-            $table->timestamp('datums_izveidots')->useCurrent();
-            $table->timestamp('datums_atjauninats')->useCurrent();
-            $table->boolean('ir_publiska')->default(true);
+            $table->string('name');
+            $table->text('description');
+            $table->unsignedSmallInteger('cooking_time');
+            $table->string('difficulty');
+            $table->string('meal_time');
+            $table->string('nutrition');
+            $table->string('diet_type');
+            $table->string('protein_source')->nullable();
+            $table->boolean('is_public')->default(true);
             $table->timestamps();
         });
     }

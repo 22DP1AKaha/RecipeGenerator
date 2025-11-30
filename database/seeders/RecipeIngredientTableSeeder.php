@@ -183,7 +183,7 @@ class RecipeIngredientTableSeeder extends Seeder
 
         foreach ($recipes as $recipeName => $ingredients) {
             // Get the recipe ID from the recipes table
-            $recipeId = DB::table('recipes')->where('nosaukums', $recipeName)->value('id');
+            $recipeId = DB::table('recipes')->where('name', $recipeName)->value('id');
 
             if (!$recipeId) {
                 // If the recipe doesn't exist, skip it
@@ -193,14 +193,14 @@ class RecipeIngredientTableSeeder extends Seeder
             // Loop through the ingredients for this recipe
             foreach ($ingredients as $ingredientName => $amount) {
                 // Get the ingredient ID from the ingredients table
-                $ingredientId = DB::table('ingredients')->where('nosaukums', $ingredientName)->value('id');
+                $ingredientId = DB::table('ingredients')->where('name', $ingredientName)->value('id');
 
                 if ($ingredientId) {
                     // Insert the ingredient into the recipe_ingredients table
                     DB::table('recipe_ingredients')->insert([
-                        'receptes_id' => $recipeId, 
-                        'sastavdalas_id' => $ingredientId, 
-                        'daudzums' => $amount, 
+                        'recipe_id' => $recipeId,
+                        'ingredient_id' => $ingredientId,
+                        'quantity' => $amount,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);

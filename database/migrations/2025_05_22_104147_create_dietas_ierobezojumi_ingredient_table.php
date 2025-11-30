@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('dietas_ierobezojumi_ingredient', function (Blueprint $table) {
-            $table->foreignId('dietas_ierobezojumi_id')
-                ->constrained('dietas_ierobezojumi', 'dietas_ierobezojumi_id')
+        Schema::create('dietary_restriction_ingredient', function (Blueprint $table) {
+            $table->foreignId('dietary_restriction_id')
+                ->constrained('dietary_restrictions')
                 ->onDelete('cascade');
             $table->foreignId('ingredient_id')
                 ->constrained()
                 ->onDelete('cascade');
-            $table->primary(['dietas_ierobezojumi_id', 'ingredient_id']);
+            $table->primary(['dietary_restriction_id', 'ingredient_id'], 'dietary_restriction_ingredient_primary');
         });
     }   
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dietas_ierobezojumi_ingredient');
+        Schema::dropIfExists('dietary_restriction_ingredient');
     }
 };

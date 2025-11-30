@@ -2,7 +2,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\DietasIerobezojumi;
+use App\Models\DietaryRestriction;
 use App\Models\Ingredient;
 
 class DietRestrictionIngredientsSeeder extends Seeder
@@ -88,9 +88,9 @@ class DietRestrictionIngredientsSeeder extends Seeder
 
 
         foreach ($diets as $dietName => $ingredients) {
-            $diet = DietasIerobezojumi::firstOrCreate(['nosaukums' => $dietName]);
+            $diet = DietaryRestriction::firstOrCreate(['name' => $dietName]);
             $diet->restrictedIngredients()->sync(
-                Ingredient::whereIn('nosaukums', $ingredients)->pluck('id')
+                Ingredient::whereIn('name', $ingredients)->pluck('id')
             );
         }
     }

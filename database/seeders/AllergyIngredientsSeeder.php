@@ -2,7 +2,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Alergijas;
+use App\Models\Allergy;
 use App\Models\Ingredient;
 
 class AllergyIngredientsSeeder extends Seeder
@@ -58,9 +58,9 @@ class AllergyIngredientsSeeder extends Seeder
         ];
 
         foreach ($allergies as $allergyName => $ingredients) {
-            $allergy = Alergijas::where('nosaukums', $allergyName)->first();
+            $allergy = Allergy::where('name', $allergyName)->first();
             $allergy->allergicIngredients()->sync(
-                Ingredient::whereIn('nosaukums', $ingredients)->pluck('id')
+                Ingredient::whereIn('name', $ingredients)->pluck('id')
             );
         }
     }

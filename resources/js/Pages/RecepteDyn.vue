@@ -3,10 +3,10 @@
       <div v-if="loading" class="spinner"></div>
 
       <div v-else-if="recipe" class="recipe-details">
-          <h1>{{ recipe.nosaukums }}</h1>
+          <h1>{{ recipe.title }}</h1>
           <div class="recipe-info">
-              <p>⏱️ Gatavošana: {{ recipe.gatavosanas_laiks }} min</p>
-              <p>⭐ Sarežģītība: {{ recipe.grutibas_pakape }}</p>
+              <p>⏱️ Gatavošana: {{ recipe.cooking_time }} min</p>
+              <p>⭐ Sarežģītība: {{ recipe.difficulty }}</p>
           </div>
 
           <div class="rating-bar">
@@ -25,9 +25,9 @@
             <div class="average-text">{{ recipe.average_rating.toFixed(1) }} / 5</div>
           </div>
 
-          <img :src="recipe.attels" alt="Recipe Image" class="recipe-image" v-if="recipe.attels" />
+          <img :src="recipe.image" alt="Recipe Image" class="recipe-image" v-if="recipe.image" />
 
-          <p class="description"><strong>Apraksts:</strong> {{ recipe.apraksts }}</p>
+          <p class="description"><strong>Apraksts:</strong> {{ recipe.description }}</p>
 
           <div class="recipe-content">
               <div class="recipe-ingredients">
@@ -77,7 +77,7 @@ export default {
   data() {
       return {
           servings: 1,
-          portionSizes: ["1 porcija", "2 porcijas", "3 porcijas", "4 porcijas", "5 porcijas"],
+          portionSizes: [],
           recipe: null,
           baseIngredients: [],
           loading: true,
@@ -85,17 +85,19 @@ export default {
       };
   },
   methods: {
+      async fetchConfig() {
+          const response = await axios.get('/api/config');
+          this.portionSizes = response.data.portionSizes.map(p => p.label);
+      },
       async fetchRecipe() {
           try {
               const response = await axios.get(`/api/recipes/${this.id}`);
-              this.recipe = response.data;
-              this.baseIngredients = response.data.ingredients.map(ing => ({
+              this.recipe = response.data.data;
+              this.baseIngredients = this.recipe.ingredients.map(ing => ({
                   id: ing.id,
-                  originalDaudzums: ing.daudzums,
-                  nosaukums: ing.nosaukums
+                  originalDaudzums: ing.quantity,
+                  nosaukums: ing.name
               }));
-          } catch (error) {
-              console.error("Error fetching recipe:", error);
           } finally {
               this.loading = false;
           }
@@ -137,6 +139,7 @@ export default {
       }
   },
   created() {
+      this.fetchConfig();
       this.fetchRecipe();
   }
 };

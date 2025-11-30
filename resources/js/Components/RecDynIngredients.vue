@@ -29,7 +29,7 @@ export default {
   },
   data() {
       return {
-          selectedServings: this.portionSizes.length > 0 ? this.portionSizes[0] : ""
+          selectedServings: "1 porcija"
       };
   },
   computed: {
@@ -38,7 +38,7 @@ export default {
           return this.baseIngredients.map(ingredient => {
               const parsed = this.parseDaudzums(ingredient.originalDaudzums);
               const newAmount = parsed.amount * servingsNumber;
-              
+
               return {
                   quantity: `${this.formatAmount(newAmount)}${parsed.unit}`,
                   name: ingredient.nosaukums

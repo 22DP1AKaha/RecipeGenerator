@@ -1,15 +1,19 @@
 <?php
 
-// app/Models/Instruction.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Instruction extends Model
 {
-    // Link each instruction to a recipe
+    protected $fillable = [
+        'recipe_id',
+        'step_number',
+        'description',
+    ];
+
     public function recipe()
     {
-        return $this->belongsTo(Recipe::class, 'receptes_id'); // Specify the custom foreign key
+        return $this->belongsTo(Recipe::class, 'recipe_id');
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DietasIerobezojumi;
-use App\Models\Alergijas;
+use App\Models\DietaryRestriction;
+use App\Models\Allergy;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -21,8 +21,8 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user()->load([
-            'dietasIerobezojumi.restrictedIngredients',
-            'alergijas.allergicIngredients'
+            'dietaryRestrictions.restrictedIngredients',
+            'allergies.allergicIngredients'
         ]);
 
         return Inertia::render('Profile/Edit', [
@@ -32,11 +32,11 @@ class ProfileController extends Controller
                 'vards' => $user->vards,
                 'email' => $user->email,
                 'forbidden_ingredients' => $user->getForbiddenIngredientIds(),
-                'dietas_ierobezojumi' => $user->dietasIerobezojumi->pluck('dietas_ierobezojumi_id'),
-                'alergijas' => $user->alergijas->pluck('alergijas_id'),
+                'dietas_ierobezojumi' => $user->dietaryRestrictions->pluck('id'),
+                'alergijas' => $user->allergies->pluck('id'),
             ],
-            'dietas' => DietasIerobezojumi::all(['dietas_ierobezojumi_id', 'nosaukums']),
-            'alergijas' => Alergijas::all(['alergijas_id', 'nosaukums']),
+            'dietas' => DietaryRestriction::all(['id', 'name']),
+            'alergijas' => Allergy::all(['id', 'name']),
         ]);
     }
 
@@ -53,8 +53,8 @@ class ProfileController extends Controller
         $user->save();
 
         // Now sync will actually pick up the IDs in the request
-        $user->dietasIerobezojumi()->sync($request->input('dietas_ierobezojumi', []));
-        $user->alergijas()->sync($request->input('alergijas', []));
+        $user->dietaryRestrictions()->sync($request->input('dietas_ierobezojumi', []));
+        $user->allergies()->sync($request->input('alergijas', []));
 
         return Redirect::route('profile.edit')->with('status','profils-atjauninats');
     }

@@ -25,7 +25,7 @@
                     'ingredient-btn': true
                   }"
                 >
-                  {{ ingredient.nosaukums }}
+                  {{ ingredient.name }}
                 </button>
               </div>
             </div>
@@ -34,21 +34,24 @@
 
         <!-- Action Section -->
         <div class="action-section">
-          <button 
-            @click="generateRecipe" 
-            :disabled="selectedIngredients.length === 0 || generating"
+          <button
+            @click="generateRecipe"
+            :disabled="selectedIngredients.length < 3 || generating"
             class="generate-btn"
           >
             <span v-if="generating">Ģenerējam...</span>
             <span v-else>Ģenerēt Recepti</span>
           </button>
-          <button 
+          <button
             @click="clearSelection"
             :disabled="selectedIngredients.length === 0"
             class="clear-btn"
           >
             Notīrīt izvēli
           </button>
+          <p v-if="selectedIngredients.length < 3" class="min-ingredient-warning">
+            Izvēlieties vismaz 3 sastāvdaļas, lai ģenerētu recepti
+          </p>
         </div>
       </div>
 
@@ -160,8 +163,8 @@ export default {
         this.generatedRecipe = null;
 
         try {
-            const names = this.selectedIngredients.map(i => i.nosaukums);
-            const response = await axios.post('/api/generate-recipe', { 
+            const names = this.selectedIngredients.map(i => i.name);
+            const response = await axios.post('/api/generate-recipe', {
                 ingredients: names.join(', ')
             }, {
                 timeout: 60000, // Increase timeout to 60 seconds
@@ -213,23 +216,25 @@ export default {
             .replace(/\r\n/g, '\n')
             .replace(/\n+/g, '\n')
             .trim();
-        
+
         const lines = normalizedRecipe.split('\n').filter(l => l.trim());
-        
-        // If no lines, reset everything
+
+        // If no lines, throw error
         if (lines.length === 0) {
-            this.recipeTitle = "Recepte netika pareizi formatēta";
-            this.recipeIngredients = [];
-            this.recipeInstructions = [];
-            return;
+            throw new Error("Recepte netika pareizi formatēta");
         }
 
-        // Extract title - handle various formats
-        const titleLine = lines[0];
-        this.recipeTitle = titleLine
-            .replace(/^[#\d\s*:.-]+/i, '')  // Remove markdown prefixes
-            .replace(/[*_]+/g, '')           // Remove bold/italic markers
-            .trim();
+        // Extract title - handle "Nosaukums:\n[title]" format
+        const titleLabelIdx = lines.findIndex(l => /^nosaukums:/i.test(l.trim()));
+        if (titleLabelIdx !== -1 && titleLabelIdx + 1 < lines.length) {
+            this.recipeTitle = lines[titleLabelIdx + 1].trim();
+        } else {
+            const titleLine = lines[0];
+            this.recipeTitle = titleLine
+                .replace(/^[#\d\s*:.-]+/i, '')
+                .replace(/[*_]+/g, '')
+                .trim();
+        }
 
         // Find section indices
         const ingIdx = lines.findIndex(l => /sastāvdaļas|ingredients|lietot|lietotājs/i.test(l));

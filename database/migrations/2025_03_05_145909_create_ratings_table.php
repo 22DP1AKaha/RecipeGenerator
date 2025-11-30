@@ -13,18 +13,12 @@ return new class extends Migration
     {
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
-        
-            // Explicitly define foreign key for 'users' table using user_id
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
-        
-            // Explicitly define foreign key for 'recipes' table
-            $table->unsignedBigInteger('receptes_id');
-            $table->foreign('receptes_id')->references('id')->on('recipes')->onDelete('cascade');
-        
-            $table->integer('vertejums');
-            $table->text('komentars')->nullable();
-            
+            $table->unsignedBigInteger('recipe_id');
+            $table->foreign('recipe_id')->references('id')->on('recipes')->onDelete('cascade');
+            $table->unsignedTinyInteger('rating');
+            $table->text('comment')->nullable();
             $table->timestamps();
         });
     }

@@ -9,22 +9,23 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('ingredients', function (Blueprint $table) {
+        Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('category');
+            $table->longText('base64_data');
+            $table->string('mime_type', 50);
+            $table->string('original_filename')->nullable();
+            $table->unsignedInteger('file_size')->nullable();
             $table->timestamps();
         });
     }
-    
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ingredients');
+        Schema::dropIfExists('images');
     }
 };

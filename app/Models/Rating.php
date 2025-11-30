@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rating extends Model
 {
-    protected $fillable = ['user_id', 'receptes_id', 'vertejums', 'komentars'];
+    protected $fillable = ['user_id', 'recipe_id', 'rating', 'comment'];
 
     public function user()
     {
@@ -15,7 +15,7 @@ class Rating extends Model
 
     public function recipe()
     {
-        return $this->belongsTo(Recipe::class, 'receptes_id', 'id');
+        return $this->belongsTo(Recipe::class, 'recipe_id', 'id');
     }
 
     
