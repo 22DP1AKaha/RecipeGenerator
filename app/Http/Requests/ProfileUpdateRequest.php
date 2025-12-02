@@ -18,9 +18,9 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class,'email')->ignore($this->user()->user_id,'user_id'),
             ],
             'dietas_ierobezojumi'   => ['nullable','array'],
-            'dietas_ierobezojumi.*' => ['integer','exists:dietas_ierobezojumi,dietas_ierobezojumi_id'],
+            'dietas_ierobezojumi.*' => ['integer','exists:dietary_restrictions,id'],
             'alergijas'             => ['nullable','array'],
-            'alergijas.*'           => ['integer','exists:alergijas,alergijas_id'],
+            'alergijas.*'           => ['integer','exists:allergies,id'],
         ];
     }
 }

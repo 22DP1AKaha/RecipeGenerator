@@ -36,8 +36,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user
                     ? $user->load([
-                        'dietasIerobezojumi.restrictedIngredients',
-                        'alergijas.allergicIngredients'
+                        'dietaryRestrictions.restrictedIngredients',
+                        'allergies.allergicIngredients'
                     ])
                     : null,
                 'forbidden_ingredients' => $user

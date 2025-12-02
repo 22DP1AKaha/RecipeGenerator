@@ -268,7 +268,7 @@ export default {
         } else {
           // Add to favorites
           await axios.post('/favorites', {
-            receptes_id: recipe.id
+            recipe_id: recipe.id
           }, {
             withCredentials: true
           });

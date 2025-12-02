@@ -96,7 +96,7 @@ export default {
               this.baseIngredients = this.recipe.ingredients.map(ing => ({
                   id: ing.id,
                   originalDaudzums: ing.quantity,
-                  nosaukums: ing.name
+                  name: ing.name
               }));
           } finally {
               this.loading = false;
@@ -109,9 +109,9 @@ export default {
           try {
               // Submit rating directly
               const response = await axios.post('/ratings', {
-                  receptes_id: this.recipe.id,
-                  vertejums: star,
-                  komentars: null // Explicitly set to null
+                  recipe_id: this.recipe.id,
+                  rating: star,
+                  comment: null
               }, {
                   withCredentials: true
               });

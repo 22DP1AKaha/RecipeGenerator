@@ -41,7 +41,7 @@ export default {
 
               return {
                   quantity: `${this.formatAmount(newAmount)}${parsed.unit}`,
-                  name: ingredient.nosaukums
+                  name: ingredient.name
               };
           });
       }

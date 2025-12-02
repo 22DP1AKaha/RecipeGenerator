@@ -37,16 +37,16 @@
               <div class="option-grid">
                 <label
                   v-for="opt in dietas"
-                  :key="opt.dietas_ierobezojumi_id"
+                  :key="opt.id"
                   class="option-card"
                 >
                   <input
                     type="checkbox"
-                    :value="opt.dietas_ierobezojumi_id"
+                    :value="opt.id"
                     v-model="form.dietas_ierobezojumi"
                   />
                   <span class="checkmark"></span>
-                  {{ opt.nosaukums }}
+                  {{ opt.name }}
                 </label>
               </div>
             </div>
@@ -57,16 +57,16 @@
               <div class="option-grid">
                 <label
                   v-for="opt in alergijas"
-                  :key="opt.alergijas_id"
+                  :key="opt.id"
                   class="option-card"
                 >
                   <input
                     type="checkbox"
-                    :value="opt.alergijas_id"
+                    :value="opt.id"
                     v-model="form.alergijas"
                   />
                   <span class="checkmark"></span>
-                  {{ opt.nosaukums }}
+                  {{ opt.name }}
                 </label>
               </div>
             </div>
@@ -101,8 +101,8 @@ import { useForm } from '@inertiajs/vue3';
   const form = useForm({
     vards: props.user.vards,
     email: props.user.email,
-    dietas_ierobezojumi: props.user.dietas_ierobezojumi || [],
-    alergijas: props.user.alergijas || [],
+    dietas_ierobezojumi: props.user.dietas_ierobezojumi,
+    alergijas: props.user.alergijas,
   });
   
   function submit() {
