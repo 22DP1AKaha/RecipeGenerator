@@ -25,6 +25,7 @@ Route::get('/aireceptes', fn() => Inertia::render('AIreceptes'))->name('airecept
 Route::prefix('api')->group(function () {
     Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
     Route::get('/recipes/{id}', [RecipeController::class, 'show'])->name('recipes.show');
+    Route::get('/recipes/{id}/pdf', [RecipeController::class, 'downloadPdf'])->name('recipes.pdf');
     Route::get('/recipe-filters', [RecipeController::class, 'getFilters']);
     Route::get('/config', [ConfigController::class, 'getAppConfig']);
 

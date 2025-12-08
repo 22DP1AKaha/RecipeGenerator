@@ -146,6 +146,61 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="!loading && total > perPage && !hasClientSideFilters" class="pagination-container">
+        <nav aria-label="Recipe pagination">
+          <ul class="pagination glass-pagination">
+            <!-- Previous Button -->
+            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <button
+                class="page-link glass-page-link"
+                @click="goToPage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                aria-label="Previous page"
+              >
+                ‹ Iepriekšējā
+              </button>
+            </li>
+
+            <!-- Page Numbers -->
+            <li
+              v-for="(page, index) in paginationPages"
+              :key="index"
+              class="page-item"
+              :class="{ active: page === currentPage, disabled: page === '...' }"
+            >
+              <button
+                v-if="page !== '...'"
+                class="page-link glass-page-link"
+                @click="goToPage(page)"
+                :aria-label="`Go to page ${page}`"
+                :aria-current="page === currentPage ? 'page' : undefined"
+              >
+                {{ page }}
+              </button>
+              <span v-else class="page-link glass-page-link disabled-ellipsis">...</span>
+            </li>
+
+            <!-- Next Button -->
+            <li class="page-item" :class="{ disabled: currentPage === lastPage }">
+              <button
+                class="page-link glass-page-link"
+                @click="goToPage(currentPage + 1)"
+                :disabled="currentPage === lastPage"
+                aria-label="Next page"
+              >
+                Nākamā ›
+              </button>
+            </li>
+          </ul>
+
+          <!-- Page Info -->
+          <div class="pagination-info">
+            Lapa {{ currentPage }} no {{ lastPage }} (Kopā: {{ total }} receptes)
+          </div>
+        </nav>
+      </div>
     </div>
   </MainLayout>
 </template>
@@ -181,44 +236,105 @@ export default {
       showFavoritesOnly: false,
       sortBy: '',
       sortDirection: 'asc',
+      currentPage: 1,
+      lastPage: 1,
+      total: 0,
+      perPage: 12,
     };
   },
   computed: {
     filteredRecipes() {
-      const forbidden = this.$page.props.auth.forbidden_ingredients;
+      // Only apply client-side search filter
+      if (!this.searchQuery) {
+        return this.recipes;
+      }
 
       return this.recipes.filter(recipe => {
-        // Base filters
-        const searchMatch = recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase());
-        const mealMatch = this.selectedMealTime ? recipe.meal_time === this.selectedMealTime : true;
-        const nutritionMatch = this.selectedNutritionType ? recipe.nutrition === this.selectedNutritionType : true;
-        const proteinMatch = this.selectedProteinSource ? recipe.protein_source === this.selectedProteinSource : true;
-
-        // Dietary preference filter
-        let preferenceMatch = true;
-        if (this.filterByPreferences && this.isUserLoggedIn) {
-          const ingredientIds = recipe.ingredients.map(ing => ing.id);
-          preferenceMatch = !forbidden.some(id => ingredientIds.includes(id));
-        }
-
-        // Favorite recipes filter
-        const favoriteMatch = this.showFavoritesOnly ? recipe.is_saved : true;
-
-        return searchMatch && mealMatch && nutritionMatch && proteinMatch && preferenceMatch && favoriteMatch;
+        return recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase());
       });
     },
     isUserLoggedIn() {
       return this.$page.props.auth.user !== null;
     },
+    hasClientSideFilters() {
+      return this.searchQuery !== '';
+    },
+    paginationPages() {
+      const pages = [];
+      const maxVisible = 7; // Show up to 7 page numbers
+      const current = this.currentPage;
+      const last = this.lastPage;
+
+      if (last <= maxVisible) {
+        // Show all pages if total is less than max visible
+        for (let i = 1; i <= last; i++) {
+          pages.push(i);
+        }
+      } else {
+        // Always show first page
+        pages.push(1);
+
+        if (current <= 3) {
+          // Near the beginning
+          for (let i = 2; i <= Math.min(5, last - 1); i++) {
+            pages.push(i);
+          }
+          if (last > 5) {
+            pages.push('...');
+          }
+        } else if (current >= last - 2) {
+          // Near the end
+          pages.push('...');
+          for (let i = Math.max(2, last - 4); i < last; i++) {
+            pages.push(i);
+          }
+        } else {
+          // In the middle
+          pages.push('...');
+          for (let i = current - 1; i <= current + 1; i++) {
+            pages.push(i);
+          }
+          pages.push('...');
+        }
+
+        // Always show last page
+        pages.push(last);
+      }
+
+      return pages;
+    },
   },
   methods: {
-    async fetchData() {
+    async fetchData(page = 1) {
       this.loading = true;
       try {
         const params = {
           sort_by: this.sortBy,
-          sort_direction: this.sortDirection
+          sort_direction: this.sortDirection,
+          page: page,
+          per_page: this.perPage
         };
+
+        // Add dropdown filters to backend request
+        if (this.selectedMealTime) {
+          params.meal_time = this.selectedMealTime;
+        }
+        if (this.selectedNutritionType) {
+          params.nutrition = this.selectedNutritionType;
+        }
+        if (this.selectedProteinSource) {
+          params.protein_source = this.selectedProteinSource;
+        }
+
+        // Add dietary preferences filter to backend
+        if (this.filterByPreferences) {
+          params.filter_by_preferences = true;
+        }
+
+        // Add favorites filter to backend
+        if (this.showFavoritesOnly) {
+          params.favorites_only = true;
+        }
 
         const [recipesResponse, filtersResponse, configResponse] = await Promise.all([
           axios.get('/api/recipes', { params, withCredentials: true }),
@@ -227,6 +343,16 @@ export default {
         ]);
 
         this.recipes = recipesResponse.data.data;
+
+        // Laravel ResourceCollection puts pagination in 'meta' object
+        const meta = recipesResponse.data.meta;
+        if (meta) {
+          this.currentPage = meta.current_page;
+          this.lastPage = meta.last_page;
+          this.total = meta.total;
+          this.perPage = meta.per_page;
+        }
+
         this.filterOptions = {
           mealTimes: filtersResponse.data.mealTimes,
           nutritionTypes: filtersResponse.data.nutritionTypes,
@@ -241,14 +367,23 @@ export default {
         this.loading = false;
       }
     },
+    goToPage(page) {
+      if (page >= 1 && page <= this.lastPage) {
+        this.fetchData(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
     clearFilters() {
       this.selectedMealTime = '';
       this.selectedNutritionType = '';
       this.selectedProteinSource = '';
-      this.showFavoritesOnly = false; // Also reset favorites toggle
+      this.filterByPreferences = false;
+      this.showFavoritesOnly = false;
+      this.fetchData(1); // Reset to page 1 and reload
     },
     toggleFavorites() {
       this.showFavoritesOnly = !this.showFavoritesOnly;
+      this.fetchData(1); // Trigger server-side filter
     },
     async handleFavorite(recipe, event) {
       event.stopPropagation();
@@ -310,10 +445,22 @@ export default {
   },
   watch:  {
     sortBy() {
-      this.fetchData();
+      this.fetchData(1);
     },
     sortDirection() {
-      this.fetchData();
+      this.fetchData(1);
+    },
+    selectedMealTime() {
+      this.fetchData(1);
+    },
+    selectedNutritionType() {
+      this.fetchData(1);
+    },
+    selectedProteinSource() {
+      this.fetchData(1);
+    },
+    filterByPreferences() {
+      this.fetchData(1);
     }
   }
 };
@@ -740,5 +887,142 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Filter Info */
+.filter-info {
+  text-align: center;
+  padding: 1rem 2rem;
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: var(--warm-dark);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-bottom: 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.glass-pagination {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-item {
+  display: inline-block;
+}
+
+.glass-page-link {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1rem;
+  min-width: 45px;
+  color: var(--warm-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+  font-size: 0.95rem;
+  text-align: center;
+  border: none;
+}
+
+.glass-page-link:hover:not(:disabled):not(.disabled-ellipsis) {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+}
+
+.page-item.active .glass-page-link {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+  transform: scale(1.05);
+}
+
+.disabled-ellipsis {
+  cursor: default;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.page-item.disabled .glass-page-link {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(200, 200, 200, 0.2);
+}
+
+.glass-page-link:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(200, 200, 200, 0.2);
+}
+
+.pagination-info {
+  text-align: center;
+  color: var(--warm-dark);
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .pagination-container {
+    margin-top: 2rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .glass-pagination {
+    gap: 0.4rem;
+  }
+
+  .glass-page-link {
+    padding: 0.5rem 0.75rem;
+    min-width: 40px;
+    font-size: 0.9rem;
+  }
+
+  .pagination-info {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-pagination {
+    gap: 0.3rem;
+  }
+
+  .glass-page-link {
+    padding: 0.4rem 0.6rem;
+    min-width: 35px;
+    font-size: 0.85rem;
+  }
+
+  .pagination-info {
+    font-size: 0.8rem;
+    padding: 0 1rem;
+  }
 }
 </style>

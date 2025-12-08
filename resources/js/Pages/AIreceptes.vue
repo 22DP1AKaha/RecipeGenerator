@@ -1,20 +1,26 @@
 <template>
   <MainLayout>
     <div class="ai-recipe-page">
-      <h1>AI Receptes Ģenerators</h1>
+      <div class="hero-section">
+        <h1 class="gradient-text">AI Receptes Ģenerators</h1>
+        <p class="hero-subtitle">Izveido unikālas receptes ar Tavām sastāvdaļām</p>
+      </div>
       
       <!-- Ingredient Selection Section -->
       <div class="selection-container">
-        <div class="ingredient-window">
-          <div v-if="loading" class="loading">Ielādējam sastāvdaļas...</div>
-          
+        <div class="ingredient-window glass-card">
+          <div v-if="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Ielādējam sastāvdaļas...</p>
+          </div>
+
           <div v-else class="ingredient-categories">
-            <div 
-              v-for="(ingredients, category) in ingredientCategories" 
+            <div
+              v-for="(ingredients, category) in ingredientCategories"
               :key="category"
               class="category-card"
             >
-              <h3>{{ category }}</h3>
+              <h3 class="category-title">{{ category }}</h3>
               <div class="ingredient-list">
                 <button
                   v-for="ingredient in ingredients"
@@ -33,11 +39,11 @@
         </div>
 
         <!-- Action Section -->
-        <div class="action-section">
+        <div class="action-section glass-card">
           <button
             @click="generateRecipe"
             :disabled="selectedIngredients.length < 3 || generating"
-            class="generate-btn"
+            class="glass-btn generate-btn"
           >
             <span v-if="generating">Ģenerējam...</span>
             <span v-else>Ģenerēt Recepti</span>
@@ -45,22 +51,20 @@
           <button
             @click="clearSelection"
             :disabled="selectedIngredients.length === 0"
-            class="clear-btn"
+            class="glass-btn-secondary clear-btn"
           >
             Notīrīt izvēli
           </button>
           <p v-if="selectedIngredients.length < 3" class="min-ingredient-warning">
-            Izvēlieties vismaz 3 sastāvdaļas, lai ģenerētu recepti
+            Izvēlieties vismaz 3 sastāvdaļas
           </p>
         </div>
       </div>
 
       <!-- Recipe Results -->
-      <div class="recipe-results">
-        
-        
+      <div v-if="generatedRecipe || generating || error" class="recipe-results glass-card">
         <div v-if="generatedRecipe" class="recipe-output">
-          <h2 class="recipe-title">{{ recipeTitle }}</h2>
+          <h2 class="recipe-title gradient-text">{{ recipeTitle }}</h2>
           
           <div class="recipe-section">
             <h3>Sastāvdaļas:</h3>
@@ -76,27 +80,24 @@
             </ol>
           </div>
 
-          <div class="ai-warning">
+          <div class="ai-warning glass-card">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="warning-icon">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
             </svg>
             <p>Šī recepte ir ģenerēta, izmantojot mākslīgo intelektu. Lūdzu, pārbaudiet recepti pirms tās pagatavošanas.</p>
           </div>
         </div>
-        
-        <div v-else-if="error" class="error-message">
-          {{ error }}
+
+        <div v-else-if="error" class="error-message glass-card">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="error-icon">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          <p>{{ error }}</p>
         </div>
 
-        <div v-else-if="generating" class="spinner"></div>
-        
-        <div v-else class="placeholder">
-          <div class="placeholder-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="ai-icon">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-            </svg>
-          </div>
-          <p>Izvēlieties sastāvdaļas un nospiediet "Ģenerēt Recepti"</p>
+        <div v-else-if="generating" class="generating-state">
+          <div class="spinner"></div>
+          <p class="generating-text">Ģenerējam Tavu recepti...</p>
         </div>
       </div>
     </div>
@@ -378,243 +379,327 @@ export default {
 .ai-recipe-page {
   max-width: 100%;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem 1rem;
+  min-height: calc(100vh - 200px);
 }
 
-h1 {
+.hero-section {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #4a3f35;
-  font-family: monospace;
+  margin-bottom: 2.5rem;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.hero-section .gradient-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--warm-dark);
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .selection-container {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ingredient-window {
   flex: 1;
-  background: linear-gradient(135deg, #FFF5E1, #FFE4B5);
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
   max-height: 60vh;
   overflow-y: auto;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.ingredient-window::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ingredient-window::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.ingredient-window::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
 }
 
 .action-section {
-  width: 180px;
+  width: 200px;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
-  justify-content: center;
+  gap: 1rem;
+  justify-content: flex-start;
+  padding: 1.5rem;
+  animation: fadeIn 0.8s ease-out;
 }
 
 .generate-btn {
-  background: linear-gradient(135deg, #4CAF50, #2E7D32);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .generate-btn:disabled {
-  background: #ccc;
+  background: rgba(200, 200, 200, 0.5);
   cursor: not-allowed;
+  transform: none;
 }
 
-.generate-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
-}
-
-.clear-btn {
-  background: linear-gradient(135deg, #f44336, #d32f2f);
+.glass-btn-secondary {
+  background: linear-gradient(135deg, var(--accent-color), #c0392b);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(230, 57, 70, 0.3);
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.65rem 1.2rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(230, 57, 70, 0.3);
 }
 
-.clear-btn:disabled {
-  background: #ccc;
+.glass-btn-secondary:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+  background: linear-gradient(135deg, #e74c3c, #a93226);
+}
+
+.glass-btn-secondary:disabled {
+  background: rgba(200, 200, 200, 0.5);
   cursor: not-allowed;
-}
-
-.clear-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  transform: none;
+  box-shadow: none;
 }
 
 .ingredient-categories {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-.category-card h3 {
-  font-size: 1.2rem;
-  margin-bottom: 0.8rem;
-  color: #5d4037;
-  border-bottom: 2px solid #d7ccc8;
-  padding-bottom: 0.4rem;
+.category-card {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.category-title {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--warm-dark);
+  font-weight: 700;
+  border-bottom: 2px solid rgba(255, 107, 53, 0.3);
+  padding-bottom: 0.5rem;
 }
 
 .ingredient-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .ingredient-btn {
-  background-color: #f5f5f5;
-  border: 2px solid #ccc;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 107, 53, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
-  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--warm-dark);
+}
+
+.ingredient-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  border-color: var(--primary-color);
 }
 
 .ingredient-btn.selected {
-  background-color: #4caf50;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
-  border-color: #388e3c;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+  transform: translateY(-2px);
+}
+
+.min-ingredient-warning {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  padding: 0.5rem;
+  background: rgba(230, 57, 70, 0.1);
+  border-radius: var(--radius-md);
 }
 
 .recipe-results {
-  background: linear-gradient(135deg, #FFF5E1, #FFE4B5);
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
   min-height: 300px;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .recipe-output {
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  animation: fadeIn 0.6s ease-out;
 }
 
 .recipe-title {
   text-align: center;
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-  color: #4a3f35;
-  padding-bottom: 0.8rem;
-  border-bottom: 2px solid #d7ccc8;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 107, 53, 0.3);
+  font-weight: 800;
 }
 
 .recipe-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .recipe-section h3 {
-  font-size: 1.3rem;
-  margin-bottom: 0.8rem;
-  color: #5d4037;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: var(--warm-dark);
+  font-weight: 700;
 }
 
 .ingredients-list, .instructions-list {
   text-align: left;
-  padding-left: 1.5rem;
+  padding-left: 2rem;
 }
 
 .ingredients-list li {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
   font-size: 1rem;
+  color: var(--warm-dark);
 }
 
 .instructions-list li {
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem;
   font-size: 1rem;
-  line-height: 1.4;
+  line-height: 1.6;
+  color: var(--warm-dark);
 }
 
-.placeholder {
+.generating-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 250px;
-  color: #7a6a5d;
+  padding: 3rem 1rem;
 }
 
-.placeholder-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 0.8rem;
-}
-
-.ai-icon {
-  fill: #7a6a5d;
-  opacity: 0.3;
+.generating-text {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  color: var(--warm-dark);
+  font-weight: 600;
 }
 
 .error-message {
-  color: #d32f2f;
-  padding: 0.8rem;
-  background: #ffebee;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid var(--accent-color);
+  border-radius: var(--radius-lg);
+  animation: fadeIn 0.4s ease;
+}
+
+.error-message p {
+  margin: 0;
+  color: var(--accent-color);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.error-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  fill: var(--accent-color);
 }
 
 .loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
   text-align: center;
-  padding: 1.5rem;
-  font-style: italic;
-  color: #666;
+}
+
+.loading p {
+  color: var(--warm-dark);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
 }
 
 .ai-warning {
-  margin-top: 1.5rem;
-  padding: 0.8rem;
-  background-color: #fff8e1;
-  border-radius: 8px;
-  border-left: 4px solid #ffc107;
+  margin-top: 2rem;
+  padding: 1rem 1.5rem;
+  border: 2px solid var(--secondary-color);
+  border-radius: var(--radius-lg);
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 1rem;
   animation: fadeIn 0.6s ease;
 }
 
 .ai-warning p {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: #5d4037;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--warm-dark);
+  font-weight: 500;
 }
 
 .warning-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  fill: #ff9800;
+  fill: var(--secondary-color);
 }
 
 .spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #FFE4B5;
+  border: 4px solid rgba(255, 107, 53, 0.1);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   animation: spin 1s linear infinite;
-  margin: 1.5rem auto;
 }
 
 @keyframes spin {
@@ -627,98 +712,155 @@ h1 {
   .selection-container {
     flex-direction: column;
   }
-  
+
+  .ingredient-window {
+    max-height: 50vh;
+  }
+
   .action-section {
     width: 100%;
     flex-direction: row;
     justify-content: center;
+    padding: 1.5rem;
   }
 }
 
 /* Small screens (landscape phone) */
 @media (max-width: 768px) {
-  h1 {
-    font-size: 1.75rem;
+  .hero-section .gradient-text {
+    font-size: 2rem;
   }
-  
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
   .ai-recipe-page {
-    padding: 0.75rem;
+    padding: 1.5rem 0.75rem;
   }
-  
+
+  .ingredient-window {
+    padding: 1rem;
+  }
+
+  .category-title {
+    font-size: 1.1rem;
+  }
+
   .ingredient-btn {
-    padding: 0.35rem 0.7rem;
-    font-size: 0.95rem;
-  }
-  
-  .action-section {
-    gap: 0.5rem;
-  }
-  
-  .generate-btn {
-    padding: 8px 16px;
-    font-size: 0.95rem;
-  }
-  
-  .clear-btn {
-    padding: 6px 12px;
+    padding: 0.4rem 0.8rem;
     font-size: 0.9rem;
+  }
+
+  .action-section {
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .generate-btn {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .glass-btn-secondary {
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .recipe-results {
+    padding: 1.5rem;
+  }
+
+  .recipe-title {
+    font-size: 1.6rem;
+  }
+
+  .recipe-section h3 {
+    font-size: 1.2rem;
   }
 }
 
 /* Extra small screens (portrait phones) */
 @media (max-width: 480px) {
-  .selection-container {
-    flex-direction: column;
-  }
-  
-  .ingredient-window {
-    padding: 0.8rem;
-    max-height: 50vh;
+  .hero-section .gradient-text {
+    font-size: 1.75rem;
   }
 
-  .category-card h3 {
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .ai-recipe-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .selection-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ingredient-window {
+    padding: 1rem;
+    max-height: 45vh;
+  }
+
+  .category-title {
     font-size: 1rem;
   }
-  
+
   .ingredient-list {
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
-  
+
   .ingredient-btn {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.9rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
   }
-  
+
   .action-section {
     flex-direction: column;
     width: 100%;
+    gap: 0.8rem;
   }
-  
-  .generate-btn, 
-  .clear-btn {
+
+  .generate-btn,
+  .glass-btn-secondary {
     width: 100%;
     text-align: center;
   }
-  
+
   .recipe-results {
-    padding: 0.8rem;
+    padding: 1rem;
   }
-  
+
   .recipe-title {
     font-size: 1.5rem;
-    padding-bottom: 0.6rem;
+    padding-bottom: 0.8rem;
   }
-  
+
   .recipe-section h3 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
-  
+
+  .ingredients-list,
+  .instructions-list {
+    padding-left: 1.5rem;
+  }
+
   .ingredients-list li,
   .instructions-list li {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
-  
+
+  .ai-warning {
+    padding: 0.8rem 1rem;
+  }
+
   .ai-warning p {
+    font-size: 0.85rem;
+  }
+
+  .min-ingredient-warning {
     font-size: 0.85rem;
   }
 }

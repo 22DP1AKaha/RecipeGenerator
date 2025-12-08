@@ -1,12 +1,16 @@
 <template>
-    <div class="card">
-      <img :src="image" alt="Photo"><br>
-      <h1>{{ title }}</h1>
-      <p>{{ description }}</p><br>
-      <CustomButton 
-        :href="link"
-        text="Izmēģināt"
-      />
+    <div class="card glass-card">
+      <div class="card-image-wrapper">
+        <img :src="image" alt="Photo" class="card-image">
+      </div>
+      <div class="card-content">
+        <h1 class="card-title">{{ title }}</h1>
+        <p class="card-description">{{ description }}</p>
+        <CustomButton
+          :href="link"
+          text="Izmēģināt"
+        />
+      </div>
     </div>
   </template>
   
@@ -35,49 +39,57 @@
   
   <style scoped>
 .card {
-  font-family: monospace;
-  padding: 1.5rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  overflow: visible;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 10px;
-  position: relative;
-  animation: fadeIn 0.5s ease-in;
-  background: linear-gradient(135deg, #FFF5E1, #FFE4B5);
+  overflow: hidden;
   text-align: center;
+  animation: fadeIn 0.6s ease-out;
+  max-width: 420px;
+  padding: 0;
 }
 
-/* Title & Description */
-.card h1 {
-  font-size: 2rem;
-  margin: 1rem 0 0.5rem;
+.card-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  height: 280px;
 }
 
-.card p {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-/* Image adjustments */
-.card img {
+.card-image {
   width: 100%;
-  max-width: 400px;
-  height: auto;
+  height: 100%;
   object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 1rem;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+.card:hover .card-image {
+  transform: scale(1.1);
 }
 
-/* Fade-in animation */
+.card-content {
+  padding: 2rem 1.5rem;
+}
+
+.card-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-description {
+  font-size: 1rem;
+  color: var(--warm-dark);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -85,41 +97,47 @@
   }
 }
 
-/* Medium screens (≤768px) */
 @media (max-width: 768px) {
   .card {
-    padding: 1.2rem;
+    max-width: 360px;
   }
 
-  .card h1 {
-    font-size: 1.75rem;
+  .card-image-wrapper {
+    height: 240px;
   }
 
-  .card p {
-    font-size: 0.95rem;
+  .card-content {
+    padding: 1.5rem 1.25rem;
   }
 
-  .card img {
-    max-width: 300px;
-  }
-}
-
-/* Small screens (≤480px) */
-@media (max-width: 480px) {
-  .card {
-    padding: 1rem;
-  }
-
-  .card h1 {
+  .card-title {
     font-size: 1.5rem;
   }
 
-  .card p {
-    font-size: 0.9rem;
+  .card-description {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    max-width: 100%;
   }
 
-  .card img {
-    max-width: 100%;
+  .card-image-wrapper {
+    height: 200px;
+  }
+
+  .card-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .card-title {
+    font-size: 1.35rem;
+  }
+
+  .card-description {
+    font-size: 0.9rem;
   }
 }
 </style>

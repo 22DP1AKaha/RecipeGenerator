@@ -1,36 +1,52 @@
 <template>
   <MainLayout>
-      <div v-if="loading" class="spinner"></div>
+      <div v-if="loading" class="loading-container">
+        <div class="spinner"></div>
+      </div>
 
       <div v-else-if="recipe" class="recipe-details">
-          <h1>{{ recipe.title }}</h1>
-          <div class="recipe-info">
-              <p>⏱️ Gatavošana: {{ recipe.cooking_time }} min</p>
-              <p>⭐ Sarežģītība: {{ recipe.difficulty }}</p>
+          <h1 class="recipe-title gradient-text">{{ recipe.title }}</h1>
+
+          <div class="recipe-info glass-card">
+              <div class="info-item">
+                <span class="info-icon">⏱️</span>
+                <span class="info-text">{{ recipe.cooking_time }} min</span>
+              </div>
+              <div class="info-item">
+                <span class="info-icon">⭐</span>
+                <span class="info-text">{{ recipe.difficulty }}</span>
+              </div>
           </div>
 
-          <div class="rating-bar">
-            <span
-              v-for="star in 5"
-              :key="star"
-              class="star"
-              :class="{
-                filled: star <= hover || (!hover && star <= recipe.average_rating),
-                'user-rated': star <= recipe.user_rating
-              }"
-              @mouseover="hover = star"
-              @mouseleave="hover = 0"
-              @click="rateRecipe(star)"
-            >★</span>
+          <div class="rating-bar glass-card">
+            <div class="stars-container">
+              <span
+                v-for="star in 5"
+                :key="star"
+                class="star"
+                :class="{
+                  filled: star <= hover || (!hover && star <= recipe.average_rating),
+                  'user-rated': star <= recipe.user_rating
+                }"
+                @mouseover="hover = star"
+                @mouseleave="hover = 0"
+                @click="rateRecipe(star)"
+              >★</span>
+            </div>
             <div class="average-text">{{ recipe.average_rating.toFixed(1) }} / 5</div>
           </div>
 
-          <img :src="recipe.image" alt="Recipe Image" class="recipe-image" v-if="recipe.image" />
+          <div class="recipe-image-container" v-if="recipe.image">
+            <img :src="recipe.image" alt="Recipe Image" class="recipe-image" />
+          </div>
 
-          <p class="description"><strong>Apraksts:</strong> {{ recipe.description }}</p>
+          <div class="description glass-card">
+            <h3>Apraksts</h3>
+            <p>{{ recipe.description }}</p>
+          </div>
 
           <div class="recipe-content">
-              <div class="recipe-ingredients">
+              <div class="recipe-ingredients glass-card">
                   <RecDynIngredients
                       :base-ingredients="baseIngredients"
                       :portion-sizes="portionSizes"
@@ -39,16 +55,25 @@
                   />
               </div>
 
-              <div class="recipe-instructions">
+              <div class="recipe-instructions glass-card">
                   <RecDynInstructions :instructions="recipe.instructions" />
               </div>
           </div>
 
-          <BackButton />
+          <div class="action-buttons-container">
+            <a
+              :href="`/api/recipes/${id}/pdf`"
+              class="glass-btn pdf-button"
+              download
+            >
+              📄 Lejupielādēt PDF
+            </a>
+            <BackButton />
+          </div>
       </div>
 
-      <div v-else-if="!recipe" class="recipe-not-found">
-          <h1>Recepte nav atrasta!</h1>
+      <div v-else-if="!recipe" class="recipe-not-found glass-card">
+          <h1 class="gradient-text">Recepte nav atrasta!</h1>
           <BackButton />
       </div>
   </MainLayout>
@@ -146,91 +171,159 @@ export default {
 </script>
 
 <style scoped>
-* {
-  font-family: monospace;
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
 }
 
 .recipe-details {
-  max-width: 700px;
-  margin: auto;
-  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.recipe-title {
   text-align: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
 }
 
 .recipe-info {
-  font-size: 18px;
-  margin: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-icon {
+  font-size: 1.5rem;
+}
+
+.info-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--warm-dark);
+}
+
+.recipe-image-container {
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
 }
 
 .recipe-image {
   width: 100%;
-  max-width: 400px;
-  border-radius: 10px;
-  margin: 20px 0;
+  max-width: 500px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.recipe-image:hover {
+  transform: scale(1.02);
 }
 
 .description {
-  font-size: 18px;
-  margin-bottom: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.description h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--warm-dark);
+  margin-bottom: 1rem;
+}
+
+.description p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--warm-dark);
+  margin: 0;
 }
 
 .recipe-content {
   display: flex;
   justify-content: space-between;
   text-align: left;
-  margin-top: 20px;
-  gap: 40px;
+  margin-top: 1.5rem;
+  gap: 2rem;
 }
 
 .recipe-ingredients {
   flex: 1;
-  max-width: 300px;
+  min-width: 280px;
+  padding: 1.5rem;
 }
 
 .recipe-instructions {
   flex: 2;
   min-width: 0;
+  padding: 1.5rem;
 }
 
-/* Jaunie stili sastāvdaļām */
 :deep(.ingredient-row) {
   display: flex;
-  gap: 15px;
-  margin-bottom: 8px;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
   align-items: baseline;
 }
 
 :deep(.ingredient-quantity) {
-  flex: 0 0 70px;
+  flex: 0 0 80px;
   text-align: right;
-  font-weight: bold;
+  font-weight: 700;
   white-space: nowrap;
+  color: var(--primary-color);
 }
 
 :deep(.ingredient-name) {
   flex: 1;
   word-break: break-word;
   hyphens: auto;
+  color: var(--warm-dark);
 }
 
 :deep(ul) {
   padding-left: 0;
-  margin-top: 15px;
+  margin-top: 1rem;
 }
 
 :deep(li) {
   list-style: none;
-  padding: 3px 0;
+  padding: 0.5rem 0;
 }
 
 .spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #FFE4B5;
+  border: 4px solid rgba(255, 107, 53, 0.1);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   animation: spin 1s linear infinite;
-  margin: 2rem auto;
 }
 
 @keyframes spin {
@@ -240,52 +333,155 @@ export default {
 
 .rating-bar {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 5px;
-  justify-content: center;
-  margin: 15px 0;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.stars-container {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .star {
-  font-size: 24px;
-  color: #ccc;
+  font-size: 2rem;
+  color: rgba(255, 107, 53, 0.2);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.star:hover {
+  transform: scale(1.2);
 }
 
 .star.filled {
-  color: gold;
+  color: var(--secondary-color);
 }
 
 .star.user-rated {
-  color: orange;
+  color: var(--primary-color);
+  text-shadow: 0 2px 8px rgba(255, 107, 53, 0.5);
 }
 
 .average-text {
-  margin-left: 10px;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--warm-dark);
 }
 
-@media (max-width: 600px) {
+.action-buttons-container {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pdf-button {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.8rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.pdf-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+}
+
+.recipe-not-found {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.recipe-not-found h1 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .recipe-title {
+    font-size: 2rem;
+  }
+
+  .recipe-info {
+    gap: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .info-icon {
+    font-size: 1.25rem;
+  }
+
+  .info-text {
+    font-size: 1rem;
+  }
+
   .recipe-content {
-      flex-direction: column;
-      gap: 20px;
+    flex-direction: column;
+    gap: 1.5rem;
   }
 
   .recipe-ingredients {
-      max-width: 100%;
+    min-width: 100%;
   }
-  
+
+  .description h3 {
+    font-size: 1.3rem;
+  }
+
+  .description p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .recipe-details {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .recipe-title {
+    font-size: 1.75rem;
+  }
+
+  .recipe-info {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
   .rating-bar {
-      flex-wrap: wrap;
-      justify-content: center;
+    padding: 1.25rem;
   }
-  
+
+  .star {
+    font-size: 1.75rem;
+  }
+
   .average-text {
-      width: 100%;
-      text-align: center;
-      margin-top: 10px;
+    font-size: 1rem;
+  }
+
+  .recipe-ingredients,
+  .recipe-instructions {
+    padding: 1.25rem;
+  }
+
+  .recipe-not-found {
+    padding: 2rem 1.5rem;
+  }
+
+  .recipe-not-found h1 {
+    font-size: 1.75rem;
   }
 }
 </style>

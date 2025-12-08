@@ -1,14 +1,17 @@
 <template>
-    <footer class="footer" v-if="!hideFooter">
-      <div class="footer-container">
-        <!-- Logo and Company Name -->
-        <div class="logo">
-          <img src="/foodyML_logo.png" alt="FoodyML Logo" />
-          <h1>FOODYML</h1>
+    <footer class="footer glass-card" v-if="!hideFooter">
+      <div class="container">
+        <div class="row align-items-center justify-content-center text-center">
+          <div class="col-12 mb-3">
+            <div class="logo">
+              <img src="/foodyML_logo.png" alt="FoodyML Logo" />
+              <h1 class="gradient-text mb-0">FOODYML</h1>
+            </div>
+          </div>
+          <div class="col-12">
+            <p class="footer-text mb-0">&copy; 2025 FOODYML. Visas tiesības aizsargātas.</p>
+          </div>
         </div>
-        
-        <!-- Footer Text -->
-        <p class="footer-text">&copy; 2025 FOODYML. Visas tiesības aizsargātas.</p>
       </div>
     </footer>
   </template>
@@ -32,45 +35,48 @@
   </script>
   
   <style scoped>
-  * {
-    font-family: monospace; 
-  }
-  
   .footer {
-    padding: 20px 0;
-    text-align: center;
+    margin-top: 4rem;
+    padding: 2rem 1rem;
+    border-top: 1px solid var(--glass-border);
   }
-  
-  .footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  
+
   .logo {
     display: flex;
     align-items: center;
+    justify-content: center;
+    gap: 12px;
   }
-  
+
   .logo img {
-    height: 35px;
+    height: 40px;
     width: auto;
-    margin-right: 10px;
+    filter: drop-shadow(0 2px 4px rgba(255, 107, 53, 0.3));
   }
-  
+
   .logo h1 {
     font-size: 1.5rem;
-    background: linear-gradient(to right, #b927fc 0%, #2c64fc 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: 700;
   }
-  
+
   .footer-text {
-    font-size: 0.9rem;
-    color: #555; /* A subtle gray for the text */
+    font-size: 0.95rem;
+    color: var(--warm-dark);
+    opacity: 0.7;
+  }
+
+  @media (max-width: 768px) {
+    .footer {
+      margin-top: 3rem;
+      padding: 1.5rem 1rem;
+    }
+
+    .logo h1 {
+      font-size: 1.25rem;
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+    }
   }
   </style>

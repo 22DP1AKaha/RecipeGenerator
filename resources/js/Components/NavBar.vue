@@ -1,47 +1,51 @@
 <template>
-  <nav v-if="!hideNav">
-    <Link :href="route('home')" class="logo">
-      <img src="/foodyML_logo.png" alt="FoodyML Logo" />
-      <h1>FOODYML</h1>
-    </Link>
+  <nav v-if="!hideNav" class="glass-navbar">
+    <div class="container-fluid px-4">
+      <div class="d-flex justify-content-between align-items-center py-3">
+        <Link :href="route('home')" class="logo">
+          <img src="/foodyML_logo.png" alt="FoodyML Logo" />
+          <h1 class="gradient-text mb-0">FOODYML</h1>
+        </Link>
 
-    <ul class="desktop-menu">
-      <li><Link :href="route('home')">Sākums</Link></li>
-      <li><Link :href="route('receptes')">Receptes</Link></li>
-      <li><Link :href="route('aireceptes')">Ģenerēšana</Link></li>
-      <li v-if="isUserLoggedIn" class="dropdown">
-        <a class="dropbtn">Profils</a>
-        <div class="dropdown-content">
-          <Link :href="route('profile.edit')">Profils</Link>
-          <Link :href="route('logout')" method="post">Iziet</Link>
+        <ul class="desktop-menu d-none d-md-flex list-unstyled mb-0">
+          <li><Link :href="route('home')" class="nav-link-glass">Sākums</Link></li>
+          <li><Link :href="route('receptes')" class="nav-link-glass">Receptes</Link></li>
+          <li><Link :href="route('aireceptes')" class="nav-link-glass">Ģenerēšana</Link></li>
+          <li v-if="isUserLoggedIn" class="dropdown position-relative">
+            <a class="nav-link-glass dropdown-toggle">Profils</a>
+            <div class="dropdown-content glass-card">
+              <Link :href="route('profile.edit')" class="dropdown-item-glass">Profils</Link>
+              <Link :href="route('logout')" method="post" class="dropdown-item-glass">Iziet</Link>
+            </div>
+          </li>
+          <li v-else>
+            <Link :href="route('login')" class="glass-btn-small">Ienākt</Link>
+          </li>
+        </ul>
+
+        <div class="hamburger d-md-none" :class="{ 'hamburger-active': menuActive }" @click="toggleNav">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
         </div>
-      </li>
-      <li v-else>
-        <Link :href="route('login')">Ienākt</Link>
-      </li>
-    </ul>
-
-    <div class="hamburger" :class="{ 'hamburger-active': menuActive }" @click="toggleNav">
-      <span class="line"></span>
-      <span class="line"></span>
-      <span class="line"></span>
+      </div>
     </div>
   </nav>
 
-  <div class="menubar" :class="{ active: menuActive }">
-    <ul>
-      <li><Link :href="route('home')" @click="toggleNav">Sākums</Link></li>
-      <li><Link :href="route('receptes')" @click="toggleNav">Receptes</Link></li>
-      <li><Link :href="route('aireceptes')" @click="toggleNav">Ģenerēšana</Link></li>
+  <div class="menubar glass-card" :class="{ active: menuActive }">
+    <ul class="list-unstyled">
+      <li><Link :href="route('home')" @click="toggleNav" class="mobile-link">Sākums</Link></li>
+      <li><Link :href="route('receptes')" @click="toggleNav" class="mobile-link">Receptes</Link></li>
+      <li><Link :href="route('aireceptes')" @click="toggleNav" class="mobile-link">Ģenerēšana</Link></li>
       <li v-if="isUserLoggedIn" class="mobile-dropdown">
-        <a @click="mobileDropdownOpen = !mobileDropdownOpen">Profils</a>
+        <a @click="mobileDropdownOpen = !mobileDropdownOpen" class="mobile-link">Profils</a>
         <div class="mobile-dropdown-content" v-show="mobileDropdownOpen">
-          <Link :href="route('profile.edit')" @click="toggleNav; mobileDropdownOpen = false">Profils</Link>
-          <Link :href="route('logout')" method="post" @click="toggleNav; mobileDropdownOpen = false">Iziet</Link>
+          <Link :href="route('profile.edit')" @click="toggleNav; mobileDropdownOpen = false" class="mobile-link-sub">Profils</Link>
+          <Link :href="route('logout')" method="post" @click="toggleNav; mobileDropdownOpen = false" class="mobile-link-sub">Iziet</Link>
         </div>
       </li>
       <li v-else>
-        <Link :href="route('login')" @click="toggleNav">Ienākt</Link>
+        <Link :href="route('login')" @click="toggleNav" class="mobile-link">Ienākt</Link>
       </li>
     </ul>
   </div>
@@ -78,192 +82,188 @@ export default {
 </script>
 
 <style scoped>
-*{
-  font-family: monospace;
-}
-nav {
-  padding: 5px 5%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
-  rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-  z-index: 1;
-}
 .logo {
   display: flex;
   align-items: center;
   text-decoration: none;
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
 .logo img {
-  height: 35px;
+  height: 40px;
   width: auto;
-  margin-right: 10px;
+  margin-right: 12px;
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 53, 0.3));
 }
+
 .logo h1 {
   font-size: 1.5rem;
-  background: linear-gradient(to right, #b927fc 0%, #2c64fc 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
+  font-weight: 700;
 }
 
-nav ul {
-  list-style: none;
+.desktop-menu {
   display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
-nav ul li {
-  margin-left: 1.5rem;
-}
-nav ul li a {
+
+.nav-link-glass {
   text-decoration: none;
-  color: #000;
-  font-size: 1.2rem;
-  padding: 4px 8px;
-  border-radius: 5px;
-}
-
-nav ul li a:hover {
-  background-color: rgb(243, 213, 170);
-}
-
-.hamburger {
-  display: none;
-  cursor: pointer;
-}
-
-.hamburger .line {
-  width: 25px;
-  height: 1px;
-  background-color: #1f1f1f;
-  display: block;
-  margin: 7px auto;
-  transition: all 0.3s ease-in-out;
-}
-.hamburger-active {
-  transition: all 0.3s ease-in-out;
-  transition-delay: 0.6s;
-  transform: rotate(45deg);
-}
-
-.hamburger-active .line:nth-child(2) {
-  width: 0px;
-}
-
-.hamburger-active .line:nth-child(1),
-.hamburger-active .line:nth-child(3) {
-  transition-delay: 0.3s;
-}
-
-.hamburger-active .line:nth-child(1) {
-  transform: translateY(12px);
-}
-
-.hamburger-active .line:nth-child(3) {
-  transform: translateY(-5px) rotate(90deg);
-}
-
-.menubar {
-  position: absolute;
-  top: 0;
-  left: -60%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 60%;
-  height: 100vh;
-  padding: 20% 0;
-  background: rgba(255, 255, 255);
-  transition: all 0.5s ease-in;
-  z-index: 2;
-}
-.active {
-  left: 0;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-}
-
-.menubar ul {
-  padding: 0;
-  list-style: none;
-}
-.menubar ul li {
-  margin-bottom: 32px;
-}
-
-.menubar ul li a {
-  text-decoration: none;
-  color: #000;
-  font-size: 95%;
-  font-weight: 400;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-
-.menubar ul li a:hover {
-  background-color: #f5f5f5;
-}
-@media screen and (max-width: 790px) {
-  .hamburger {
-      display: block;
-  }
-  nav ul {
-      display: none;
-  }
-}
-
-.dropdown {
+  color: var(--warm-dark);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  display: inline-block;
+}
+
+.nav-link-glass:hover {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.glass-btn-small {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 0.5rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.25);
+}
+
+.glass-btn-small:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.35);
+  color: white;
 }
 
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #ffffff;
-  min-width: 160px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  border-radius: 5px;
-  z-index: 3;
-  top: 100%;
-  left: 0;
+  min-width: 180px;
+  top: calc(100% + 8px);
+  right: 0;
+  padding: 0.5rem;
+  z-index: 1000;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-.dropdown-content a {
-  color: #000;
-  padding: 8px 16px;
+.dropdown-item-glass {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--warm-dark);
   text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-item-glass:hover {
+  background: rgba(255, 107, 53, 0.15);
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.hamburger {
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.hamburger .line {
+  width: 28px;
+  height: 3px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   display: block;
-  font-size: 1rem;
+  margin: 6px 0;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dropdown-content a:hover {
-  background-color: rgb(243, 213, 170);
+.hamburger-active {
+  transform: rotate(45deg);
 }
 
-/* Mobile dropdown styles */
+.hamburger-active .line:nth-child(2) {
+  opacity: 0;
+  width: 0;
+}
+
+.hamburger-active .line:nth-child(1) {
+  transform: translateY(9px);
+}
+
+.hamburger-active .line:nth-child(3) {
+  transform: translateY(-9px) rotate(90deg);
+}
+
+.menubar {
+  position: fixed;
+  top: 0;
+  left: -70%;
+  width: 70%;
+  max-width: 320px;
+  height: 100vh;
+  padding: 6rem 2rem 2rem;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.menubar.active {
+  left: 0;
+}
+
+.menubar ul li {
+  margin-bottom: 1rem;
+}
+
+.mobile-link {
+  display: block;
+  padding: 1rem;
+  color: var(--warm-dark);
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.mobile-link:hover {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--primary-color);
+  transform: translateX(8px);
+}
+
 .mobile-dropdown-content {
-  padding-left: 20px;
+  padding-left: 1rem;
+  margin-top: 0.5rem;
 }
 
-.mobile-dropdown-content a {
+.mobile-link-sub {
   display: block;
-  padding: 8px 0;
+  padding: 0.75rem 1rem;
+  color: var(--warm-dark);
+  text-decoration: none;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-@media screen and (max-width: 790px) {
-  .dropdown {
-    display: none;
-  }
-  
-  .mobile-dropdown {
-    display: block;
-  }
+.mobile-link-sub:hover {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--primary-color);
 }
 </style>
