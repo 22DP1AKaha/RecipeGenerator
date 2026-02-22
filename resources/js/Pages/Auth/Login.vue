@@ -16,7 +16,7 @@ const submit = () => {
 
 <template>
   <div class="login-page">
-    <Head title="Log in" />
+    <Head title="Ienākt" />
     <div class="container">
       <div class="row justify-content-center align-items-center min-vh-100">
         <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">

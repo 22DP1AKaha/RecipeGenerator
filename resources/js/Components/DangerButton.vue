@@ -1,5 +1,5 @@
 <template>
-    <button class="danger-button">
+    <button type="button" class="danger-button">
       <slot />
     </button>
   </template>
@@ -15,7 +15,7 @@
     letter-spacing: 0.04em;
     font-family: monospace;
     color: #fff;
-    background-color: #a94442; /* softer red */
+    background-color: #a94442;
     border: 1px solid #a94442;
     border-radius: 4px;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
@@ -23,11 +23,11 @@
   }
   
   .danger-button:hover {
-    background-color: #c44b48; /* hover tone */
+    background-color: #c44b48;
   }
   
   .danger-button:active {
-    background-color: #843534; /* deeper tone on click */
+    background-color: #843534;
   }
   
   .danger-button:focus {

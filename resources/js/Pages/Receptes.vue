@@ -3,7 +3,6 @@
     <div class="recipe-page">
       <h1>Recepšu Meklētājs</h1>
 
-      <!-- Search Bar -->
       <input
         v-model="searchQuery"
         type="text"
@@ -11,7 +10,6 @@
         class="search-bar"
       />
 
-      <!-- Filters -->
       <div class="filters">
         <select v-model="selectedMealTime" class="filter-dropdown">
           <option value="">{{ config.filterLabels.allMealTimes }}</option>
@@ -74,16 +72,14 @@
         </select>
       </div>
 
-      <!-- Preference Filter -->
-      <div v-if="isUserLoggedIn" class="preference-filter">
+      <div v-if="hasPreferences" class="preference-filter">
         <label>
           <input type="checkbox" v-model="filterByPreferences" />
           Parādīt tikai manam uzturam atbilstošas receptes
         </label>
       </div>
 
-      <!-- Favorites Toggle -->
-      <div v-if="isUserLoggedIn" class="favorites-toggle">
+      <div v-if="hasFavorites" class="favorites-toggle">
         <button 
           @click="toggleFavorites"
           :class="{ active: showFavoritesOnly }"
@@ -96,10 +92,8 @@
         </button>
       </div>  
 
-      <!-- Loading Spinner -->
       <div v-if="loading" class="spinner"></div>
 
-      <!-- Recipe Grid -->
       <div v-else class="recipe-grid">
         <div v-if="filteredRecipes.length === 0" class="no-results">
           Nav atrastas receptes atbilstoši filtriem!
@@ -111,11 +105,9 @@
           class="recipe-card"
           @click="showRecipe(recipe.id)"
         >
-          <!-- Recipe Image with Rating Overlay -->
           <div class="image-container">
             <img :src="recipe.image" :alt="recipe.title" />
             
-            <!-- Heart Icon for Favorites -->
             <div 
               class="favorite-heart" 
               @click.stop="handleFavorite(recipe, $event)"
@@ -141,17 +133,15 @@
           
           <h2>{{ recipe.title }}</h2>
           <div class="recipe-tags">
-            <span class="tag">{{ recipe.edienreize }}</span>
-            <span class="tag">{{ recipe.dietas_tips }}</span>
+            <span class="tag">{{ recipe.meal_time }}</span>
+            <span class="tag">{{ recipe.diet_type }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Pagination Controls -->
       <div v-if="!loading && total > perPage && !hasClientSideFilters" class="pagination-container">
         <nav aria-label="Recipe pagination">
           <ul class="pagination glass-pagination">
-            <!-- Previous Button -->
             <li class="page-item" :class="{ disabled: currentPage === 1 }">
               <button
                 class="page-link glass-page-link"
@@ -163,7 +153,6 @@
               </button>
             </li>
 
-            <!-- Page Numbers -->
             <li
               v-for="(page, index) in paginationPages"
               :key="index"
@@ -182,7 +171,6 @@
               <span v-else class="page-link glass-page-link disabled-ellipsis">...</span>
             </li>
 
-            <!-- Next Button -->
             <li class="page-item" :class="{ disabled: currentPage === lastPage }">
               <button
                 class="page-link glass-page-link"
@@ -195,7 +183,6 @@
             </li>
           </ul>
 
-          <!-- Page Info -->
           <div class="pagination-info">
             Lapa {{ currentPage }} no {{ lastPage }} (Kopā: {{ total }} receptes)
           </div>
@@ -208,6 +195,7 @@
 <script>
 import MainLayout from "@/Layouts/MainLayout.vue";
 import axios from 'axios';
+import { showToast } from '@/Composables/useToast';
 
 export default {
   name: 'Receptes',
@@ -244,7 +232,6 @@ export default {
   },
   computed: {
     filteredRecipes() {
-      // Only apply client-side search filter
       if (!this.searchQuery) {
         return this.recipes;
       }
@@ -256,6 +243,12 @@ export default {
     isUserLoggedIn() {
       return this.$page.props.auth.user !== null;
     },
+    hasFavorites() {
+      return this.isUserLoggedIn && this.$page.props.auth.has_favorites;
+    },
+    hasPreferences() {
+      return this.isUserLoggedIn && this.$page.props.auth.has_preferences;
+    },
     hasClientSideFilters() {
       return this.searchQuery !== '';
     },
@@ -266,16 +259,13 @@ export default {
       const last = this.lastPage;
 
       if (last <= maxVisible) {
-        // Show all pages if total is less than max visible
         for (let i = 1; i <= last; i++) {
           pages.push(i);
         }
       } else {
-        // Always show first page
         pages.push(1);
 
         if (current <= 3) {
-          // Near the beginning
           for (let i = 2; i <= Math.min(5, last - 1); i++) {
             pages.push(i);
           }
@@ -283,13 +273,11 @@ export default {
             pages.push('...');
           }
         } else if (current >= last - 2) {
-          // Near the end
           pages.push('...');
           for (let i = Math.max(2, last - 4); i < last; i++) {
             pages.push(i);
           }
         } else {
-          // In the middle
           pages.push('...');
           for (let i = current - 1; i <= current + 1; i++) {
             pages.push(i);
@@ -297,7 +285,6 @@ export default {
           pages.push('...');
         }
 
-        // Always show last page
         pages.push(last);
       }
 
@@ -315,7 +302,6 @@ export default {
           per_page: this.perPage
         };
 
-        // Add dropdown filters to backend request
         if (this.selectedMealTime) {
           params.meal_time = this.selectedMealTime;
         }
@@ -326,12 +312,10 @@ export default {
           params.protein_source = this.selectedProteinSource;
         }
 
-        // Add dietary preferences filter to backend
         if (this.filterByPreferences) {
           params.filter_by_preferences = true;
         }
 
-        // Add favorites filter to backend
         if (this.showFavoritesOnly) {
           params.favorites_only = true;
         }
@@ -344,7 +328,6 @@ export default {
 
         this.recipes = recipesResponse.data.data;
 
-        // Laravel ResourceCollection puts pagination in 'meta' object
         const meta = recipesResponse.data.meta;
         if (meta) {
           this.currentPage = meta.current_page;
@@ -387,52 +370,47 @@ export default {
     },
     async handleFavorite(recipe, event) {
       event.stopPropagation();
-      
+
       try {
         if (recipe.is_saved) {
-          // Remove from favorites
-          await axios.delete(`/favorites/${recipe.id}`, {
+          const response = await axios.delete(`/favorites/${recipe.id}`, {
             withCredentials: true
           });
           recipe.is_saved = false;
-          
-          // If we're in favorites-only mode and this was the last favorite, reset the filter
+          this.$page.props.auth.has_favorites = response.data.has_favorites;
+          showToast('Recepte noņemta no favorītiem', 'success');
+
           if (this.showFavoritesOnly && !this.recipes.some(r => r.is_saved)) {
             this.showFavoritesOnly = false;
           }
         } else {
-          // Add to favorites
-          await axios.post('/favorites', {
+          const response = await axios.post('/favorites', {
             recipe_id: recipe.id
           }, {
             withCredentials: true
           });
           recipe.is_saved = true;
+          this.$page.props.auth.has_favorites = response.data.has_favorites;
+          showToast('Recepte pievienota favorītiem!', 'success');
         }
       } catch (error) {
           if (error.response && error.response.status === 401) {
-                  // Unauthenticated - redirect to login
-                  window.location.href = '/ienakt';
+              window.location.href = '/ienakt';
           } else {
               console.error('Kļūda apstrādājot favorītu:', error);
-              
-              // Detailed error message
+
               let errorMsg = 'Radās kļūda. Lūdzu, mēģiniet vēlreiz.';
               if (error.response) {
-                // Server responded with error status
-                errorMsg = error.response.data.error || 
-                          error.response.data.message || 
+                errorMsg = error.response.data.error ||
+                          error.response.data.message ||
                           `Servera kļūda: ${error.response.status}`;
               } else if (error.request) {
-                // No response received
                 errorMsg = 'Nav savienojuma ar serveri. Pārbaudiet savienojumu.';
-              }
-              else if (error.message) {
-                // General error message
+              } else if (error.message) {
                 errorMsg = error.message;
               }
-        
-              alert(errorMsg);
+
+              showToast(errorMsg, 'error');
           }
         }
     },
@@ -494,7 +472,6 @@ export default {
   justify-content: center;
 }
 
-/* Neumorphic pill button */
 .favorites-button {
   display: inline-flex;
   align-items: center;
@@ -621,7 +598,6 @@ export default {
   background-color: #d32f2f;
 }
 
-/* Grid of recipe cards */
 .recipe-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -669,7 +645,6 @@ export default {
   object-fit: cover;
 }
 
-/* Heart Icon */
 .favorite-heart {
   position: absolute;
   top: 8px;
@@ -729,7 +704,6 @@ export default {
   }
 }
 
-/* Rating overlay */
 .rating-overlay {
   position: absolute;
   top: 0;
@@ -796,14 +770,12 @@ export default {
   font-size: 0.9rem;
 }
 
-/* Medium screens (≤1024px) */
 @media (max-width: 1024px) {
   .recipe-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Small screens (≤600px) */
 @media (max-width: 600px) {
   .recipe-page {
     padding: 1rem;
@@ -873,7 +845,6 @@ export default {
   }
 }
 
-/* Spinner */
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #FFE4B5;
@@ -889,7 +860,6 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* Filter Info */
 .filter-info {
   text-align: center;
   padding: 1rem 2rem;
@@ -904,7 +874,6 @@ export default {
   box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
 }
 
-/* Pagination Styles */
 .pagination-container {
   display: flex;
   flex-direction: column;

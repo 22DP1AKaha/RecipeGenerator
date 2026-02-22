@@ -1,7 +1,7 @@
 <template>
-    <div>
+    <div class="layout-wrapper">
       <Navbar />
-      <slot /> <!-- This is where the page content will go -->
+      <slot />
       <Footer />
     </div>
 </template>
@@ -17,4 +17,9 @@ import Navbar from "@/Components/NavBar.vue";
     },
   };
   </script>
-  
+
+<style>
+.layout-wrapper {
+  overflow-x: clip;
+}
+</style>

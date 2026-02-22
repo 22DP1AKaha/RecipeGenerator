@@ -7,14 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class DietasIerobezojumiSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        // Insert predefined data
         DB::table('dietary_restrictions')->insert([
             ['name' => 'Bezglutēna'],
             ['name' => 'Veģetāra'],

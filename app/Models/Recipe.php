@@ -10,66 +10,68 @@ class Recipe extends Model
         'name',
         'description',
         'cooking_time',
-        'difficulty',
-        'meal_time',
-        'nutrition',
-        'diet_type',
-        'protein_source',
-        'image_id',
+        'difficulty_level_id',
+        'meal_time_id',
+        'nutrition_type_id',
+        'diet_type_id',
+        'protein_source_id',
         'is_public',
     ];
 
+    public function difficultyLevel()
+    {
+        return $this->belongsTo(DifficultyLevel::class);
+    }
+
+    public function mealTime()
+    {
+        return $this->belongsTo(MealTime::class);
+    }
+
+    public function nutritionType()
+    {
+        return $this->belongsTo(NutritionType::class);
+    }
+
+    public function dietType()
+    {
+        return $this->belongsTo(DietType::class);
+    }
+
+    public function proteinSource()
+    {
+        return $this->belongsTo(ProteinSource::class);
+    }
+
     public function instructions()
     {
-        return $this->hasMany(Instruction::class, 'recipe_id');
+        return $this->hasMany(Instruction::class);
     }
 
     public function ingredients()
     {
-        return $this->belongsToMany(
-            Ingredient::class,
-            'recipe_ingredients',
-            'recipe_id',
-            'ingredient_id'
-        )
-        ->withPivot(['quantity', 'quantity_numeric', 'unit', 'notes'])
-        ->withTimestamps();
+        return $this->belongsToMany(Ingredient::class, 'recipe_ingredients')
+            ->withPivot(['quantity', 'unit_id'])
+            ->withTimestamps();
     }
 
     public function ratings()
     {
-        return $this->hasMany(Rating::class, 'recipe_id');
-    }
-
-    public function userRating()
-    {
-        return $this->hasOne(Rating::class, 'recipe_id')
-            ->where('user_id', auth()->id());
+        return $this->hasMany(Rating::class);
     }
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class, 'recipe_id');
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(Image::class);
     }
 
     public function image()
     {
-        return $this->belongsTo(Image::class, 'image_id');
-    }
-
-    public function getAverageRatingAttribute()
-    {
-        return $this->ratings()->avg('rating') ?: 0;
-    }
-
-    public function getUserRatingAttribute()
-    {
-        return $this->userRating()->value('rating') ?: 0;
-    }
-
-    public function isFavoritedByUser()
-    {
-        if (!auth()->check()) return false;
-        return $this->favorites()->where('user_id', auth()->user()->user_id)->exists();
+        return $this->hasOne(Image::class);
     }
 }

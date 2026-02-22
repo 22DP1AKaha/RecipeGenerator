@@ -6,7 +6,6 @@
         <p class="hero-subtitle">Izveido unikālas receptes ar Tavām sastāvdaļām</p>
       </div>
       
-      <!-- Ingredient Selection Section -->
       <div class="selection-container">
         <div class="ingredient-window glass-card">
           <div v-if="loading" class="loading">
@@ -38,7 +37,6 @@
           </div>
         </div>
 
-        <!-- Action Section -->
         <div class="action-section glass-card">
           <button
             @click="generateRecipe"
@@ -61,7 +59,6 @@
         </div>
       </div>
 
-      <!-- Recipe Results -->
       <div v-if="generatedRecipe || generating || error" class="recipe-results glass-card">
         <div v-if="generatedRecipe" class="recipe-output">
           <h2 class="recipe-title gradient-text">{{ recipeTitle }}</h2>
@@ -168,13 +165,13 @@ export default {
             const response = await axios.post('/api/generate-recipe', {
                 ingredients: names.join(', ')
             }, {
-                timeout: 60000, // Increase timeout to 60 seconds
+                timeout: 60000,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
             
-            // Check for successful response
+
             if (response.status >= 200 && response.status < 300) {
                 this.generatedRecipe = response.data.recipe;
                 this.parseRecipe();
@@ -185,9 +182,9 @@ export default {
         } catch (e) {
             console.error('Full error:', e);
             
-            // Enhanced error handling
+
             if (e.response) {
-                // The request was made and the server responded with a status code
+
                 console.error('Response data:', e.response.data);
                 console.error('Response status:', e.response.status);
                 console.error('Response headers:', e.response.headers);
@@ -198,11 +195,11 @@ export default {
                     e.response.statusText
                 }`;
             } else if (e.request) {
-                // The request was made but no response was received
+
                 console.error('Request:', e.request);
                 this.error = 'No response from server. Check network connection.';
             } else {
-                // Something happened in setting up the request
+
                 console.error('Error message:', e.message);
                 this.error = `Request setup error: ${e.message}`;
             }
@@ -212,7 +209,7 @@ export default {
     },
 
     parseRecipe() {
-        // Normalize line breaks and trim whitespace
+
         const normalizedRecipe = this.generatedRecipe
             .replace(/\r\n/g, '\n')
             .replace(/\n+/g, '\n')
@@ -220,12 +217,10 @@ export default {
 
         const lines = normalizedRecipe.split('\n').filter(l => l.trim());
 
-        // If no lines, throw error
         if (lines.length === 0) {
             throw new Error("Recepte netika pareizi formatēta");
         }
 
-        // Extract title - handle "Nosaukums:\n[title]" format
         const titleLabelIdx = lines.findIndex(l => /^nosaukums:/i.test(l.trim()));
         if (titleLabelIdx !== -1 && titleLabelIdx + 1 < lines.length) {
             this.recipeTitle = lines[titleLabelIdx + 1].trim();
@@ -237,54 +232,49 @@ export default {
                 .trim();
         }
 
-        // Find section indices
         const ingIdx = lines.findIndex(l => /sastāvdaļas|ingredients|lietot|lietotājs/i.test(l));
         const insIdx = lines.findIndex(l => /pagatavošana|instrukcijas|gatavošana|gatavošanas/i.test(l));
         
-        // Handle case where sections might be merged
+
         if (ingIdx === insIdx && ingIdx > -1) {
             this.parseCombinedSections(lines, ingIdx);
             return;
         }
 
-        // Extract ingredients
         this.recipeIngredients = this.extractSection(
             lines, 
             ingIdx, 
             insIdx > ingIdx ? insIdx : lines.length,
-            /^[-*•]|^\d+\.?\)?/ // Match bullet points or numbered lists
+            /^[-*•]|^\d+\.?\)?/
         );
 
-        // Extract instructions
         this.recipeInstructions = this.extractSection(
             lines, 
             insIdx > -1 ? insIdx : (ingIdx > -1 ? ingIdx + 1 : 0),
             lines.length,
-            /^\d+[.)]|^[-*•]/   // Match numbered steps or bullet points
+            /^\d+[.)]|^[-*•]/
         );
         
-        // Fallback if sections weren't found
+
         if (this.recipeIngredients.length === 0 || this.recipeInstructions.length === 0) {
             this.parseFallbackFormat(lines);
         }
     },
 
-    // Helper function to extract sections
     extractSection(lines, startIdx, endIdx, pattern) {
         if (startIdx < 0 || startIdx >= lines.length) return [];
         
         const sectionLines = lines.slice(startIdx + 1, endIdx);
         return sectionLines
             .map(line => {
-                // Remove section headers if they appear in the content
+
                 const cleaned = line.replace(/^(sastāvdaļas|ingredients|pagatavošana|gatavošanas|instrukcijas)[:.]?\s*/i, '');
-                // Remove list markers
+
                 return cleaned.replace(pattern, '').trim();
             })
             .filter(line => line.length > 0);
     },
 
-    // Handle combined sections (like "Sastāvdaļas un pagatavošana:")
     parseCombinedSections(lines, sectionIdx) {
         const sectionLines = lines.slice(sectionIdx + 1);
         const separatorIndex = sectionLines.findIndex(line => /^[=-]{5,}|^\s*$/.test(line));
@@ -304,7 +294,7 @@ export default {
                 /^\d+[.)]|^[-*•]/
             );
         } else {
-            // Try to split by list type change
+
             const firstNumberedIndex = sectionLines.findIndex(line => /^\d+[.)]/.test(line));
             
             if (firstNumberedIndex > 0) {
@@ -322,7 +312,7 @@ export default {
                     /^\d+[.)]/
                 );
             } else {
-                // Fallback: treat everything as ingredients
+
                 this.recipeIngredients = this.extractSection(
                     sectionLines, 
                     -1, 
@@ -334,9 +324,8 @@ export default {
         }
     },
 
-    // Fallback parser for unexpected formats
     parseFallbackFormat(lines) {
-        // Try to detect list patterns
+
         const isNumberedList = lines.some(line => /^\d+[.)]/.test(line));
         const isBulletList = lines.some(line => /^[-*•]/.test(line));
         
@@ -347,18 +336,18 @@ export default {
             
             this.recipeIngredients = lines
                 .filter(line => !/^\d+[.)]/.test(line) && line.trim().length > 0)
-                .slice(1) // Skip title
+                .slice(1)
                 .map(line => line.replace(/^[-*•]\s*/, '').trim());
         } 
         else if (isBulletList) {
             this.recipeIngredients = lines
-                .slice(1) // Skip title
+                .slice(1)
                 .map(line => line.replace(/^[-*•]\s*/, '').trim());
             
             this.recipeInstructions = ["Lūdzu skatīt sastāvdaļu sadaļā"];
         } 
         else {
-            // Last resort: split by empty lines
+
             const sections = normalizedRecipe.split(/\n\s*\n/);
             if (sections.length > 1) {
                 this.recipeIngredients = sections[1].split('\n').map(l => l.trim());
@@ -366,7 +355,7 @@ export default {
                     ? sections[2].split('\n').map(l => l.trim())
                     : ["Instrukcijas nav atrastas"];
             } else {
-                // Show everything as instructions
+
                 this.recipeInstructions = lines.slice(1);
             }
         }
@@ -707,7 +696,6 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* Medium screens (tablet) */
 @media (max-width: 1024px) {
   .selection-container {
     flex-direction: column;
@@ -725,7 +713,6 @@ export default {
   }
 }
 
-/* Small screens (landscape phone) */
 @media (max-width: 768px) {
   .hero-section .gradient-text {
     font-size: 2rem;
@@ -780,7 +767,6 @@ export default {
   }
 }
 
-/* Extra small screens (portrait phones) */
 @media (max-width: 480px) {
   .hero-section .gradient-text {
     font-size: 1.75rem;

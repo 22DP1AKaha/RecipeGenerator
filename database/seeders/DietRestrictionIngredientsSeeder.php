@@ -67,12 +67,10 @@ class DietRestrictionIngredientsSeeder extends Seeder
             ],
 
             'Paleo' => [
-                // graudi
                 'Kvieši', 'Milti', 'Makaroni',
                 'Baltmaize', 'Rudzu maize',
                 'Mieži', 'Auzu pārslas',
                 'Kvinoja', 'Lēcas', 'Griķi',
-                // piena produkti
                 'Siers', 'Piens', 'Jogurts',
                 'Krējums', 'Biezpiens',
                 'Sviests', 'Kefīrs',

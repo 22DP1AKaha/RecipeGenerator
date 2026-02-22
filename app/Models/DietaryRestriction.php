@@ -10,11 +10,11 @@ class DietaryRestriction extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'dietary_restriction_user', 'dietary_restriction_id', 'user_id');
+        return $this->belongsToMany(User::class, 'user_dietary_restrictions', 'dietary_restriction_id', 'user_id');
     }
 
     public function restrictedIngredients()
     {
-        return $this->belongsToMany(Ingredient::class, 'dietary_restriction_ingredient', 'dietary_restriction_id', 'ingredient_id');
+        return $this->belongsToMany(Ingredient::class, 'ingredient_dietary_restriction', 'dietary_restriction_id', 'ingredient_id');
     }
 }

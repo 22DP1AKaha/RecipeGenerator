@@ -2,48 +2,45 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
-    // Table & primary key
-    protected $table = 'users';
-    protected $primaryKey = 'user_id';
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    // Mass assignable fields
     protected $fillable = [
         'vards',
         'email',
         'password',
+        'role_id',
         'registracijas_datums',
         'pedeja_pieteiksanas',
     ];
 
-    // Hide sensitive fields
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    // Cast fields to appropriate types
     protected $casts = [
         'registracijas_datums' => 'date',
         'pedeja_pieteiksanas'  => 'datetime',
+        'email_verified_at'    => 'datetime',
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     public function dietaryRestrictions()
     {
         return $this->belongsToMany(
             DietaryRestriction::class,
-            'dietary_restriction_user',
-            'user_id',
-            'dietary_restriction_id'
+            'user_dietary_restrictions'
         )->with(['restrictedIngredients']);
     }
 
@@ -51,25 +48,18 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(
             Allergy::class,
-            'allergy_user',
-            'user_id',
-            'allergy_id'
+            'user_allergy'
         )->with(['allergicIngredients']);
     }
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class, 'user_id');
+        return $this->hasMany(Favorite::class);
     }
 
     public function favoriteRecipes()
     {
-        return $this->belongsToMany(
-            Recipe::class,
-            'favorites',
-            'user_id',
-            'recipe_id'
-        );
+        return $this->belongsToMany(Recipe::class, 'favorites');
     }
 
     public function getForbiddenIngredientIds()

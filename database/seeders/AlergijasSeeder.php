@@ -7,14 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class AlergijasSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        // Insert predefined data
         DB::table('allergies')->insert([
             ['name' => 'Rieksti'],
             ['name' => 'Piens'],

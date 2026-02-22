@@ -23,12 +23,12 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 3px solid #FF6B35;
+            border-bottom: 3px solid #000;
         }
 
         h1 {
             font-size: 32px;
-            color: #FF6B35;
+            color: #000;
             margin-bottom: 15px;
             font-weight: bold;
         }
@@ -37,7 +37,7 @@
             display: table;
             width: 100%;
             margin: 20px 0;
-            background: #FFF5E9;
+            background: #fff;
             padding: 15px;
             border-radius: 8px;
         }
@@ -51,7 +51,7 @@
 
         .meta-label {
             font-weight: bold;
-            color: #FF6B35;
+            color: #000;
         }
 
         .section {
@@ -60,16 +60,16 @@
 
         h2 {
             font-size: 20px;
-            color: #FF6B35;
+            color: #000;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #FFB84D;
+            border-bottom: 2px solid #999;
         }
 
         .description {
             padding: 15px;
-            background: #FFEBD6;
-            border-left: 4px solid #FF6B35;
+            background: #fff;
+            border-left: 4px solid #000;
             margin-bottom: 20px;
             font-size: 14px;
         }
@@ -80,7 +80,7 @@
         }
 
         .stars {
-            color: #FFB84D;
+            color: #000;
             font-size: 18px;
             letter-spacing: 2px;
         }
@@ -93,14 +93,14 @@
         .ingredients-list li {
             padding: 8px 12px;
             margin: 5px 0;
-            background: #FFF5E9;
-            border-left: 3px solid #FFB84D;
+            background: #fff;
+            border-left: 3px solid #999;
             font-size: 14px;
         }
 
         .ingredient-quantity {
             font-weight: bold;
-            color: #FF6B35;
+            color: #000;
         }
 
         .instructions-list {
@@ -113,7 +113,7 @@
             counter-increment: step-counter;
             padding: 12px 15px 12px 45px;
             margin: 10px 0;
-            background: #FFF5E9;
+            background: #fff;
             border-radius: 5px;
             position: relative;
             font-size: 14px;
@@ -125,7 +125,7 @@
             left: 12px;
             top: 12px;
             background: transparent;
-            color: #FF6B35;
+            color: #000;
             font-weight: bold;
             width: 24px;
             height: 24px;
@@ -140,7 +140,7 @@
         .footer {
             margin-top: 40px;
             padding-top: 20px;
-            border-top: 2px solid #FFB84D;
+            border-top: 2px solid #999;
             text-align: center;
             font-size: 12px;
             color: #666;
@@ -149,10 +149,7 @@
         .logo {
             font-size: 16px;
             font-weight: bold;
-            background: linear-gradient(135deg, #FF6B35, #E63946);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #000;
         }
 
         @page {
@@ -186,22 +183,22 @@
             <span class="meta-label">Gatavošanas laiks:</span> {{ $recipe->cooking_time }} min
         </div>
         <div class="meta-item">
-            <span class="meta-label">Grūtības pakāpe:</span> {{ $recipe->difficulty }}
+            <span class="meta-label">Grūtības pakāpe:</span> {{ $recipe->difficultyLevel?->name }}
         </div>
         <div class="meta-item">
-            <span class="meta-label">Ēdienreize:</span> {{ $recipe->meal_time }}
+            <span class="meta-label">Ēdienreize:</span> {{ $recipe->mealTime?->name }}
         </div>
         <div class="meta-item">
-            <span class="meta-label">Uzturs:</span> {{ $recipe->nutrition }}
+            <span class="meta-label">Uzturs:</span> {{ $recipe->nutritionType?->name }}
         </div>
-        @if($recipe->diet_type)
+        @if($recipe->dietType)
         <div class="meta-item">
-            <span class="meta-label">Diētas tips:</span> {{ $recipe->diet_type }}
+            <span class="meta-label">Diētas tips:</span> {{ $recipe->dietType->name }}
         </div>
         @endif
-        @if($recipe->protein_source)
+        @if($recipe->proteinSource)
         <div class="meta-item">
-            <span class="meta-label">Olbaltumvielu avots:</span> {{ $recipe->protein_source }}
+            <span class="meta-label">Olbaltumvielu avots:</span> {{ $recipe->proteinSource->name }}
         </div>
         @endif
     </div>
@@ -221,12 +218,9 @@
             @forelse($recipe->ingredients as $ingredient)
             <li>
                 <span class="ingredient-quantity">
-                    {{ $ingredient->pivot->quantity }}
+                    {{ $ingredient->pivot->quantity }} {{ $unitNames[$ingredient->pivot->unit_id] ?? '' }}
                 </span>
                 {{ $ingredient->name }}
-                @if($ingredient->pivot->notes)
-                    <em>({{ $ingredient->pivot->notes }})</em>
-                @endif
             </li>
             @empty
             <li>Nav sastāvdaļu</li>

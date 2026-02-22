@@ -66,7 +66,6 @@ export default {
   font-family: monospace;
 }
 
-/* Portion size dropdown styling */
 #portion-size {
   padding: 8px 12px;
   border: 2px solid dimgray;

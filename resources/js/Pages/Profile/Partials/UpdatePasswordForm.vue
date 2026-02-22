@@ -175,7 +175,7 @@ h2 {
 }
 
 .save-btn {
-    background-color: #000000;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: #ffffff;
     padding: 0.8rem 1.5rem;
     border: none;
@@ -184,17 +184,18 @@ h2 {
     font-weight: bold;
     font-family: monospace;
     transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.25);
 }
 
 .save-btn:hover {
-    background-color: #333333;
+    background: linear-gradient(135deg, #FF7A4D, #FFA035);
     transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.35);
 }
 
 .save-btn:disabled {
-    background-color: #666666;
+    opacity: 0.5;
     cursor: not-allowed;
-    opacity: 0.9;
     transform: none;
 }
 

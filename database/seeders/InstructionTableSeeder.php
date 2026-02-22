@@ -8,12 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class InstructionTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run()
     {
-        // Define your recipes with names and instructions
         $recipes = [
             [
                 'name' => 'Omlete ar spinātiem un sieru',
@@ -237,14 +233,12 @@ class InstructionTableSeeder extends Seeder
         ];
 
         foreach ($recipes as $recipe) {
-            // Get the recipe ID using the recipe name
             $recipeId = DB::table('recipes')->where('name', $recipe['name'])->value('id');
 
             if (!$recipeId) {
-                continue; // Skip if recipe doesn't exist
+                continue;
             }
 
-            // Insert instructions for this recipe
             foreach ($recipe['instructions'] as $index => $step) {
                 DB::table('instructions')->insert([
                     'recipe_id' => $recipeId,

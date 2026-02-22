@@ -8,199 +8,194 @@ use Illuminate\Support\Facades\DB;
 
 class RecipeIngredientTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run()
     {
+        $units = DB::table('units')->pluck('id', 'name');
+
         $recipes = [
             'Omlete ar spinātiem un sieru' => [
-                'Olas' => '2 gab.',
-                'Spināti' => '50g',
-                'Siers' => '30g',
-                'Sāls' => '1g',
-                'Pipari' => '1g',
-                'Augu eļļa' => '5g',
+                ['name' => 'Olas', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Spināti', 'quantity' => 50, 'unit' => 'g'],
+                ['name' => 'Siers', 'quantity' => 30, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Augu eļļa', 'quantity' => 5, 'unit' => 'g'],
             ],
             'Banānu pankūkas' => [
-                'Banāns' => '2 gab.',
-                'Olas' => '1 gab.',
-                'Milti' => '120g',
-                'Cukurs' => '10g',
-                'Sāls' => '1g',
-                'Cepamais pulveris' => '10g',
-                'Kokosriekstu eļļa' => '5g',
-                'Piens' => '240ml',
+                ['name' => 'Banāns', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Olas', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Milti', 'quantity' => 120, 'unit' => 'g'],
+                ['name' => 'Cukurs', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Cepamais pulveris', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Kokosriekstu eļļa', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Piens', 'quantity' => 240, 'unit' => 'ml'],
             ],
             'Auzu pārslas ar āboliem un kanēli' => [
-                'Auzu pārslas' => '60g',
-                'Ūdens' => '120ml',
-                'Ābols' => '1 gab.',
-                'Kļavu sīrups' => '20g',
-                'Kanēlis' => '10g',
+                ['name' => 'Auzu pārslas', 'quantity' => 60, 'unit' => 'g'],
+                ['name' => 'Ūdens', 'quantity' => 120, 'unit' => 'ml'],
+                ['name' => 'Ābols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Kļavu sīrups', 'quantity' => 20, 'unit' => 'g'],
+                ['name' => 'Kanēlis', 'quantity' => 10, 'unit' => 'g'],
             ],
             'Avakado tostermaize ar olu' => [
-                'Baltmaize' => '1 gab.',
-                'Avakado' => '1 gab.',
-                'Olas' => '1 gab.',
-                'Olīveļļa' => '5g',
-                'Sāls' => '1g'
+                ['name' => 'Baltmaize', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Avakado', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Olas', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Augļu salāti ar jogurtu' => [
-                'Ābols' => '2 gab.',
-                'Banāns' => '1 gab.',
-                'Kivi' => '1 gab.',
-                'Jogurts' => '100g',
-                'Medus' => '20g',
-                'Kokosriekstu eļļa' => '5g',
+                ['name' => 'Ābols', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Banāns', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Kivi', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Jogurts', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Medus', 'quantity' => 20, 'unit' => 'g'],
+                ['name' => 'Kokosriekstu eļļa', 'quantity' => 5, 'unit' => 'g'],
             ],
             'Tomātu zupa' => [
-                'Tomāts' => '500g',
-                'Sīpols' => '1 gab.',
-                'Ķiploks' => '2 gab.',
-                'Olīveļļa' => '10g',
-                'Sāls' => '5g',
-                'Pipari' => '2g',
-                'Skābais krējums' => '100g',
-                'Ūdens' => '240ml',
+                ['name' => 'Tomāts', 'quantity' => 500, 'unit' => 'g'],
+                ['name' => 'Sīpols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Ķiploks', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 2, 'unit' => 'g'],
+                ['name' => 'Skābais krējums', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Ūdens', 'quantity' => 240, 'unit' => 'ml'],
             ],
             'Burkānu un ingvera zupa' => [
-                'Burkāns' => '500g',
-                'Sīpols' => '1 gab.',
-                'Ingvers' => '10g',
-                'Olīveļļa' => '10g',
-                'Sāls' => '5g',
-                'Pipari' => '2g',
-                'Ūdens' => '240ml',
-                'Skābais krējums' => '100g',
+                ['name' => 'Burkāns', 'quantity' => 500, 'unit' => 'g'],
+                ['name' => 'Sīpols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Ingvers', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 2, 'unit' => 'g'],
+                ['name' => 'Ūdens', 'quantity' => 240, 'unit' => 'ml'],
+                ['name' => 'Skābais krējums', 'quantity' => 100, 'unit' => 'g'],
             ],
             'Kāpostu un kartupeļu zupa' => [
-                'Kāposts' => '300g',
-                'Kartupeļi' => '300g',
-                'Sīpols' => '1 gab.',
-                'Ķiploki' => '2 gab.',
-                'Olīveļļa' => '10g',
-                'Sāls' => '5g',
-                'Pipari' => '2g',
-                'Laura lapas' => '1g',
-                'Ūdens' => '500ml',
+                ['name' => 'Kāposts', 'quantity' => 300, 'unit' => 'g'],
+                ['name' => 'Kartupeļi', 'quantity' => 300, 'unit' => 'g'],
+                ['name' => 'Sīpols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Ķiploki', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 2, 'unit' => 'g'],
+                ['name' => 'Laura lapas', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Ūdens', 'quantity' => 500, 'unit' => 'ml'],
             ],
             'Vistas un rīsu zupa' => [
-                'Rīsi'          => '100g',
-                'Vistas fileja'   => '200g',
-                'Sīpols'        => '1 gab.',
-                'Burkāns'       => '1 gab.',
-                'Ūdens'         => '1l',
-                'Sāls'          => '1g',
-                'Pipari'        => '1g'
+                ['name' => 'Rīsi', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Vistas fileja', 'quantity' => 200, 'unit' => 'g'],
+                ['name' => 'Sīpols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Burkāns', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Ūdens', 'quantity' => 1, 'unit' => 'l'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Lēcu un spinātu sautējums' => [
-                'Lēcas'         => '150g',
-                'Spināti'       => '100g',
-                'Tomāts'        => '2 gab.',
-                'Sīpols'        => '1 gab.',
-                'Olīveļļa'      => '10g',
-                'Ūdens'         => '250ml',
-                'Sāls'          => '1g',
-                'Pipari'        => '1g'
+                ['name' => 'Lēcas', 'quantity' => 150, 'unit' => 'g'],
+                ['name' => 'Spināti', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Tomāts', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Sīpols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Ūdens', 'quantity' => 250, 'unit' => 'ml'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Spageti ar ķiploku un sviesta mērci' => [
-                'Makaroni'      => '200g',  // izmanto kā spageti
-                'Ķiploki'       => '3 gab.',
-                'Sviests'       => '30g',
-                'Sāls'          => '1g',
-                'Pipari'        => '1g'
+                ['name' => 'Makaroni', 'quantity' => 200, 'unit' => 'g'],
+                ['name' => 'Ķiploki', 'quantity' => 3, 'unit' => 'gab.'],
+                ['name' => 'Sviests', 'quantity' => 30, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Vistas sautējums ar dārzeņiem' => [
-                'Vistas gaļa'   => '200g',
-                'Brokolis'      => '150g',
-                'Sīpols'        => '1 gab.',
-                'Olīveļļa'      => '10g',
-                'Sāls'          => '1g',
-                'Pipari'        => '1g'
+                ['name' => 'Vistas gaļa', 'quantity' => 200, 'unit' => 'g'],
+                ['name' => 'Brokolis', 'quantity' => 150, 'unit' => 'g'],
+                ['name' => 'Sīpols', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Tofu un dārzeņu karijs' => [
-                'Tofu'              => '150g',
-                'Burkāns'           => '1 gab.',
-                'Cukini'            => '1 gab.',
-                'Kokosriekstu piens' => '200ml',  
-                'Karijs'            => '1g',
-                'Sāls'              => '1g',
-                'Pipari'            => '1g'
+                ['name' => 'Tofu', 'quantity' => 150, 'unit' => 'g'],
+                ['name' => 'Burkāns', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Cukini', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Kokosriekstu piens', 'quantity' => 200, 'unit' => 'ml'],
+                ['name' => 'Karijs', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Pildīta piprika' => [
-                'Paprika'           => '1 gab.',
-                'Rīsi'              => '100g',
-                'Maltā gaļa'        => '150g',  
-                'Tomāts'            => '2 gab.',
-                'Olīveļļa'          => '10g',
-                'Sāls'              => '1g',
-                'Pipari'            => '1g'
+                ['name' => 'Paprika', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Rīsi', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Maltā gaļa', 'quantity' => 150, 'unit' => 'g'],
+                ['name' => 'Tomāts', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Grilēta zivs' => [
-                'Zivis'             => '1 gab.',
-                'Citrons'           => '1/2 gab.',
-                'Sviests'           => '20g',
-                'Olīveļļa'          => '5g',
-                'Sāls'              => '1g',
-                'Pipari'            => '1g'
+                ['name' => 'Zivis', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Citrons', 'quantity' => 0.5, 'unit' => 'gab.'],
+                ['name' => 'Sviests', 'quantity' => 20, 'unit' => 'g'],
+                ['name' => 'Olīveļļa', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Cepti kartupeļi ar rozmarīnu' => [
-                'Kartupeļi'         => '200g',
-                'Rozmarīns'         => '1g',
-                'Olīveļļa'          => '10g',
-                'Sāls'              => '1g',
-                'Pipari'            => '1g'
+                ['name' => 'Kartupeļi', 'quantity' => 200, 'unit' => 'g'],
+                ['name' => 'Rozmarīns', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Olīveļļa', 'quantity' => 10, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Kāpostu salāti' => [
-                'Kāposts'           => '100g',
-                'Burkāns'           => '1 gab.', 
-                'Jogurts'           => '50g',
-                'Sāls'              => '1g',
-                'Pipari'            => '1g'
+                ['name' => 'Kāposts', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Burkāns', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Jogurts', 'quantity' => 50, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Gurķu un tomātu salāti' => [
-                'Gurķis'    => '1 gab.',
-                'Tomāts'    => '2 gab.',
-                'Olīveļļa'  => '5g',
-                'Sāls'      => '1g',
-                'Pipari'    => '1g'
+                ['name' => 'Gurķis', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Tomāts', 'quantity' => 2, 'unit' => 'gab.'],
+                ['name' => 'Olīveļļa', 'quantity' => 5, 'unit' => 'g'],
+                ['name' => 'Sāls', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Pipari', 'quantity' => 1, 'unit' => 'g'],
             ],
             'Ābolu pīrāgs ar kanēli' => [
-                'Ābols'     => '3 gab.',
-                'Kanēlis'   => '1g',
-                'Cukurs'   => '50g',
-                'Milti'     => '200g',
-                'Sviests'   => '100g',
-                'Olas'      => '2 gab.'
+                ['name' => 'Ābols', 'quantity' => 3, 'unit' => 'gab.'],
+                ['name' => 'Kanēlis', 'quantity' => 1, 'unit' => 'g'],
+                ['name' => 'Cukurs', 'quantity' => 50, 'unit' => 'g'],
+                ['name' => 'Milti', 'quantity' => 200, 'unit' => 'g'],
+                ['name' => 'Sviests', 'quantity' => 100, 'unit' => 'g'],
+                ['name' => 'Olas', 'quantity' => 2, 'unit' => 'gab.'],
             ],
             'Mango smūtijs' => [
-                'Mango'     => '1 gab.',
-                'Jogurts'   => '150g',
-                'Medus'     => '10g'
+                ['name' => 'Mango', 'quantity' => 1, 'unit' => 'gab.'],
+                ['name' => 'Jogurts', 'quantity' => 150, 'unit' => 'g'],
+                ['name' => 'Medus', 'quantity' => 10, 'unit' => 'g'],
             ],
         ];
 
         foreach ($recipes as $recipeName => $ingredients) {
-            // Get the recipe ID from the recipes table
             $recipeId = DB::table('recipes')->where('name', $recipeName)->value('id');
 
             if (!$recipeId) {
-                // If the recipe doesn't exist, skip it
                 continue;
             }
 
-            // Loop through the ingredients for this recipe
-            foreach ($ingredients as $ingredientName => $amount) {
-                // Get the ingredient ID from the ingredients table
-                $ingredientId = DB::table('ingredients')->where('name', $ingredientName)->value('id');
+            foreach ($ingredients as $ingredient) {
+                $ingredientId = DB::table('ingredients')->where('name', $ingredient['name'])->value('id');
 
                 if ($ingredientId) {
-                    // Insert the ingredient into the recipe_ingredients table
                     DB::table('recipe_ingredients')->insert([
                         'recipe_id' => $recipeId,
                         'ingredient_id' => $ingredientId,
-                        'quantity' => $amount,
+                        'quantity' => $ingredient['quantity'],
+                        'unit_id' => $units[$ingredient['unit']],
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
@@ -209,4 +204,3 @@ class RecipeIngredientTableSeeder extends Seeder
         }
     }
 }
-     

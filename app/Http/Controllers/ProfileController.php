@@ -15,9 +15,6 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): Response
     {
         $user = $request->user()->load([
@@ -40,9 +37,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
@@ -52,7 +46,6 @@ class ProfileController extends Controller
         }
         $user->save();
 
-        // Now sync will actually pick up the IDs in the request
         $user->dietaryRestrictions()->sync($request->input('dietas_ierobezojumi', []));
         $user->allergies()->sync($request->input('alergijas', []));
 
@@ -60,9 +53,6 @@ class ProfileController extends Controller
     }
 
 
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([

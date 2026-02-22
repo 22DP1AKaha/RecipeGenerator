@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Requests/ProfileUpdateRequest.php
 namespace App\Http\Requests;
 
 use App\Models\User;
@@ -15,7 +14,7 @@ class ProfileUpdateRequest extends FormRequest
             'vards' => ['required','string','max:255'],
             'email' => [
                 'required','email','max:255',
-                Rule::unique(User::class,'email')->ignore($this->user()->user_id,'user_id'),
+                Rule::unique(User::class,'email')->ignore($this->user()->id),
             ],
             'dietas_ierobezojumi'   => ['nullable','array'],
             'dietas_ierobezojumi.*' => ['integer','exists:dietary_restrictions,id'],

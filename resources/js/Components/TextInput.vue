@@ -19,15 +19,30 @@ defineExpose({ focus: () => input.value.focus() });
 
 <template>
     <input
-        class="w-full p-3 text-lg border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-white text-gray-900 placeholder-gray-400 transition-all duration-200 ease-in-out"
+        class="text-input"
         v-model="model"
         ref="input"
     />
 </template>
 
 <style scoped>
-input {
+.text-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
     font-family: monospace;
-    border-radius: 4px;
+    margin-top: 0.5rem;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--warm-dark);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
 }
 </style>

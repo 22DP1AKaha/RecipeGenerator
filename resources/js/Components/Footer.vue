@@ -21,8 +21,7 @@
     name: "Footer",
     computed: {
       hideFooter() {
-        // Use Inertia's $page.url instead of $route.path
-        const url = this.$page.url;
+          const url = this.$page.url;
         return (
           url === "/ienakt" ||
           url === "/registreties" ||

@@ -10,13 +10,14 @@ class AIRecipeGeneratorService
     private string $apiKey;
     private string $apiUrl = 'https://api.deepseek.com/chat/completions';
     private string $model = 'deepseek-chat';
+    private float $temperature = 0.7;
 
     public function __construct()
     {
         $this->apiKey = config('services.deepseek.api_key', env('DEEPSEEK_API_KEY'));
 
         if (!$this->apiKey) {
-            throw new \Exception('DeepSeek API key is not configured');
+            throw new \RuntimeException('DeepSeek API key is not configured');
         }
     }
 
@@ -95,12 +96,12 @@ SVARĪGI: Katrs pagatavošanas solis JĀBŪT atsevišķā rindā ar numuru. Nera
                         'content' => $prompt
                     ],
                 ],
-                'temperature' => 0.7,
+                'temperature' => $this->temperature,
                 'max_tokens' => 1500,
             ]);
 
         if ($response->failed()) {
-            throw new \Exception(
+            throw new \RuntimeException(
                 'DeepSeek API request failed: ' . $response->status() . ' - ' . $response->body()
             );
         }

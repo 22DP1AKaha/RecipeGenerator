@@ -9,20 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Log;
+use App\Models\Role;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create()
     {
         return inertia('Auth/Register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     */
     public function store(Request $request)
     {
         $customMessages = [
@@ -41,7 +36,6 @@ class RegisteredUserController extends Controller
             'password_confirmation.required' => 'Lūdzu, apstipriniet paroli.',
         ];
 
-        // Validate outside try-catch
         $validated = $request->validate([
             'vards' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -50,10 +44,13 @@ class RegisteredUserController extends Controller
         ], $customMessages);
 
         try {
+            $defaultRole = Role::where('name', 'Lietotājs')->first();
+
             $user = User::create([
                 'vards' => $validated['vards'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
+                'role_id' => $defaultRole->id,
                 'registracijas_datums' => now()->toDateString(),
                 'pedeja_pieteiksanas' => now(),
             ]);

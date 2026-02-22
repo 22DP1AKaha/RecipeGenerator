@@ -5,7 +5,6 @@
           <h1>Profila Rediģēšana</h1>
   
           <form @submit.prevent="submit" class="profile-form">
-            <!-- Name Field -->
             <div class="form-group">
               <label>Vārds</label>
               <input
@@ -16,7 +15,6 @@
               />
             </div>
   
-            <!-- Disabled Email Field -->
             <div class="form-group">
               <label>E-pasts</label>
               <input
@@ -31,7 +29,6 @@
               <UpdatePasswordForm />
             </div>
   
-            <!-- Dietary Restrictions -->
             <div class="form-group">
               <h2>Diētas Ierobežojumi</h2>
               <div class="option-grid">
@@ -51,7 +48,6 @@
               </div>
             </div>
   
-            <!-- Allergies -->
             <div class="form-group">
               <h2>Alerģijas</h2>
               <div class="option-grid">
@@ -90,23 +86,40 @@
 import MainLayout from '@/Layouts/MainLayout.vue';
 import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm.vue';
-import { useForm } from '@inertiajs/vue3';
-  
+import { useForm, usePage } from '@inertiajs/vue3';
+import { watch } from 'vue';
+import { showToast } from '@/Composables/useToast';
+
   const props = defineProps({
     user: Object,
     dietas: Array,
     alergijas: Array,
   });
-  
+
   const form = useForm({
     vards: props.user.vards,
     email: props.user.email,
     dietas_ierobezojumi: props.user.dietas_ierobezojumi,
     alergijas: props.user.alergijas,
   });
-  
+
+  const page = usePage();
+
+  watch(
+    () => page.props.flash?.status,
+    (newStatus) => {
+      if (newStatus === 'profils-atjauninats') {
+        showToast('Profils veiksmīgi atjaunināts!', 'success');
+      }
+    }
+  );
+
   function submit() {
-    form.patch(route('profile.update'));
+    form.patch(route('profile.update'), {
+      onError: () => {
+        showToast('Kļūda saglabājot profilu. Lūdzu mēģiniet vēlreiz.', 'error');
+      },
+    });
   }
   </script>
   
@@ -225,7 +238,6 @@ import { useForm } from '@inertiajs/vue3';
     align-items: center;
   }
   
-  /* Removed custom save-btn styles */
   @media (max-width: 768px) {
     .profile-card {
       margin: 1rem;

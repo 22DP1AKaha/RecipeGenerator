@@ -61,6 +61,17 @@
           </div>
 
           <div class="action-buttons-container">
+            <button
+              v-if="isUserLoggedIn"
+              @click="handleFavorite"
+              class="glass-btn favorite-button"
+              :class="{ 'favorite-button--saved': recipe.is_saved }"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="heart-icon">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              {{ recipe.is_saved ? 'Saglabāts' : 'Saglabāt' }}
+            </button>
             <a
               :href="`/api/recipes/${id}/pdf`"
               class="glass-btn pdf-button"
@@ -85,6 +96,7 @@ import RecDynIngredients from "@/Components/RecDynIngredients.vue";
 import RecDynInstructions from "@/Components/RecDynInstructions.vue";
 import MainLayout from "@/Layouts/MainLayout.vue";
 import axios from 'axios';
+import { showToast } from '@/Composables/useToast';
 
 export default {
   components: {
@@ -109,6 +121,11 @@ export default {
           hover: 0,
       };
   },
+  computed: {
+      isUserLoggedIn() {
+          return this.$page.props.auth.user !== null;
+      },
+  },
   methods: {
       async fetchConfig() {
           const response = await axios.get('/api/config');
@@ -132,7 +149,6 @@ export default {
       },
       async rateRecipe(star) {
           try {
-              // Submit rating directly
               const response = await axios.post('/ratings', {
                   recipe_id: this.recipe.id,
                   rating: star,
@@ -140,28 +156,62 @@ export default {
               }, {
                   withCredentials: true
               });
-              
-              // Update the recipe data with new ratings
+
               this.recipe.user_rating = star;
               this.recipe.average_rating = response.data.average;
+              showToast('Vērtējums saglabāts!', 'success');
           } catch (error) {
               if (error.response && error.response.status === 401) {
-                  // Unauthenticated - redirect to login
                   window.location.href = '/ienakt';
               } else {
                   console.error('Rating failed:', error);
                   let errorMessage = 'Vērtējums neizdevās. Lūdzu mēģiniet vēlreiz.';
-                  
+
                   if (error.response?.data?.message) {
                       errorMessage = error.response.data.message;
                   } else if (error.message) {
                       errorMessage = error.message;
                   }
-                  
-                  alert(errorMessage);
+
+                  showToast(errorMessage, 'error');
               }
           }
-      }
+      },
+      async handleFavorite() {
+          try {
+              if (this.recipe.is_saved) {
+                  const response = await axios.delete(`/favorites/${this.recipe.id}`, {
+                      withCredentials: true
+                  });
+                  this.recipe.is_saved = false;
+                  this.$page.props.auth.has_favorites = response.data.has_favorites;
+                  showToast('Recepte noņemta no favorītiem', 'success');
+              } else {
+                  const response = await axios.post('/favorites', {
+                      recipe_id: this.recipe.id
+                  }, {
+                      withCredentials: true
+                  });
+                  this.recipe.is_saved = true;
+                  this.$page.props.auth.has_favorites = response.data.has_favorites;
+                  showToast('Recepte pievienota favorītiem!', 'success');
+              }
+          } catch (error) {
+              if (error.response && error.response.status === 401) {
+                  window.location.href = '/ienakt';
+              } else {
+                  let errorMsg = 'Radās kļūda. Lūdzu, mēģiniet vēlreiz.';
+                  if (error.response) {
+                      errorMsg = error.response.data.error || error.response.data.message || `Servera kļūda: ${error.response.status}`;
+                  } else if (error.request) {
+                      errorMsg = 'Nav savienojuma ar serveri. Pārbaudiet savienojumu.';
+                  } else if (error.message) {
+                      errorMsg = error.message;
+                  }
+                  showToast(errorMsg, 'error');
+              }
+          }
+      },
   },
   created() {
       this.fetchConfig();
@@ -394,6 +444,45 @@ export default {
 .pdf-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+}
+
+.favorite-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.8rem;
+  font-size: 1rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.15));
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: var(--warm-dark);
+}
+
+.favorite-button:hover {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(231, 76, 60, 0.05));
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #c0392b;
+  box-shadow: 0 8px 24px rgba(231, 76, 60, 0.2);
+}
+
+.favorite-button--saved {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.1));
+  border-color: rgba(231, 76, 60, 0.5);
+  color: #c0392b;
+}
+
+.favorite-button--saved:hover {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.15));
+}
+
+.heart-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  transition: transform 0.2s ease;
+}
+
+.favorite-button:hover .heart-icon {
+  transform: scale(1.2);
 }
 
 .recipe-not-found {

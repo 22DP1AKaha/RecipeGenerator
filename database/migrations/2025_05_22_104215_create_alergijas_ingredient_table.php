@@ -6,27 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('allergy_ingredient', function (Blueprint $table) {
-            $table->foreignId('allergy_id')
-                ->constrained('allergies')
-                ->onDelete('cascade');
-            $table->foreignId('ingredient_id')
-                ->constrained()
-                ->onDelete('cascade');
-            $table->primary(['allergy_id', 'ingredient_id']);
+        Schema::create('ingredient_allergy', function (Blueprint $table) {
+            $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
+            $table->foreignId('allergy_id')->constrained('allergies')->onDelete('cascade');
+            $table->primary(['ingredient_id', 'allergy_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('allergy_ingredient');
+        Schema::dropIfExists('ingredient_allergy');
     }
 };

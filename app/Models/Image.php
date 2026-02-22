@@ -7,15 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Image extends Model
 {
     protected $fillable = [
+        'recipe_id',
         'base64_data',
         'mime_type',
         'original_filename',
         'file_size',
     ];
 
-    public function recipes()
+    public function recipe()
     {
-        return $this->hasMany(Recipe::class, 'image_id');
+        return $this->belongsTo(Recipe::class, 'recipe_id');
     }
 
     public function getDataUrlAttribute()

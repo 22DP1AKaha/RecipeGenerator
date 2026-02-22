@@ -6,13 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('recipe_id')->constrained('recipes')->onDelete('cascade');
             $table->longText('base64_data');
             $table->string('mime_type', 50);
             $table->string('original_filename')->nullable();
@@ -21,9 +19,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('images');

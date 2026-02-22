@@ -8,22 +8,27 @@ class Ingredient extends Model
 {
     protected $fillable = [
         'name',
-        'category',
+        'ingredient_category_id',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(IngredientCategory::class, 'ingredient_category_id');
+    }
 
     public function recipes()
     {
         return $this->belongsToMany(Recipe::class, 'recipe_ingredients', 'ingredient_id', 'recipe_id')
-                    ->withPivot(['quantity', 'quantity_numeric', 'unit', 'notes']);
+                    ->withPivot(['quantity', 'unit_id']);
     }
 
     public function dietaryRestrictions()
     {
-        return $this->belongsToMany(DietaryRestriction::class, 'dietary_restriction_ingredient', 'ingredient_id', 'dietary_restriction_id');
+        return $this->belongsToMany(DietaryRestriction::class, 'ingredient_dietary_restriction', 'ingredient_id', 'dietary_restriction_id');
     }
 
     public function allergies()
     {
-        return $this->belongsToMany(Allergy::class, 'allergy_ingredient', 'ingredient_id', 'allergy_id');
+        return $this->belongsToMany(Allergy::class, 'ingredient_allergy', 'ingredient_id', 'allergy_id');
     }
 }

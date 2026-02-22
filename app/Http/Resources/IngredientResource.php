@@ -2,8 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Cache;
 
 class IngredientResource extends JsonResource
 {
@@ -12,8 +14,13 @@ class IngredientResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'category' => $this->category,
-            'quantity' => $this->when(isset($this->pivot), $this->pivot->quantity),
+            'category' => $this->category?->name,
+            'quantity' => $this->when(isset($this->pivot), function () {
+                $qty = $this->pivot->quantity;
+                $units = Cache::remember('units_map', 3600, fn() => Unit::pluck('name', 'id'));
+                $unit = $units[$this->pivot->unit_id] ?? null;
+                return $unit ? "{$qty} {$unit}" : (string) $qty;
+            }),
         ];
     }
 }

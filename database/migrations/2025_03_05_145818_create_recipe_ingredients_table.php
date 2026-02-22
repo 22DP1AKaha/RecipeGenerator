@@ -6,24 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up()
-{
-    Schema::create('recipe_ingredients', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('recipe_id')->constrained('recipes')->onDelete('cascade');
-        $table->foreignId('ingredient_id')->constrained('ingredients')->onDelete('cascade');
-        $table->string('quantity');
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('recipe_ingredients', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('recipe_id')->constrained('recipes')->onDelete('cascade');
+            $table->foreignId('ingredient_id')->constrained('ingredients')->onDelete('cascade');
+            $table->decimal('quantity', 8, 2);
+            $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
+            $table->unique(['recipe_id', 'ingredient_id']);
+            $table->timestamps();
+        });
+    }
 
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('recipe_ingredients');

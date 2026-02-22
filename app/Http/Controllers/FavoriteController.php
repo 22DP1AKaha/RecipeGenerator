@@ -9,34 +9,32 @@ use Illuminate\Support\Facades\Log;
 
 class FavoriteController extends Controller
 {
-    // Store a new favorite
     public function store(Request $request)
     {
         try {
             $data = $request->validate([
-                'receptes_id' => 'required|exists:recipes,id',
+                'recipe_id' => 'required|exists:recipes,id',
             ]);
-            
-            $userId = Auth::user()->user_id;
-            
-            // Check if already exists
+
+            $userId = Auth::id();
+
             $exists = Favorite::where('user_id', $userId)
-                ->where('receptes_id', $data['receptes_id'])
+                ->where('recipe_id', $data['recipe_id'])
                 ->exists();
-                
+
             if ($exists) {
                 return response()->json([
                     'error' => 'Recipe is already saved'
                 ], 409);
             }
-            
+
             Favorite::create([
-                'user_id'     => $userId,
-                'receptes_id' => $data['receptes_id'],
+                'user_id'   => $userId,
+                'recipe_id' => $data['recipe_id'],
             ]);
-            
-            return response()->json(['saved' => true], 201);
-            
+
+            return response()->json(['saved' => true, 'has_favorites' => true], 201);
+
         } catch (\Exception $e) {
             Log::error('Favorite store error: ' . $e->getMessage());
             return response()->json([
@@ -46,26 +44,27 @@ class FavoriteController extends Controller
         }
     }
 
-    // Remove a favorite
     public function destroy($recipeId)
     {
         try {
-            $userId = Auth::user()->user_id;
-            
+            $userId = Auth::id();
+
             $favorite = Favorite::where('user_id', $userId)
-                ->where('receptes_id', $recipeId)
+                ->where('recipe_id', $recipeId)
                 ->first();
-                
+
             if (!$favorite) {
                 return response()->json([
                     'error' => 'Favorite not found'
                 ], 404);
             }
-            
+
             $favorite->delete();
-            
-            return response()->json(['saved' => false], 200);
-            
+
+            $hasFavorites = Favorite::where('user_id', $userId)->exists();
+
+            return response()->json(['saved' => false, 'has_favorites' => $hasFavorites], 200);
+
         } catch (\Exception $e) {
             Log::error('Favorite destroy error: ' . $e->getMessage());
             return response()->json([
