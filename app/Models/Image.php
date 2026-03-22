@@ -14,6 +14,10 @@ class Image extends Model
         'file_size',
     ];
 
+    protected $appends = ['data_url'];
+
+    protected $hidden = ['base64_data'];
+
     public function recipe()
     {
         return $this->belongsTo(Recipe::class, 'recipe_id');

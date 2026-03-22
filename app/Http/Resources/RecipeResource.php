@@ -14,6 +14,13 @@ class RecipeResource extends JsonResource
             'title' => $this->name,
             'description' => $this->when($request->routeIs('*.show'), $this->description),
             'image' => $this->image?->data_url,
+            'images' => $this->when(
+                $request->routeIs('*.show') && $this->relationLoaded('images'),
+                fn() => $this->images->map(fn($img) => [
+                    'id'  => $img->id,
+                    'url' => $img->data_url,
+                ])->values()
+            ),
             'cooking_time' => $this->cooking_time,
             'difficulty' => $this->difficultyLevel?->name,
             'meal_time' => $this->mealTime?->name,

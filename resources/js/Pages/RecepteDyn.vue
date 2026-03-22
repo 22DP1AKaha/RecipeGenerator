@@ -34,11 +34,76 @@
               >★</span>
             </div>
             <div class="average-text">{{ recipe.average_rating.toFixed(1) }} / 5</div>
+            <button
+              v-if="isUserLoggedIn && recipe.user_rating > 0"
+              @click="deleteRating"
+              class="delete-rating-btn"
+            >Noņemt vērtējumu</button>
           </div>
 
-          <div class="recipe-image-container" v-if="recipe.image">
-            <img :src="recipe.image" alt="Recipe Image" class="recipe-image" />
+          <div class="recipe-gallery" v-if="galleryImages.length > 0">
+            <div class="gallery-main" @click="openLightbox(currentImageIndex)">
+              <img :src="galleryImages[currentImageIndex]" :alt="recipe.title" class="gallery-image" />
+              <button
+                v-if="galleryImages.length > 1 && currentImageIndex > 0"
+                class="gallery-arrow gallery-arrow--prev"
+                @click.stop="prevImage"
+              >&#8249;</button>
+              <button
+                v-if="galleryImages.length > 1 && currentImageIndex < galleryImages.length - 1"
+                class="gallery-arrow gallery-arrow--next"
+                @click.stop="nextImage"
+              >&#8250;</button>
+              <div class="gallery-zoom-hint">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+              </div>
+            </div>
+
+            <div v-if="galleryImages.length > 1" class="gallery-dots">
+              <button
+                v-for="(img, i) in galleryImages"
+                :key="i"
+                class="gallery-dot"
+                :class="{ active: i === currentImageIndex }"
+                @click="currentImageIndex = i"
+              ></button>
+            </div>
+
+            <div v-if="galleryImages.length > 1" class="gallery-thumbs">
+              <img
+                v-for="(img, i) in galleryImages"
+                :key="i"
+                :src="img"
+                :alt="`${recipe.title} ${i + 1}`"
+                class="gallery-thumb"
+                :class="{ active: i === currentImageIndex }"
+                @click="currentImageIndex = i"
+              />
+            </div>
           </div>
+
+          <Teleport to="body">
+            <div v-if="lightboxOpen" class="lightbox-overlay" @click.self="closeLightbox">
+              <div class="lightbox-content">
+                <button class="lightbox-close" @click="closeLightbox">✕</button>
+                <img :src="galleryImages[lightboxIndex]" :alt="recipe.title" class="lightbox-image" />
+                <button
+                  v-if="galleryImages.length > 1 && lightboxIndex > 0"
+                  class="lightbox-arrow lightbox-arrow--prev"
+                  @click="lightboxIndex--"
+                >&#8249;</button>
+                <button
+                  v-if="galleryImages.length > 1 && lightboxIndex < galleryImages.length - 1"
+                  class="lightbox-arrow lightbox-arrow--next"
+                  @click="lightboxIndex++"
+                >&#8250;</button>
+                <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ galleryImages.length }}</div>
+              </div>
+            </div>
+          </Teleport>
 
           <div class="description glass-card">
             <h3>Apraksts</h3>
@@ -119,14 +184,45 @@ export default {
           baseIngredients: [],
           loading: true,
           hover: 0,
+          currentImageIndex: 0,
+          lightboxOpen: false,
+          lightboxIndex: 0,
       };
   },
   computed: {
       isUserLoggedIn() {
           return this.$page.props.auth.user !== null;
       },
+      galleryImages() {
+          if (this.recipe?.images?.length > 0) {
+              return this.recipe.images.map(img => img.url);
+          }
+          if (this.recipe?.image) {
+              return [this.recipe.image];
+          }
+          return [];
+      },
   },
   methods: {
+      prevImage() {
+          if (this.currentImageIndex > 0) this.currentImageIndex--;
+      },
+      nextImage() {
+          if (this.currentImageIndex < this.galleryImages.length - 1) this.currentImageIndex++;
+      },
+      openLightbox(index) {
+          this.lightboxIndex = index;
+          this.lightboxOpen = true;
+      },
+      closeLightbox() {
+          this.lightboxOpen = false;
+      },
+      onKeydown(e) {
+          if (!this.lightboxOpen) return;
+          if (e.key === 'Escape') this.closeLightbox();
+          if (e.key === 'ArrowLeft' && this.lightboxIndex > 0) this.lightboxIndex--;
+          if (e.key === 'ArrowRight' && this.lightboxIndex < this.galleryImages.length - 1) this.lightboxIndex++;
+      },
       async fetchConfig() {
           const response = await axios.get('/api/config');
           this.portionSizes = response.data.portionSizes.map(p => p.label);
@@ -146,6 +242,22 @@ export default {
       },
       updateServings(newServings) {
           this.servings = parseInt(newServings);
+      },
+      async deleteRating() {
+          try {
+              const response = await axios.delete(`/ratings/${this.recipe.id}`, {
+                  withCredentials: true
+              });
+              this.recipe.user_rating = 0;
+              this.recipe.average_rating = response.data.average;
+              showToast('Vērtējums noņemts!', 'success');
+          } catch (error) {
+              if (error.response && error.response.status === 401) {
+                  window.location.href = '/ienakt';
+              } else {
+                  showToast('Neizdevās noņemt vērtējumu. Lūdzu mēģiniet vēlreiz.', 'error');
+              }
+          }
       },
       async rateRecipe(star) {
           try {
@@ -213,6 +325,12 @@ export default {
           }
       },
   },
+  mounted() {
+      window.addEventListener('keydown', this.onKeydown);
+  },
+  beforeUnmount() {
+      window.removeEventListener('keydown', this.onKeydown);
+  },
   created() {
       this.fetchConfig();
       this.fetchRecipe();
@@ -277,22 +395,226 @@ export default {
   color: var(--warm-dark);
 }
 
-.recipe-image-container {
+.recipe-gallery {
   margin: 1.5rem 0;
-  display: flex;
-  justify-content: center;
 }
 
-.recipe-image {
+.gallery-main {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  cursor: zoom-in;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.gallery-image {
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
+  max-height: 420px;
+  object-fit: cover;
   border-radius: var(--radius-lg);
   box-shadow: 0 8px 24px rgba(255, 107, 53, 0.2);
   transition: transform 0.3s ease;
+  display: block;
 }
 
-.recipe-image:hover {
-  transform: scale(1.02);
+.gallery-main:hover .gallery-image {
+  transform: scale(1.015);
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+}
+
+.gallery-arrow:hover {
+  background: rgba(255, 107, 53, 0.75);
+}
+
+.gallery-arrow--prev { left: 10px; }
+.gallery-arrow--next { right: 10px; }
+
+.gallery-zoom-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.gallery-main:hover .gallery-zoom-hint {
+  opacity: 1;
+}
+
+.gallery-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 107, 53, 0.25);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.gallery-dot.active {
+  background: var(--primary-color);
+  transform: scale(1.3);
+}
+
+.gallery-thumbs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gallery-thumb {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.55;
+  border: 2px solid transparent;
+  transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.gallery-thumb:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.gallery-thumb.active {
+  opacity: 1;
+  border-color: var(--primary-color);
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightbox-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.lightbox-arrow:hover {
+  background: rgba(255, 107, 53, 0.6);
+}
+
+.lightbox-arrow--prev { left: 1rem; }
+.lightbox-arrow--next { right: 1rem; }
+
+.lightbox-counter {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
 }
 
 .description {
@@ -420,6 +742,22 @@ export default {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--warm-dark);
+}
+
+.delete-rating-btn {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.delete-rating-btn:hover {
+  opacity: 1;
 }
 
 .action-buttons-container {
@@ -571,6 +909,27 @@ export default {
 
   .recipe-not-found h1 {
     font-size: 1.75rem;
+  }
+
+  .gallery-image {
+    max-height: 260px;
+  }
+
+  .gallery-arrow {
+    width: 34px;
+    height: 34px;
+    font-size: 1.3rem;
+  }
+
+  .gallery-thumb {
+    width: 52px;
+    height: 40px;
+  }
+
+  .lightbox-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.6rem;
   }
 }
 </style>

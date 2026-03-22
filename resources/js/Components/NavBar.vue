@@ -12,14 +12,26 @@
           <li><Link :href="route('receptes')" class="nav-link-glass">Receptes</Link></li>
           <li><Link :href="route('aireceptes')" class="nav-link-glass">Ģenerēšana</Link></li>
           <li v-if="isUserLoggedIn" class="dropdown position-relative">
-            <a class="nav-link-glass dropdown-toggle">Profils</a>
-            <div class="dropdown-content glass-card">
+            <a class="nav-link-glass dropdown-toggle" @click.stop="profileDropdownOpen = !profileDropdownOpen">Profils</a>
+            <div class="dropdown-content glass-card" :style="{ display: profileDropdownOpen ? 'block' : 'none' }">
               <Link :href="route('profile.edit')" class="dropdown-item-glass">Profils</Link>
-              <Link :href="route('logout')" method="post" class="dropdown-item-glass">Iziet</Link>
+              <Link :href="route('logout')" method="post" as="button" class="dropdown-item-glass">Iziet</Link>
             </div>
           </li>
           <li v-else>
             <Link :href="route('login')" class="glass-btn-small">Ienākt</Link>
+          </li>
+          <li v-if="isAdmin" class="dropdown position-relative">
+            <button class="cogwheel-btn" :class="{ active: adminDropdownOpen }" @click.stop="adminDropdownOpen = !adminDropdownOpen" title="Administrācija">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+            <div class="dropdown-content glass-card" :style="{ display: adminDropdownOpen ? 'block' : 'none' }">
+              <Link :href="route('admin.recipes.index')" class="dropdown-item-glass">Receptes</Link>
+              <Link :href="route('admin.users.index')" class="dropdown-item-glass">Lietotāji</Link>
+            </div>
           </li>
         </ul>
 
@@ -41,18 +53,25 @@
         <a @click="mobileDropdownOpen = !mobileDropdownOpen" class="mobile-link">Profils</a>
         <div class="mobile-dropdown-content" v-show="mobileDropdownOpen">
           <Link :href="route('profile.edit')" @click="toggleNav; mobileDropdownOpen = false" class="mobile-link-sub">Profils</Link>
-          <Link :href="route('logout')" method="post" @click="toggleNav; mobileDropdownOpen = false" class="mobile-link-sub">Iziet</Link>
+          <Link :href="route('logout')" method="post" as="button" @click="toggleNav; mobileDropdownOpen = false" class="mobile-link-sub">Iziet</Link>
         </div>
       </li>
       <li v-else>
         <Link :href="route('login')" @click="toggleNav" class="mobile-link">Ienākt</Link>
+      </li>
+      <li v-if="isAdmin" class="mobile-dropdown">
+        <a @click="mobileAdminOpen = !mobileAdminOpen" class="mobile-link mobile-admin-link">⚙ Administrācija</a>
+        <div class="mobile-dropdown-content" v-show="mobileAdminOpen">
+          <Link :href="route('admin.recipes.index')" @click="toggleNav" class="mobile-link-sub">Receptes</Link>
+          <Link :href="route('admin.users.index')" @click="toggleNav" class="mobile-link-sub">Lietotāji</Link>
+        </div>
       </li>
     </ul>
   </div>
 </template>
 
 <script>
-import { Link } from '@inertiajs/inertia-vue3';
+import { Link } from '@inertiajs/vue3';
 
 export default {
   name: "Navbar",
@@ -61,6 +80,9 @@ export default {
     return {
       menuActive: false,
       mobileDropdownOpen: false,
+      mobileAdminOpen: false,
+      profileDropdownOpen: false,
+      adminDropdownOpen: false,
     };
   },
   computed: {
@@ -71,12 +93,28 @@ export default {
     isUserLoggedIn() {
       return this.$page.props.auth.user !== null;
     },
+    isAdmin() {
+      return this.$page.props.auth.is_admin === true;
+    },
   },
   methods: {
     toggleNav() {
       this.menuActive = !this.menuActive;
       this.mobileDropdownOpen = false;
+      this.mobileAdminOpen = false;
     },
+    closeDropdowns(e) {
+      if (!this.$el.contains(e.target)) {
+        this.profileDropdownOpen = false;
+        this.adminDropdownOpen = false;
+      }
+    },
+  },
+  mounted() {
+    document.addEventListener('click', this.closeDropdowns);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.closeDropdowns);
   },
 };
 </script>
@@ -147,6 +185,27 @@ export default {
   color: white;
 }
 
+.cogwheel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: rgba(255, 107, 53, 0.08);
+  border-radius: 10px;
+  color: var(--warm-dark);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cogwheel-btn:hover,
+.cogwheel-btn.active {
+  background: rgba(255, 107, 53, 0.18);
+  color: var(--primary-color);
+  transform: rotate(45deg);
+}
+
 .dropdown-content {
   display: none;
   position: absolute;
@@ -157,18 +216,22 @@ export default {
   z-index: 1000;
 }
 
-.dropdown:hover .dropdown-content {
-  display: block;
-}
 
 .dropdown-item-glass {
   display: block;
+  width: 100%;
   padding: 0.75rem 1rem;
   color: var(--warm-dark);
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s ease;
   font-weight: 500;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .dropdown-item-glass:hover {
@@ -239,12 +302,18 @@ export default {
   font-weight: 500;
   font-size: 1.1rem;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .mobile-link:hover {
   background: rgba(255, 107, 53, 0.1);
   color: var(--primary-color);
   transform: translateX(8px);
+}
+
+.mobile-admin-link {
+  color: var(--primary-color);
+  font-weight: 600;
 }
 
 .mobile-dropdown-content {
@@ -254,12 +323,18 @@ export default {
 
 .mobile-link-sub {
   display: block;
+  width: 100%;
   padding: 0.75rem 1rem;
   color: var(--warm-dark);
   text-decoration: none;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .mobile-link-sub:hover {

@@ -29,4 +29,21 @@ class RatingController extends Controller
             'average' => (float) number_format($average, 1)
         ], 201);
     }
+
+    public function destroy(int $recipeId)
+    {
+        $deleted = Rating::where('user_id', Auth::id())
+            ->where('recipe_id', $recipeId)
+            ->delete();
+
+        if (!$deleted) {
+            return response()->json(['message' => 'Vērtējums nav atrasts.'], 404);
+        }
+
+        $average = Rating::where('recipe_id', $recipeId)->avg('rating');
+
+        return response()->json([
+            'average' => $average ? (float) number_format($average, 1) : 0.0
+        ]);
+    }
 }

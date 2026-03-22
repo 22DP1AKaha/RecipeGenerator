@@ -27,8 +27,8 @@ class RecipeService
             'dietType',
             'proteinSource',
         ])
-        ->withAvg('ratings as average_rating', 'rating')
-        ->select('recipes.*');
+        ->select('recipes.*')
+        ->withAvg('ratings as average_rating', 'rating');
 
         $this->applyFilters($query, $filters);
 
@@ -57,6 +57,7 @@ class RecipeService
             'ratings',
             'favorites',
             'image',
+            'images',
             'difficultyLevel',
             'mealTime',
             'nutritionType',

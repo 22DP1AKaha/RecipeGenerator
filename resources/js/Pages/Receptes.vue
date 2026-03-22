@@ -104,12 +104,18 @@
           :key="recipe.id"
           class="recipe-card"
           @click="showRecipe(recipe.id)"
+          @mouseenter="hoveredId = recipe.id"
+          @mouseleave="hoveredId = null"
         >
           <div class="image-container">
-            <img :src="recipe.image" :alt="recipe.title" />
-            
-            <div 
-              class="favorite-heart" 
+            <img
+              :src="recipe.image"
+              :alt="recipe.title"
+              :class="{ 'img-dimmed': hoveredId === recipe.id }"
+            />
+
+            <div
+              class="favorite-heart"
               @click.stop="handleFavorite(recipe, $event)"
               :class="{ saved: recipe.is_saved }"
             >
@@ -117,8 +123,8 @@
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
             </div>
-            
-            <div class="rating-overlay">
+
+            <div class="rating-overlay" :class="{ 'rating-overlay--visible': hoveredId === recipe.id }">
               <div class="rating-stars">
                 <span
                   v-for="star in 5"
@@ -208,6 +214,7 @@ export default {
       selectedMealTime: "",
       selectedNutritionType: "",
       selectedProteinSource: "",
+      hoveredId: null,
       recipes: [],
       filterOptions: {
         mealTimes: [],
@@ -382,6 +389,7 @@ export default {
 
           if (this.showFavoritesOnly && !this.recipes.some(r => r.is_saved)) {
             this.showFavoritesOnly = false;
+            this.fetchData(1);
           }
         } else {
           const response = await axios.post('/favorites', {
@@ -743,16 +751,16 @@ export default {
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .image-container img {
-    transition: filter 0.3s ease;
-  }
-  .recipe-card:hover .image-container img {
-    filter: brightness(0.7);
-  }
-  .recipe-card:hover .rating-overlay {
-    opacity: 1;
-  }
+.rating-overlay--visible {
+  opacity: 1;
+}
+
+.image-container img {
+  transition: filter 0.3s ease;
+}
+
+.img-dimmed {
+  filter: brightness(0.7);
 }
 
 .recipe-tags {

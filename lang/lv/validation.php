@@ -1,20 +1,52 @@
 <?php
 
 return [
-    'accepted' => 'Lauks :attribute ir jāakceptē.',
-    'current_password' => 'Pašreizējā parole nav pareiza.',
-    'password' => 'Parolei jābūt vismaz 8 rakstzīmēm un jāatbilst apstiprinājumam.',
-    'confirmed' => 'Paroles nesakrīt.',
-    'required' => 'Lauks :attribute ir obligāts.',
-    
-    'min' => [
-        'string' => 'Lauks :attribute jābūt vismaz :min rakstzīmēm garam.',
-        // Add other min rules if needed
+    'accepted'             => 'Lauks :attribute ir jāakceptē.',
+    'array'                => 'Laukam :attribute jābūt masīvam.',
+    'boolean'              => 'Lauka :attribute vērtībai jābūt patiesa vai nepatiesa.',
+    'confirmed'            => 'Paroles nesakrīt.',
+    'current_password'     => 'Pašreizējā parole nav pareiza.',
+    'email'                => 'Laukam :attribute jābūt derīgai e-pasta adresei.',
+    'exists'               => 'Izvēlētā :attribute vērtība nav derīga.',
+    'image'                => 'Laukam :attribute jābūt attēlam.',
+    'integer'              => 'Laukam :attribute jābūt veselam skaitlim.',
+    'max'                  => [
+        'array'   => 'Laukā :attribute nedrīkst būt vairāk par :max elementiem.',
+        'file'    => 'Faila :attribute izmērs nedrīkst pārsniegt :max KB.',
+        'numeric' => 'Lauka :attribute vērtība nedrīkst pārsniegt :max.',
+        'string'  => 'Lauks :attribute nedrīkst būt garāks par :max rakstzīmēm.',
     ],
+    'min'                  => [
+        'array'   => 'Laukā :attribute jābūt vismaz :min elementiem.',
+        'file'    => 'Faila :attribute izmērs nedrīkst būt mazāks par :min KB.',
+        'numeric' => 'Lauka :attribute vērtībai jābūt vismaz :min.',
+        'string'  => 'Lauks :attribute jābūt vismaz :min rakstzīmēm garam.',
+    ],
+    'nullable'             => '',
+    'numeric'              => 'Laukam :attribute jābūt skaitlim.',
+    'password'             => 'Parolei jābūt vismaz 8 rakstzīmēm un jāatbilst apstiprinājumam.',
+    'required'             => 'Lauks :attribute ir obligāts.',
+    'string'               => 'Laukam :attribute jābūt tekstam.',
+    'unique'               => 'Šāda :attribute vērtība jau pastāv.',
 
     'attributes' => [
-        'current_password' => 'pašreizējā parole',
-        'password' => 'parole',
+        'name'                => 'nosaukums',
+        'description'         => 'apraksts',
+        'cooking_time'        => 'gatavošanas laiks',
+        'difficulty_level_id' => 'grūtums',
+        'meal_time_id'        => 'ēdienreize',
+        'nutrition_type_id'   => 'uzturvielu tips',
+        'diet_type_id'        => 'diētas tips',
+        'protein_source_id'   => 'olbaltumvielu avots',
+        'is_public'           => 'publiska recepte',
+        'ingredients'         => 'sastāvdaļas',
+        'instructions'        => 'soļi',
+        'images'              => 'attēli',
+        'vards'               => 'vārds',
+        'email'               => 'e-pasts',
+        'password'            => 'parole',
         'password_confirmation' => 'paroles apstiprinājums',
+        'role_id'             => 'loma',
+        'current_password'    => 'pašreizējā parole',
     ],
 ];

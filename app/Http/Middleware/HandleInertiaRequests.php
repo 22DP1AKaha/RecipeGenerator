@@ -23,6 +23,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user,
+                'is_admin' => $user && $user->role && $user->role->name === 'Administrators',
                 'has_favorites' => $user ? $user->favorites()->exists() : false,
                 'has_preferences' => $user
                     ? ($user->dietaryRestrictions()->exists() || $user->allergies()->exists())
