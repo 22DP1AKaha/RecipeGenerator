@@ -54,7 +54,7 @@ class RecipeService
         return Recipe::with([
             'instructions',
             'ingredients.category',
-            'ratings',
+            'ratings.user',
             'favorites',
             'image',
             'images',

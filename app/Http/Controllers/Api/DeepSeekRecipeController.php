@@ -20,12 +20,13 @@ class DeepSeekRecipeController extends Controller
     {
         try {
             $request->validate([
-                'ingredients' => 'required|string',
+                'ingredients'     => 'required|string',
+                'use_preferences' => 'boolean',
             ]);
 
             $options = [];
 
-            if (auth()->check()) {
+            if (auth()->check() && $request->boolean('use_preferences', true)) {
                 $user = auth()->user()->load(['dietaryRestrictions', 'allergies']);
 
                 if ($user->dietaryRestrictions->isNotEmpty()) {

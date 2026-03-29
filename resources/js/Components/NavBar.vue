@@ -31,6 +31,7 @@
             <div class="dropdown-content glass-card" :style="{ display: adminDropdownOpen ? 'block' : 'none' }">
               <Link :href="route('admin.recipes.index')" class="dropdown-item-glass">Receptes</Link>
               <Link :href="route('admin.users.index')" class="dropdown-item-glass">Lietotāji</Link>
+              <Link :href="route('admin.email')" class="dropdown-item-glass">Sūtīt e-pastu</Link>
             </div>
           </li>
         </ul>
@@ -64,6 +65,7 @@
         <div class="mobile-dropdown-content" v-show="mobileAdminOpen">
           <Link :href="route('admin.recipes.index')" @click="toggleNav" class="mobile-link-sub">Receptes</Link>
           <Link :href="route('admin.users.index')" @click="toggleNav" class="mobile-link-sub">Lietotāji</Link>
+          <Link :href="route('admin.email')" @click="toggleNav" class="mobile-link-sub">Sūtīt e-pastu</Link>
         </div>
       </li>
     </ul>

@@ -34,6 +34,18 @@
               >★</span>
             </div>
             <div class="average-text">{{ recipe.average_rating.toFixed(1) }} / 5</div>
+
+            <div v-if="isUserLoggedIn" class="comment-area">
+              <textarea
+                v-model="comment"
+                class="comment-input glass-input"
+                placeholder="Pievieno komentāru (neobligāti)..."
+                rows="2"
+                maxlength="500"
+              ></textarea>
+              <div class="comment-hint">Izvēlies zvaigznes, lai nosūtītu vērtējumu</div>
+            </div>
+
             <button
               v-if="isUserLoggedIn && recipe.user_rating > 0"
               @click="deleteRating"
@@ -125,6 +137,8 @@
               </div>
           </div>
 
+          <RecipeReviews :reviews="recipe.reviews ?? []" />
+
           <div class="action-buttons-container">
             <button
               v-if="isUserLoggedIn"
@@ -159,6 +173,7 @@
 import BackButton from "@/Components/BackButton.vue";
 import RecDynIngredients from "@/Components/RecDynIngredients.vue";
 import RecDynInstructions from "@/Components/RecDynInstructions.vue";
+import RecipeReviews from "@/Components/RecipeReviews.vue";
 import MainLayout from "@/Layouts/MainLayout.vue";
 import axios from 'axios';
 import { showToast } from '@/Composables/useToast';
@@ -168,6 +183,7 @@ export default {
       MainLayout,
       RecDynIngredients,
       RecDynInstructions,
+      RecipeReviews,
       BackButton
   },
   props: {
@@ -184,6 +200,7 @@ export default {
           baseIngredients: [],
           loading: true,
           hover: 0,
+          comment: '',
           currentImageIndex: 0,
           lightboxOpen: false,
           lightboxIndex: 0,
@@ -250,6 +267,10 @@ export default {
               });
               this.recipe.user_rating = 0;
               this.recipe.average_rating = response.data.average;
+              this.comment = '';
+              if (this.recipe.reviews) {
+                  this.recipe.reviews = this.recipe.reviews.filter(r => !r.is_own);
+              }
               showToast('Vērtējums noņemts!', 'success');
           } catch (error) {
               if (error.response && error.response.status === 401) {
@@ -264,13 +285,27 @@ export default {
               const response = await axios.post('/ratings', {
                   recipe_id: this.recipe.id,
                   rating: star,
-                  comment: null
+                  comment: this.comment.trim() || null,
               }, {
                   withCredentials: true
               });
 
               this.recipe.user_rating = star;
               this.recipe.average_rating = response.data.average;
+
+              if (this.comment.trim()) {
+                  const userName = this.$page.props.auth.user?.vards ?? 'Tu';
+                  const today = new Date().toLocaleDateString('lv-LV', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                  const existing = this.recipe.reviews?.findIndex(r => r.is_own) ?? -1;
+                  const reviewEntry = { user: userName, rating: star, comment: this.comment.trim(), created_at: today, is_own: true };
+                  if (!this.recipe.reviews) this.recipe.reviews = [];
+                  if (existing > -1) {
+                      this.recipe.reviews.splice(existing, 1, reviewEntry);
+                  } else {
+                      this.recipe.reviews.unshift(reviewEntry);
+                  }
+              }
+
               showToast('Vērtējums saglabāts!', 'success');
           } catch (error) {
               if (error.response && error.response.status === 401) {
@@ -278,13 +313,11 @@ export default {
               } else {
                   console.error('Rating failed:', error);
                   let errorMessage = 'Vērtējums neizdevās. Lūdzu mēģiniet vēlreiz.';
-
                   if (error.response?.data?.message) {
                       errorMessage = error.response.data.message;
                   } else if (error.message) {
                       errorMessage = error.message;
                   }
-
                   showToast(errorMessage, 'error');
               }
           }
@@ -742,6 +775,29 @@ export default {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--warm-dark);
+}
+
+.comment-area {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.comment-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 60px;
+  font-size: 0.92rem;
+  box-sizing: border-box;
+}
+
+.comment-hint {
+  font-size: 0.75rem;
+  color: var(--warm-dark);
+  opacity: 0.45;
+  text-align: center;
 }
 
 .delete-rating-btn {

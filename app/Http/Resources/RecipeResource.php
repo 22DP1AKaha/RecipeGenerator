@@ -34,6 +34,20 @@ class RecipeResource extends JsonResource
             'is_saved' => auth()->check() && $this->relationLoaded('favorites')
                 ? $this->favorites->where('user_id', auth()->id())->isNotEmpty()
                 : false,
+            'reviews' => $this->when(
+                $request->routeIs('*.show') && $this->relationLoaded('ratings'),
+                fn() => $this->ratings
+                    ->whereNotNull('comment')
+                    ->where('comment', '!=', '')
+                    ->sortByDesc('created_at')
+                    ->map(fn($r) => [
+                        'user'       => $r->user?->vards ?? 'Anonīms',
+                        'rating'     => $r->rating,
+                        'comment'    => $r->comment,
+                        'created_at' => $r->created_at?->format('d.m.Y'),
+                        'is_own'     => auth()->id() === $r->user_id,
+                    ])->values()
+            ),
             'ingredients' => IngredientResource::collection($this->whenLoaded('ingredients')),
             'instructions' => $this->when(
                 $request->routeIs('*.show') && $this->relationLoaded('instructions'),

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DeepSeekRecipeController;
 use App\Http\Controllers\Api\IngredientController;
 use App\Http\Controllers\Admin\AdminRecipeController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminMailController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -48,6 +49,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
     Route::post('/lietotaji', [AdminUserController::class, 'store'])->name('admin.users.store');
     Route::patch('/lietotaji/{user}/loma', [AdminUserController::class, 'updateRole'])->name('admin.users.updateRole');
     Route::delete('/lietotaji/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+
+    Route::get('/email', [AdminMailController::class, 'index'])->name('admin.email');
+    Route::post('/email', [AdminMailController::class, 'send'])->name('admin.email.send');
 });
 
 Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirect'])->name('google.redirect');

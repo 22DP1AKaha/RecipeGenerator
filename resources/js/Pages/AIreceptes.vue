@@ -56,6 +56,30 @@
           <p v-if="selectedIngredients.length < 3" class="min-ingredient-warning">
             Izvēlieties vismaz 3 sastāvdaļas
           </p>
+
+          <div
+            v-if="isLoggedIn && hasPreferences"
+            class="preferences-toggle-wrap"
+          >
+            <button
+              @click="usePreferences = !usePreferences"
+              :class="['preferences-toggle', { active: usePreferences }]"
+              type="button"
+              aria-label="Diētas un alerģiju filtrs"
+            >
+              <!-- shield icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path v-if="usePreferences" d="M9 12l2 2 4-4"/>
+                <line v-else x1="9" y1="9" x2="15" y2="15"/>
+                <line v-else x1="15" y1="9" x2="9" y2="15"/>
+              </svg>
+            </button>
+            <div class="pref-tooltip">
+              <strong>{{ usePreferences ? 'Preferences: ieslēgtas' : 'Preferences: izslēgtas' }}</strong>
+              <span>{{ usePreferences ? 'AI ņems vērā Tavas diētas un alerģijas.' : 'AI ignorēs Tavas diētas un alerģijas.' }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -110,6 +134,14 @@ export default {
   components: {
     MainLayout
   },
+  computed: {
+    hasPreferences() {
+      return this.$page.props.auth?.has_preferences === true;
+    },
+    isLoggedIn() {
+      return this.$page.props.auth?.user !== null;
+    },
+  },
   data() {
     return {
       ingredientCategories: {},
@@ -120,7 +152,8 @@ export default {
       error: "",
       recipeTitle: "",
       recipeIngredients: [],
-      recipeInstructions: []
+      recipeInstructions: [],
+      usePreferences: true,
     };
   },
   mounted() {
@@ -163,7 +196,8 @@ export default {
         try {
             const names = this.selectedIngredients.map(i => i.name);
             const response = await axios.post('/api/generate-recipe', {
-                ingredients: names.join(', ')
+                ingredients: names.join(', '),
+                use_preferences: this.usePreferences,
             }, {
                 timeout: 60000,
                 headers: {
@@ -551,6 +585,85 @@ export default {
   padding: 0.5rem;
   background: rgba(230, 57, 70, 0.1);
   border-radius: var(--radius-md);
+}
+
+.preferences-toggle-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.preferences-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(150, 150, 150, 0.35);
+  background: rgba(150, 150, 150, 0.08);
+  color: var(--warm-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.preferences-toggle:hover {
+  opacity: 1;
+  border-color: rgba(150, 150, 150, 0.6);
+  transform: scale(1.08);
+}
+
+.preferences-toggle.active {
+  border-color: rgba(76, 175, 80, 0.6);
+  background: rgba(76, 175, 80, 0.12);
+  color: #3d8b40;
+  opacity: 1;
+}
+
+.pref-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.92);
+  background: rgba(30, 30, 30, 0.92);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.pref-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(30, 30, 30, 0.92);
+}
+
+.pref-tooltip strong {
+  font-size: 0.82rem;
+}
+
+.pref-tooltip span {
+  opacity: 0.75;
+}
+
+.preferences-toggle-wrap:hover .pref-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }
 
 .recipe-results {
