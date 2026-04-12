@@ -13,7 +13,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
-const dialog = ref();
 const showSlot = ref(props.show);
 
 watch(
@@ -22,11 +21,9 @@ watch(
         if (props.show) {
             document.body.style.overflow = 'hidden';
             showSlot.value = true;
-            dialog.value?.showModal();
         } else {
             document.body.style.overflow = '';
             setTimeout(() => {
-                dialog.value?.close();
                 showSlot.value = false;
             }, 200);
         }
@@ -56,54 +53,32 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <dialog ref="dialog" class="modal-dialog">
-        <div class="modal-overlay" @click="close">
-            <Transition
-                enter-active-class="modal-enter-active"
-                enter-from-class="modal-enter-from"
-                enter-to-class="modal-enter-to"
-                leave-active-class="modal-leave-active"
-                leave-from-class="modal-leave-from"
-                leave-to-class="modal-leave-to"
-            >
-                <div
-                    v-show="show"
-                    class="modal-box"
-                    @click.stop
-                >
+    <Teleport to="body">
+        <Transition
+            enter-active-class="modal-enter-active"
+            enter-from-class="modal-enter-from"
+            enter-to-class="modal-enter-to"
+            leave-active-class="modal-leave-active"
+            leave-from-class="modal-leave-from"
+            leave-to-class="modal-leave-to"
+        >
+            <div v-if="show" class="modal-overlay" @click="close">
+                <div class="modal-box" @click.stop>
                     <slot v-if="showSlot" />
                 </div>
-            </Transition>
-        </div>
-    </dialog>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
-<style scoped>
-.modal-dialog {
+<style>
+.modal-overlay {
     position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
     z-index: 2000;
-    overflow: hidden;
-}
-
-.modal-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.modal-overlay {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
     padding: 1.5rem;
     background: rgba(0, 0, 0, 0.5);
 }
@@ -121,17 +96,32 @@ onUnmounted(() => {
 
 .modal-enter-active,
 .modal-leave-active {
+    transition: opacity 0.25s ease;
+}
+
+.modal-enter-active .modal-box,
+.modal-leave-active .modal-box {
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .modal-enter-from,
 .modal-leave-to {
     opacity: 0;
+}
+
+.modal-enter-from .modal-box,
+.modal-leave-to .modal-box {
+    opacity: 0;
     transform: scale(0.95) translateY(-8px);
 }
 
 .modal-enter-to,
 .modal-leave-from {
+    opacity: 1;
+}
+
+.modal-enter-to .modal-box,
+.modal-leave-from .modal-box {
     opacity: 1;
     transform: scale(1) translateY(0);
 }

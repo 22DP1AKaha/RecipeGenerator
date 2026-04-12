@@ -240,7 +240,7 @@
     </div>
 
     <div class="footer">
-        <p>PDF ģenerēts ar FOODYML • {{ now()->format('Y-m-d H:i') }}</p>
+        <p>PDF ģenerēts ar FOODYML • {{ now()->format('d.m.Y H:i') }}</p>
         <p>Šī recepte ir paredzēta personīgai lietošanai</p>
     </div>
 </body>

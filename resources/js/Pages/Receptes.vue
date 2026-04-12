@@ -1,7 +1,10 @@
 <template>
   <MainLayout>
     <div class="recipe-page">
-      <h1>Recepšu Meklētājs</h1>
+      <div class="hero-section">
+        <h1 class="gradient-text">Recepšu Meklētājs</h1>
+        <p class="hero-subtitle">Meklē, filtrē un atklāj jaunas receptes</p>
+      </div>
 
       <input
         v-model="searchQuery"
@@ -548,15 +551,26 @@ export default {
 }
 
 .recipe-page {
-  font-family: monospace;
   text-align: center;
   padding: 1.5rem;
 }
 
-.recipe-page h1 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #4a3f35;
+.hero-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.hero-section .gradient-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--warm-dark);
+  opacity: 0.8;
+  font-weight: 400;
 }
 
 .search-bar {
@@ -622,7 +636,6 @@ export default {
 }
 
 .recipe-card {
-  font-family: monospace;
   background: linear-gradient(135deg, #FFF5E1, #FFE4B5);
   padding: 1rem;
   width: 250px;
@@ -789,7 +802,7 @@ export default {
     padding: 1rem;
   }
 
-  .recipe-page h1 {
+  .hero-section .gradient-text {
     font-size: 1.75rem;
   }
 

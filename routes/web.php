@@ -11,12 +11,14 @@ use App\Http\Controllers\Admin\AdminRecipeController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminMailController;
 use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Api\ShoppingListController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', fn() => Inertia::render('Home'))->name('home');
 Route::get('/receptes', fn() => Inertia::render('Receptes'))->name('receptes');
 Route::get('/aireceptes', fn() => Inertia::render('AIreceptes'))->name('aireceptes');
+Route::get('/iepirkumi', fn() => Inertia::render('IepirkumuSaraksts'))->name('iepirkumi')->middleware(['auth', 'verified']);
 
 Route::prefix('api')->group(function () {
     Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
@@ -28,6 +30,9 @@ Route::prefix('api')->group(function () {
     Route::get('/ingredients', [IngredientController::class, 'index']);
 
     Route::post('/generate-recipe', [DeepSeekRecipeController::class, 'generateRecipe']);
+
+    Route::post('/shopping-list', [ShoppingListController::class, 'generate']);
+    Route::post('/shopping-list/pdf', [ShoppingListController::class, 'downloadPdf']);
 });
 
 Route::get('/recepte/{id}', fn($id) => Inertia::render('RecepteDyn', ['id' => $id]))->name('recepte');

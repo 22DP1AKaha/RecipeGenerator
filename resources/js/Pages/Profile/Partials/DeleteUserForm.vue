@@ -1,8 +1,10 @@
 <script setup>
 import InputError from '@/Components/InputError.vue';
 import Modal from '@/Components/Modal.vue';
-import { useForm } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
+import { usePage, useForm } from '@inertiajs/vue3';
+import { nextTick, ref, computed } from 'vue';
+
+const isGoogleUser = computed(() => usePage().props.user?.is_google_user ?? false);
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
@@ -13,14 +15,16 @@ const form = useForm({
 
 const confirmUserDeletion = () => {
     confirmingUserDeletion.value = true;
-    nextTick(() => passwordInput.value.focus());
+    if (!isGoogleUser.value) {
+        nextTick(() => passwordInput.value?.focus());
+    }
 };
 
 const deleteUser = () => {
     form.delete(route('profile.destroy'), {
         preserveScroll: true,
         onSuccess: () => closeModal(),
-        onError: () => passwordInput.value.focus(),
+        onError: () => passwordInput.value?.focus(),
         onFinish: () => form.reset(),
     });
 };
@@ -46,7 +50,7 @@ const closeModal = () => {
                 Ievadiet savu paroli, lai apstiprinātu.
             </p>
 
-            <div class="form-group">
+            <div v-if="!isGoogleUser" class="form-group">
                 <input
                     ref="passwordInput"
                     v-model="form.password"
@@ -57,6 +61,9 @@ const closeModal = () => {
                     @keyup.enter="deleteUser"
                 />
                 <InputError :message="form.errors.password" class="invalid-feedback d-block" />
+            </div>
+            <div v-else class="google-notice">
+                Jūs esat pieteicies ar Google kontu. Parole nav nepieciešama.
             </div>
 
             <div class="modal-actions">
@@ -135,6 +142,16 @@ const closeModal = () => {
 .form-group {
     margin-bottom: 1.5rem;
     text-align: left;
+}
+
+.google-notice {
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--warm-dark);
 }
 
 .is-invalid {

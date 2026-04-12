@@ -31,6 +31,7 @@ class ProfileController extends Controller
                 'forbidden_ingredients' => $user->getForbiddenIngredientIds(),
                 'dietas_ierobezojumi' => $user->dietaryRestrictions->pluck('id'),
                 'alergijas' => $user->allergies->pluck('id'),
+                'is_google_user' => (bool) $user->social_provider,
             ],
             'dietas' => DietaryRestriction::all(['id', 'name']),
             'alergijas' => Allergy::all(['id', 'name']),
@@ -55,11 +56,13 @@ class ProfileController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
+
+        if (!$user->social_provider) {
+            $request->validate([
+                'password' => ['required', 'current_password'],
+            ]);
+        }
 
         Auth::logout();
 

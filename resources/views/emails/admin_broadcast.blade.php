@@ -25,7 +25,7 @@
             <p>{{ $body }}</p>
         </div>
         <div class="footer">
-            <p>Šo e-pastu nosūtīja FOODYML administrators &bull; Lūdzu, neatsauciet uz šo ziņojumu.</p>
+            <p>Šo e-pastu nosūtīja FOODYML administrators &bull; Lūdzu, neatbildēt uz šo ziņojumu.</p>
         </div>
     </div>
 </body>

@@ -13,21 +13,27 @@ class AdminMailController extends Controller
 {
     public function index()
     {
-        $recipientCount = User::whereNotNull('email_verified_at')->count();
+        $users = User::whereNotNull('email_verified_at')
+            ->orderBy('vards')
+            ->get(['id', 'vards', 'email']);
 
         return Inertia::render('Admin/Email', [
-            'recipientCount' => $recipientCount,
+            'recipients' => $users,
         ]);
     }
 
     public function send(Request $request)
     {
         $data = $request->validate([
-            'subject' => 'required|string|max:255',
-            'body'    => 'required|string|max:5000',
+            'subject'         => 'required|string|max:255',
+            'body'            => 'required|string|max:5000',
+            'recipient_ids'   => 'required|array|min:1',
+            'recipient_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $users = User::whereNotNull('email_verified_at')->get();
+        $users = User::whereIn('id', $data['recipient_ids'])
+            ->whereNotNull('email_verified_at')
+            ->get();
 
         foreach ($users as $user) {
             Mail::to($user->email)

@@ -8,11 +8,12 @@
         </Link>
 
         <ul class="desktop-menu d-none d-md-flex list-unstyled mb-0">
-          <li><Link :href="route('home')" class="nav-link-glass">Sākums</Link></li>
-          <li><Link :href="route('receptes')" class="nav-link-glass">Receptes</Link></li>
-          <li><Link :href="route('aireceptes')" class="nav-link-glass">Ģenerēšana</Link></li>
+          <li><Link :href="route('home')" class="nav-link-glass" :class="{ 'nav-link-active': isActive('home') }">Sākums</Link></li>
+          <li><Link :href="route('receptes')" class="nav-link-glass" :class="{ 'nav-link-active': isActive('receptes') }">Receptes</Link></li>
+          <li><Link :href="route('aireceptes')" class="nav-link-glass" :class="{ 'nav-link-active': isActive('aireceptes') }">Ģenerēšana</Link></li>
+          <li><Link :href="route('iepirkumi')" class="nav-link-glass" :class="{ 'nav-link-active': isActive('iepirkumi') }">Iepirkumi</Link></li>
           <li v-if="isUserLoggedIn" class="dropdown position-relative">
-            <a class="nav-link-glass dropdown-toggle" @click.stop="profileDropdownOpen = !profileDropdownOpen">Profils</a>
+            <a class="nav-link-glass dropdown-toggle" :class="{ 'nav-link-active': isActive('profile') }" @click.stop="profileDropdownOpen = !profileDropdownOpen">Profils</a>
             <div class="dropdown-content glass-card" :style="{ display: profileDropdownOpen ? 'block' : 'none' }">
               <Link :href="route('profile.edit')" class="dropdown-item-glass">Profils</Link>
               <Link :href="route('logout')" method="post" as="button" class="dropdown-item-glass">Iziet</Link>
@@ -50,6 +51,7 @@
       <li><Link :href="route('home')" @click="toggleNav" class="mobile-link">Sākums</Link></li>
       <li><Link :href="route('receptes')" @click="toggleNav" class="mobile-link">Receptes</Link></li>
       <li><Link :href="route('aireceptes')" @click="toggleNav" class="mobile-link">Ģenerēšana</Link></li>
+      <li><Link :href="route('iepirkumi')" @click="toggleNav" class="mobile-link">Iepirkumi</Link></li>
       <li v-if="isUserLoggedIn" class="mobile-dropdown">
         <a @click="mobileDropdownOpen = !mobileDropdownOpen" class="mobile-link">Profils</a>
         <div class="mobile-dropdown-content" v-show="mobileDropdownOpen">
@@ -100,6 +102,12 @@ export default {
     },
   },
   methods: {
+    isActive(routeName) {
+      const url = this.$page.url.split('?')[0];
+      if (routeName === 'home') return url === '/';
+      if (routeName === 'profile') return url.startsWith('/profile');
+      return url === '/' + routeName || url.startsWith('/' + routeName + '/');
+    },
     toggleNav() {
       this.menuActive = !this.menuActive;
       this.mobileDropdownOpen = false;
@@ -167,6 +175,24 @@ export default {
   background: rgba(255, 107, 53, 0.1);
   color: var(--primary-color);
   transform: translateY(-2px);
+}
+
+.nav-link-active {
+  color: var(--primary-color) !important;
+  background: rgba(255, 107, 53, 0.08);
+  position: relative;
+}
+
+.nav-link-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
 .glass-btn-small {

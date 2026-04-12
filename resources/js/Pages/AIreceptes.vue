@@ -19,8 +19,24 @@
               :key="category"
               class="category-card"
             >
-              <h3 class="category-title">{{ category }}</h3>
-              <div class="ingredient-list">
+              <button class="category-header" @click="toggleCategory(category)" type="button">
+                <span class="category-title">{{ category }}</span>
+                <div class="category-header-right">
+                  <span v-if="selectedCountInCategory(category) > 0" class="category-badge">
+                    {{ selectedCountInCategory(category) }}
+                  </span>
+                  <svg
+                    class="chevron"
+                    :class="{ rotated: !collapsedCategories[category] }"
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+              </button>
+              <div v-show="!collapsedCategories[category]" class="ingredient-list">
                 <button
                   v-for="ingredient in ingredients"
                   :key="ingredient.id"
@@ -57,6 +73,21 @@
             Izvēlieties vismaz 3 sastāvdaļas
           </p>
 
+          <div v-if="selectedIngredients.length > 0" class="selected-chips">
+            <span
+              v-for="ingredient in selectedIngredients"
+              :key="ingredient.id"
+              class="chip"
+              @click="toggleIngredient(ingredient)"
+              title="Noņemt"
+            >
+              {{ ingredient.name }}
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </span>
+          </div>
+
           <div
             v-if="isLoggedIn && hasPreferences"
             class="preferences-toggle-wrap"
@@ -83,7 +114,7 @@
         </div>
       </div>
 
-      <div v-if="generatedRecipe || generating || error" class="recipe-results glass-card">
+      <div v-if="generatedRecipe || generating || error" ref="recipeResults" class="recipe-results glass-card">
         <div v-if="generatedRecipe" class="recipe-output">
           <h2 class="recipe-title gradient-text">{{ recipeTitle }}</h2>
           
@@ -145,6 +176,7 @@ export default {
   data() {
     return {
       ingredientCategories: {},
+      collapsedCategories: {},
       selectedIngredients: [],
       generatedRecipe: "",
       loading: true,
@@ -164,12 +196,28 @@ export default {
       try {
         const response = await axios.get("/api/ingredients");
         this.ingredientCategories = response.data;
+        // Start all categories collapsed
+        const collapsed = {};
+        Object.keys(response.data).forEach(cat => { collapsed[cat] = true; });
+        this.collapsedCategories = collapsed;
       } catch (error) {
         console.error("Error fetching ingredients:", error);
         this.error = "Neizdevās ielādēt sastāvdaļas";
       } finally {
         this.loading = false;
       }
+    },
+
+    toggleCategory(category) {
+      this.collapsedCategories = {
+        ...this.collapsedCategories,
+        [category]: !this.collapsedCategories[category],
+      };
+    },
+
+    selectedCountInCategory(category) {
+      const ids = new Set((this.ingredientCategories[category] || []).map(i => i.id));
+      return this.selectedIngredients.filter(i => ids.has(i.id)).length;
     },
 
     toggleIngredient(ingredient) {
@@ -192,6 +240,9 @@ export default {
         this.generating = true;
         this.error = '';
         this.generatedRecipe = null;
+        this.$nextTick(() => {
+          this.$refs.recipeResults?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
 
         try {
             const names = this.selectedIngredients.map(i => i.name);
@@ -534,13 +585,103 @@ export default {
   animation: fadeIn 0.4s ease-out;
 }
 
+.category-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  border-bottom: 2px solid rgba(255, 107, 53, 0.3);
+  padding: 0 0 0.5rem 0;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.category-header:hover .category-title {
+  color: var(--primary-color);
+}
+
+.category-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.category-badge {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  min-width: 1.2rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.chevron {
+  color: var(--warm-dark);
+  opacity: 0.5;
+  transition: transform 0.25s ease;
+  transform: rotate(-90deg);
+}
+
+.chevron.rotated {
+  transform: rotate(0deg);
+}
+
 .category-title {
   font-size: 1.3rem;
-  margin-bottom: 1rem;
   color: var(--warm-dark);
   font-weight: 700;
-  border-bottom: 2px solid rgba(255, 107, 53, 0.3);
-  padding-bottom: 0.5rem;
+  transition: color 0.2s ease;
+  text-align: left;
+}
+
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+}
+
+.selected-chips::-webkit-scrollbar {
+  width: 4px;
+}
+
+.selected-chips::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.chip:hover {
+  opacity: 0.8;
+  transform: scale(0.96);
+}
+
+.chip svg {
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .ingredient-list {
