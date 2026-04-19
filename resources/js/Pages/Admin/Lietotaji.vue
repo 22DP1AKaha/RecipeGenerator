@@ -230,6 +230,13 @@ function formatDate(d) {
     padding: 0;
     overflow: hidden;
     overflow-x: auto;
+    background: rgba(255, 240, 220, 0.45);
+}
+
+.users-table:hover {
+    background: rgba(255, 240, 220, 0.45);
+    transform: none;
+    box-shadow: 0 8px 32px 0 var(--glass-shadow);
 }
 
 table {
@@ -377,6 +384,13 @@ td {
     width: 100%;
     max-width: 440px;
     animation: scaleIn 0.25s ease;
+    background: rgba(255, 240, 220, 0.45);
+}
+
+.modal-box:hover {
+    background: rgba(255, 240, 220, 0.45);
+    transform: none;
+    box-shadow: 0 8px 32px 0 var(--glass-shadow);
 }
 
 @keyframes scaleIn {

@@ -3,10 +3,10 @@ import { showToast } from '@/Composables/useToast.js';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
-    recipes: Array,
+    recipes: Object,
     difficultyLevels: Array,
     mealTimes: Array,
     nutritionTypes: Array,
@@ -14,6 +14,86 @@ const props = defineProps({
     proteinSources: Array,
     ingredients: Array,
     units: Array,
+    filters: Object,
+});
+
+// Filter state (initialised from current URL filters)
+const search = ref(props.filters?.search ?? '');
+const selectedMealTime = ref(props.filters?.meal_time_id ?? '');
+const selectedNutritionType = ref(props.filters?.nutrition_type_id ?? '');
+const selectedProteinSource = ref(props.filters?.protein_source_id ?? '');
+const sortBy = ref(props.filters?.sort_by ?? 'name');
+const sortDirection = ref(props.filters?.sort_direction ?? 'asc');
+
+const currentPage = computed(() => props.recipes.current_page ?? 1);
+const lastPage = computed(() => props.recipes.last_page ?? 1);
+const total = computed(() => props.recipes.total ?? 0);
+
+const paginationPages = computed(() => {
+    const pages = [];
+    const maxVisible = 7;
+    const current = currentPage.value;
+    const last = lastPage.value;
+
+    if (last <= maxVisible) {
+        for (let i = 1; i <= last; i++) pages.push(i);
+    } else {
+        pages.push(1);
+        if (current <= 3) {
+            for (let i = 2; i <= Math.min(5, last - 1); i++) pages.push(i);
+            if (last > 5) pages.push('...');
+        } else if (current >= last - 2) {
+            pages.push('...');
+            for (let i = Math.max(2, last - 4); i < last; i++) pages.push(i);
+        } else {
+            pages.push('...');
+            for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+            pages.push('...');
+        }
+        pages.push(last);
+    }
+    return pages;
+});
+
+function applyFilters(page = 1) {
+    const params = {};
+    if (search.value) params.search = search.value;
+    if (selectedMealTime.value) params.meal_time_id = selectedMealTime.value;
+    if (selectedNutritionType.value) params.nutrition_type_id = selectedNutritionType.value;
+    if (selectedProteinSource.value) params.protein_source_id = selectedProteinSource.value;
+    if (sortBy.value && sortBy.value !== 'name') params.sort_by = sortBy.value;
+    if (sortDirection.value && sortDirection.value !== 'asc') params.sort_direction = sortDirection.value;
+    if (page > 1) params.page = page;
+
+    router.get(route('admin.recipes.index'), params, { preserveState: true, replace: true });
+}
+
+function goToPage(page) {
+    if (page >= 1 && page <= lastPage.value) {
+        applyFilters(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function clearFilters() {
+    search.value = '';
+    selectedMealTime.value = '';
+    selectedNutritionType.value = '';
+    selectedProteinSource.value = '';
+    sortBy.value = 'name';
+    sortDirection.value = 'asc';
+    router.get(route('admin.recipes.index'), {}, { preserveState: true, replace: true });
+}
+
+// Debounce for search
+let searchTimeout = null;
+watch(search, () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => applyFilters(1), 400);
+});
+
+watch([selectedMealTime, selectedNutritionType, selectedProteinSource, sortBy, sortDirection], () => {
+    applyFilters(1);
 });
 
 const drawerOpen = ref(false);
@@ -216,8 +296,45 @@ function labelFor(list, id, field = 'name') {
                 <button class="btn glass-btn" @click="openCreate">+ Pievienot recepti</button>
             </div>
 
+            <div class="admin-filters">
+                <input
+                    v-model="search"
+                    type="text"
+                    placeholder="Meklēt pēc nosaukuma..."
+                    class="filter-input"
+                />
+
+                <select v-model="selectedMealTime" class="filter-select">
+                    <option value="">Visas ēdienreizes</option>
+                    <option v-for="m in mealTimes" :key="m.id" :value="m.id">{{ m.name }}</option>
+                </select>
+
+                <select v-model="selectedNutritionType" class="filter-select">
+                    <option value="">Visi uzturvielu tipi</option>
+                    <option v-for="n in nutritionTypes" :key="n.id" :value="n.id">{{ n.name }}</option>
+                </select>
+
+                <select v-model="selectedProteinSource" class="filter-select">
+                    <option value="">Visi olbaltumvielu avoti</option>
+                    <option v-for="p in proteinSources" :key="p.id" :value="p.id">{{ p.name }}</option>
+                </select>
+
+                <select v-model="sortBy" class="filter-select">
+                    <option value="name">Kārtot: nosaukums</option>
+                    <option value="cooking_time">Kārtot: laiks</option>
+                    <option value="created_at">Kārtot: pievienošanas datums</option>
+                </select>
+
+                <select v-model="sortDirection" class="filter-select filter-select--narrow">
+                    <option value="asc">Augoši</option>
+                    <option value="desc">Dilstoši</option>
+                </select>
+
+                <button class="btn-clear" @click="clearFilters">Notīrīt</button>
+            </div>
+
             <div class="recipe-grid">
-                <div v-for="recipe in recipes" :key="recipe.id" class="recipe-card glass-card">
+                <div v-for="recipe in recipes.data" :key="recipe.id" class="recipe-card glass-card">
                     <div class="recipe-thumb" v-if="recipe.images?.length">
                         <img :src="recipe.images[0].data_url ?? recipe.images[0].url" :alt="recipe.name" />
                         <span v-if="recipe.images.length > 1" class="img-count">+{{ recipe.images.length - 1 }}</span>
@@ -251,7 +368,48 @@ function labelFor(list, id, field = 'name') {
                         </button>
                     </div>
                 </div>
-                <p v-if="!recipes.length" class="empty-msg">Nav nevienas receptes.</p>
+                <p v-if="!recipes.data?.length" class="empty-msg">Nav nevienas receptes.</p>
+            </div>
+
+            <div v-if="lastPage > 1" class="pagination-container">
+                <nav aria-label="Recipe pagination">
+                    <ul class="pagination glass-pagination">
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                            <button
+                                class="page-link glass-page-link"
+                                @click="goToPage(currentPage - 1)"
+                                :disabled="currentPage === 1"
+                            >‹ Iepriekšējā</button>
+                        </li>
+
+                        <li
+                            v-for="(page, index) in paginationPages"
+                            :key="index"
+                            class="page-item"
+                            :class="{ active: page === currentPage, disabled: page === '...' }"
+                        >
+                            <button
+                                v-if="page !== '...'"
+                                class="page-link glass-page-link"
+                                @click="goToPage(page)"
+                                :aria-current="page === currentPage ? 'page' : undefined"
+                            >{{ page }}</button>
+                            <span v-else class="page-link glass-page-link disabled-ellipsis">...</span>
+                        </li>
+
+                        <li class="page-item" :class="{ disabled: currentPage === lastPage }">
+                            <button
+                                class="page-link glass-page-link"
+                                @click="goToPage(currentPage + 1)"
+                                :disabled="currentPage === lastPage"
+                            >Nākamā ›</button>
+                        </li>
+                    </ul>
+
+                    <div class="pagination-info">
+                        Lapa {{ currentPage }} no {{ lastPage }} (Kopā: {{ total }} receptes)
+                    </div>
+                </nav>
             </div>
         </div>
 
@@ -819,5 +977,154 @@ function labelFor(list, id, field = 'name') {
     .drawer { width: 100vw; }
     .field-row { grid-template-columns: 1fr; }
     .ingredient-row { grid-template-columns: 1fr 60px 70px 28px; }
+}
+
+/* ── Filters ── */
+.admin-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+}
+
+.filter-input {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 107, 53, 0.25);
+    border-radius: 10px;
+    background: var(--glass-bg);
+    color: var(--warm-dark);
+    min-width: 200px;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+    border-color: var(--primary-color);
+}
+
+.filter-select {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255, 107, 53, 0.25);
+    border-radius: 10px;
+    background: var(--glass-bg);
+    color: var(--warm-dark);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.filter-select--narrow {
+    min-width: unset;
+}
+
+.filter-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.btn-clear {
+    padding: 0.5rem 1rem;
+    background: rgba(230, 57, 70, 0.12);
+    color: #c0392b;
+    border: 1px solid rgba(230, 57, 70, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-clear:hover {
+    background: rgba(230, 57, 70, 0.25);
+}
+
+@media (max-width: 768px) {
+    .admin-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-input,
+    .filter-select {
+        width: 100%;
+    }
+}
+
+/* ── Pagination ── */
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-bottom: 2rem;
+}
+
+.glass-pagination {
+    display: flex;
+    gap: 0.4rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.page-item { display: inline-block; }
+
+.glass-page-link {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.9rem;
+    min-width: 40px;
+    color: var(--warm-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.08);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.glass-page-link:hover:not(:disabled):not(.disabled-ellipsis) {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.3);
+}
+
+.page-item.active .glass-page-link {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+    transform: scale(1.05);
+}
+
+.page-item.disabled .glass-page-link,
+.glass-page-link:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba(200, 200, 200, 0.2);
+}
+
+.disabled-ellipsis {
+    cursor: default;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+.pagination-info {
+    color: var(--warm-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.75;
+    text-align: center;
 }
 </style>

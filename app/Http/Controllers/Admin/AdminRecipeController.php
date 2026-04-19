@@ -17,9 +17,9 @@ use Inertia\Inertia;
 
 class AdminRecipeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $recipes = Recipe::with([
+        $query = Recipe::with([
             'difficultyLevel',
             'mealTime',
             'nutritionType',
@@ -28,7 +28,30 @@ class AdminRecipeController extends Controller
             'ingredients',
             'instructions' => fn($q) => $q->orderBy('step_number'),
             'images',
-        ])->orderBy('name')->get();
+        ]);
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('meal_time_id')) {
+            $query->where('meal_time_id', $request->meal_time_id);
+        }
+
+        if ($request->filled('nutrition_type_id')) {
+            $query->where('nutrition_type_id', $request->nutrition_type_id);
+        }
+
+        if ($request->filled('protein_source_id')) {
+            $query->where('protein_source_id', $request->protein_source_id);
+        }
+
+        $allowedSorts = ['name', 'cooking_time', 'created_at'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'name';
+        $sortDir = $request->get('sort_direction') === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortBy, $sortDir);
+
+        $recipes = $query->paginate(12)->withQueryString();
 
         return Inertia::render('Admin/Receptes', [
             'recipes'          => $recipes,
@@ -39,6 +62,7 @@ class AdminRecipeController extends Controller
             'proteinSources'   => ProteinSource::all(),
             'ingredients'      => Ingredient::orderBy('name')->get(),
             'units'            => Unit::all(),
+            'filters'          => $request->only(['search', 'meal_time_id', 'nutrition_type_id', 'protein_source_id', 'sort_by', 'sort_direction']),
         ]);
     }
 
