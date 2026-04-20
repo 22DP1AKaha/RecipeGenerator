@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             LookupTablesSeeder::class,
+            AdminUserSeeder::class,
             IngredientsTableSeeder::class,
             RecipesTableSeeder::class,
             RecipeIngredientTableSeeder::class,
