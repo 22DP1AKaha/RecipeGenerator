@@ -14,7 +14,7 @@ class Image extends Model
         'file_size',
     ];
 
-    protected $appends = ['data_url'];
+    protected $appends = ['url'];
 
     protected $hidden = ['base64_data'];
 

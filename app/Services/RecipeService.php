@@ -41,11 +41,14 @@ class RecipeService
 
     private function applySorting($query, string $sortBy, string $sortDirection)
     {
-        if ($sortBy === 'average_rating') {
-            return $query->orderBy('average_rating', $sortDirection);
-        } elseif ($sortBy === 'cooking_time') {
-            return $query->orderBy('cooking_time', $sortDirection);
-        }
+        match ($sortBy) {
+            'rating', 'average_rating' => $query->orderBy('average_rating', $sortDirection),
+            'cooking_time'             => $query->orderBy('cooking_time', $sortDirection),
+            'difficulty'               => $query->leftJoin('difficulty_levels', 'difficulty_levels.id', '=', 'recipes.difficulty_level_id')
+                                                ->orderByRaw("FIELD(difficulty_levels.name, 'Viegls', 'Vidējs', 'Grūts') " . ($sortDirection === 'desc' ? 'DESC' : 'ASC')),
+            default                    => null,
+        };
+
         return $query;
     }
 
