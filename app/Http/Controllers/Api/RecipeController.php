@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RecipeResource;
+use App\Models\Image;
 use App\Services\RecipeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -66,6 +67,15 @@ class RecipeController extends Controller
             Log::error('Recipe detail error: ' . $e->getMessage());
             return response()->json(['error' => 'Server error'], 500);
         }
+    }
+
+    public function serveImage($id)
+    {
+        $image = Image::findOrFail($id);
+
+        return response($image->base64_data_raw, 200)
+            ->header('Content-Type', $image->mime_type)
+            ->header('Cache-Control', 'public, max-age=31536000, immutable');
     }
 
     public function downloadPdf($id)

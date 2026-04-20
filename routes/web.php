@@ -33,6 +33,7 @@ Route::prefix('api')->group(function () {
 
     Route::post('/shopping-list', [ShoppingListController::class, 'generate']);
     Route::post('/shopping-list/pdf', [ShoppingListController::class, 'downloadPdf']);
+    Route::get('/images/{id}', [RecipeController::class, 'serveImage'])->name('images.show');
 });
 
 Route::get('/recepte/{id}', fn($id) => Inertia::render('RecepteDyn', ['id' => $id]))->name('recepte');

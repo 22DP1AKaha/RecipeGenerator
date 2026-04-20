@@ -27,4 +27,14 @@ class Image extends Model
     {
         return "data:{$this->mime_type};base64,{$this->base64_data}";
     }
+
+    public function getBase64DataRawAttribute()
+    {
+        return base64_decode($this->base64_data);
+    }
+
+    public function getUrlAttribute()
+    {
+        return url("/api/images/{$this->id}");
+    }
 }
