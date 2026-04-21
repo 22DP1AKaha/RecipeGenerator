@@ -82,9 +82,16 @@ class RecipeController extends Controller
     public function downloadPdf($id)
     {
         try {
-            $pdf = $this->recipeService->generateRecipePdf($id);
+            $pdf     = $this->recipeService->generateRecipePdf($id);
+            $output  = $pdf->output();
+            $filename = 'recepte-' . $id . '.pdf';
 
-            return $pdf->download('recepte-' . $id . '.pdf');
+            return response($output, 200, [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Length'      => strlen($output),
+                'Cache-Control'       => 'no-store, must-revalidate',
+            ]);
         } catch (\Exception $e) {
             Log::error('PDF generation error: ' . $e->getMessage());
             return response()->json(['error' => 'Kļūda ģenerējot PDF'], 500);

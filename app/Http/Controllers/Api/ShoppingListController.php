@@ -48,7 +48,14 @@ class ShoppingListController extends Controller
             'generatedAt' => now()->format('d.m.Y H:i'),
         ]);
 
-        return $pdf->download('iepirkumu-saraksts.pdf');
+        $output = $pdf->output();
+
+        return response($output, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="iepirkumu-saraksts.pdf"',
+            'Content-Length'      => strlen($output),
+            'Cache-Control'       => 'no-store, must-revalidate',
+        ]);
     }
 
     private function buildList(array $recipeItems): array
