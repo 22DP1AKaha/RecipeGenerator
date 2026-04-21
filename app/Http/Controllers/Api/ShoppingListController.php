@@ -50,11 +50,9 @@ class ShoppingListController extends Controller
 
         $output = $pdf->output();
 
-        return response($output, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="iepirkumu-saraksts.pdf"',
-            'Content-Length'      => strlen($output),
-            'Cache-Control'       => 'no-store, must-revalidate',
+        return response()->json([
+            'pdf'      => base64_encode($output),
+            'filename' => 'iepirkumu-saraksts.pdf',
         ]);
     }
 

@@ -361,14 +361,15 @@ export default {
       async downloadPdf() {
           this.downloadingPdf = true;
           try {
-              const response = await axios.get(
-                  `/api/recipes/${this.id}/pdf`,
-                  { responseType: 'blob' }
-              );
-              const url  = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+              const response = await axios.get(`/api/recipes/${this.id}/pdf`);
+              const binary   = atob(response.data.pdf);
+              const bytes    = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+              const blob = new Blob([bytes], { type: 'application/pdf' });
+              const url  = window.URL.createObjectURL(blob);
               const link = document.createElement('a');
               link.href  = url;
-              link.setAttribute('download', `recepte-${this.id}.pdf`);
+              link.setAttribute('download', response.data.filename);
               document.body.appendChild(link);
               link.click();
               link.remove();

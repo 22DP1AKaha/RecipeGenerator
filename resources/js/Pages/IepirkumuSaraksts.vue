@@ -260,14 +260,17 @@ export default {
       try {
         const response = await axios.post(
           '/api/shopping-list/pdf',
-          { recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })) },
-          { responseType: 'blob' }
+          { recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })) }
         );
 
-        const url  = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+        const binary = atob(response.data.pdf);
+        const bytes  = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url  = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href  = url;
-        link.setAttribute('download', 'iepirkumu-saraksts.pdf');
+        link.setAttribute('download', response.data.filename);
         document.body.appendChild(link);
         link.click();
         link.remove();
