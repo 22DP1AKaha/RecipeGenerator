@@ -16,6 +16,7 @@
             color: #333;
             line-height: 1.6;
             background: #fff;
+            padding: 2cm;
         }
 
         .header {

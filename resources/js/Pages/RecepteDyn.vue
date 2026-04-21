@@ -151,13 +151,13 @@
               </svg>
               {{ recipe.is_saved ? 'Saglabāts' : 'Saglabāt' }}
             </button>
-            <a
-              :href="`/api/recipes/${id}/pdf`"
+            <button
+              @click="downloadPdf"
               class="glass-btn pdf-button"
-              download
+              :disabled="downloadingPdf"
             >
-              📄 Lejupielādēt PDF
-            </a>
+              {{ downloadingPdf ? 'Lejupielādē...' : '📄 Lejupielādēt PDF' }}
+            </button>
             <BackButton />
           </div>
       </div>
@@ -204,6 +204,7 @@ export default {
           currentImageIndex: 0,
           lightboxOpen: false,
           lightboxIndex: 0,
+          downloadingPdf: false,
       };
   },
   computed: {
@@ -355,6 +356,27 @@ export default {
                   }
                   showToast(errorMsg, 'error');
               }
+          }
+      },
+      async downloadPdf() {
+          this.downloadingPdf = true;
+          try {
+              const response = await axios.get(
+                  `/api/recipes/${this.id}/pdf`,
+                  { responseType: 'blob' }
+              );
+              const url  = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+              const link = document.createElement('a');
+              link.href  = url;
+              link.setAttribute('download', `recepte-${this.id}.pdf`);
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              window.URL.revokeObjectURL(url);
+          } catch {
+              showToast('Kļūda lejupielādējot PDF. Lūdzu mēģiniet vēlreiz.', 'error');
+          } finally {
+              this.downloadingPdf = false;
           }
       },
   },
@@ -837,9 +859,14 @@ export default {
   transition: all 0.3s ease;
 }
 
-.pdf-button:hover {
+.pdf-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+}
+
+.pdf-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .favorite-button {
