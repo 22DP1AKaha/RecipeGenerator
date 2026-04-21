@@ -15,7 +15,6 @@
             font-family: 'DejaVu Sans', Arial, sans-serif;
             color: #333;
             line-height: 1.6;
-            padding: 40px;
             background: #fff;
         }
 
@@ -105,13 +104,11 @@
 
         .instructions-list {
             list-style: none;
-            counter-reset: step-counter;
             padding: 0;
         }
 
         .instructions-list li {
-            counter-increment: step-counter;
-            padding: 12px 15px 12px 45px;
+            padding: 12px 15px 12px 42px;
             margin: 10px 0;
             background: #fff;
             border-radius: 5px;
@@ -119,22 +116,15 @@
             font-size: 14px;
         }
 
-        .instructions-list li:before {
-            content: counter(step-counter);
+        .step-num {
             position: absolute;
             left: 12px;
-            top: 12px;
-            background: transparent;
+            top: 13px;
             color: #000;
             font-weight: bold;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
+            font-size: 13px;
+            width: 20px;
             text-align: center;
-            line-height: 24px;
         }
 
         .footer {
@@ -232,7 +222,7 @@
         <h2>Gatavošanas soļi</h2>
         <ol class="instructions-list">
             @forelse($recipe->instructions->sortBy('step_number') as $instruction)
-            <li>{{ $instruction->description }}</li>
+            <li><span class="step-num">{{ $loop->iteration }}.</span>{{ $instruction->description }}</li>
             @empty
             <li>Nav gatavošanas instrukciju</li>
             @endforelse

@@ -47,6 +47,18 @@
           </option>
         </select>
 
+        <button
+          v-if="hasFavorites"
+          @click="toggleFavorites"
+          class="filter-chip"
+          :class="{ 'filter-chip--active': showFavoritesOnly }"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="chip-heart" :class="{ filled: showFavoritesOnly }">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          Favorīti
+        </button>
+
         <button @click="clearFilters" class="clear-filters">
           {{ config.filterLabels.clearFilters }}
         </button>
@@ -81,19 +93,6 @@
           Parādīt tikai manam uzturam atbilstošas receptes
         </label>
       </div>
-
-      <div v-if="hasFavorites" class="favorites-toggle">
-        <button 
-          @click="toggleFavorites"
-          :class="{ active: showFavoritesOnly }"
-          class="favorites-button"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="star-icon">
-            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-          </svg>
-          {{ showFavoritesOnly ? 'Rādīt visas receptes' : 'Rādīt tikai favorītus' }}
-        </button>
-      </div>  
 
       <div v-if="loading" class="spinner"></div>
 
@@ -148,54 +147,37 @@
         </div>
       </div>
 
-      <div v-if="!loading && total > perPage && !hasClientSideFilters" class="pagination-container">
-        <nav aria-label="Recipe pagination">
-          <ul class="pagination glass-pagination">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <button
-                class="page-link glass-page-link"
-                @click="goToPage(currentPage - 1)"
-                :disabled="currentPage === 1"
-                aria-label="Previous page"
-              >
-                ‹ Iepriekšējā
-              </button>
-            </li>
+      <div v-if="!loading && total > perPage" class="pagination-container">
+        <div class="pg-nav">
+          <button
+            class="pg-btn pg-btn--arrow"
+            @click="goToPage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            aria-label="Iepriekšējā lapa"
+          >&#8249;</button>
 
-            <li
-              v-for="(page, index) in paginationPages"
-              :key="index"
-              class="page-item"
-              :class="{ active: page === currentPage, disabled: page === '...' }"
-            >
-              <button
-                v-if="page !== '...'"
-                class="page-link glass-page-link"
-                @click="goToPage(page)"
-                :aria-label="`Go to page ${page}`"
-                :aria-current="page === currentPage ? 'page' : undefined"
-              >
-                {{ page }}
-              </button>
-              <span v-else class="page-link glass-page-link disabled-ellipsis">...</span>
-            </li>
+          <template v-for="(page, index) in paginationPages" :key="index">
+            <button
+              v-if="page !== '...'"
+              class="pg-btn"
+              :class="{ 'pg-btn--active': page === currentPage }"
+              @click="goToPage(page)"
+              :aria-current="page === currentPage ? 'page' : undefined"
+            >{{ page }}</button>
+            <span v-else class="pg-ellipsis">&#x2026;</span>
+          </template>
 
-            <li class="page-item" :class="{ disabled: currentPage === lastPage }">
-              <button
-                class="page-link glass-page-link"
-                @click="goToPage(currentPage + 1)"
-                :disabled="currentPage === lastPage"
-                aria-label="Next page"
-              >
-                Nākamā ›
-              </button>
-            </li>
-          </ul>
+          <button
+            class="pg-btn pg-btn--arrow"
+            @click="goToPage(currentPage + 1)"
+            :disabled="currentPage === lastPage"
+            aria-label="Nākamā lapa"
+          >&#8250;</button>
+        </div>
 
-          <div class="pagination-info">
-            Lapa {{ currentPage }} no {{ lastPage }} (Kopā: {{ total }} receptes)
-          </div>
-        </nav>
+        <div class="pagination-info">
+          {{ currentPage }} / {{ lastPage }} &nbsp;·&nbsp; {{ total }} receptes
+        </div>
       </div>
     </div>
   </MainLayout>
@@ -214,6 +196,7 @@ export default {
   data() {
     return {
       searchQuery: "",
+      searchTimeout: null,
       selectedMealTime: "",
       selectedNutritionType: "",
       selectedProteinSource: "",
@@ -242,13 +225,7 @@ export default {
   },
   computed: {
     filteredRecipes() {
-      if (!this.searchQuery) {
-        return this.recipes;
-      }
-
-      return this.recipes.filter(recipe => {
-        return recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase());
-      });
+      return this.recipes;
     },
     isUserLoggedIn() {
       return this.$page.props.auth.user !== null;
@@ -260,7 +237,7 @@ export default {
       return this.isUserLoggedIn && this.$page.props.auth.has_preferences;
     },
     hasClientSideFilters() {
-      return this.searchQuery !== '';
+      return false;
     },
     paginationPages() {
       const pages = [];
@@ -311,6 +288,10 @@ export default {
           page: page,
           per_page: this.perPage
         };
+
+        if (this.searchQuery) {
+          params.search = this.searchQuery;
+        }
 
         if (this.selectedMealTime) {
           params.meal_time = this.selectedMealTime;
@@ -367,12 +348,14 @@ export default {
       }
     },
     clearFilters() {
+      this.searchQuery = '';
+      clearTimeout(this.searchTimeout);
       this.selectedMealTime = '';
       this.selectedNutritionType = '';
       this.selectedProteinSource = '';
       this.filterByPreferences = false;
       this.showFavoritesOnly = false;
-      this.fetchData(1); // Reset to page 1 and reload
+      this.fetchData(1);
     },
     toggleFavorites() {
       this.showFavoritesOnly = !this.showFavoritesOnly;
@@ -433,6 +416,10 @@ export default {
     this.fetchData();
   },
   watch:  {
+    searchQuery() {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(() => this.fetchData(1), 400);
+    },
     sortBy() {
       this.fetchData(1);
     },
@@ -477,59 +464,46 @@ export default {
   height: 1.2rem;
 }
 
-.favorites-toggle {
-  margin: 1.5rem 0;
-  display: flex;
-  justify-content: center;
-}
-
-.favorites-button {
+.filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1.8rem;
-  font-size: 1rem;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255, 107, 53, 0.25);
+  background: transparent;
+  color: var(--warm-dark);
+  font-size: 0.9rem;
   font-weight: 500;
-  color: #4a3f35;
-  background: #ede5db;
-  border-radius: 50px;
-  border: none;
-  box-shadow:
-    6px 6px 12px rgba(0,0,0,0.1),
-   -6px -6px 12px rgba(255,255,255,0.7);
   cursor: pointer;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.favorites-button .star-icon {
-  width: 20px;
-  height: 20px;
-  fill: #7a6a5d;
-  transition: fill 0.2s ease;
+.filter-chip:hover {
+  border-color: var(--primary-color);
+  background: rgba(255, 107, 53, 0.05);
+  color: var(--primary-color);
 }
 
-.favorites-button:hover {
-  box-shadow:
-    4px 4px 8px rgba(0,0,0,0.08),
-   -4px -4px 8px rgba(255,255,255,0.8);
-  transform: translateY(-1px);
+.filter-chip--active {
+  background: rgba(255, 107, 53, 0.12);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
-.favorites-button:active,
-.favorites-button.active {
-  box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1),
-              inset -4px -4px 8px rgba(255,255,255,0.7);
-  transform: none;
-  color: #b4835f;
+.chip-heart {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  flex-shrink: 0;
 }
 
-.favorites-button:active .star-icon,
-.favorites-button.active .star-icon {
-  fill: #b4835f;
-}
-
-.favorites-button:active {
-  transform: scale(0.97);
+.chip-heart.filled {
+  fill: var(--primary-color);
+  stroke: var(--primary-color);
 }
 
 .sorting {
@@ -899,120 +873,83 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-top: 3rem;
   padding-bottom: 2rem;
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
-.glass-pagination {
+.pg-nav {
   display: flex;
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  align-items: center;
+  gap: 0.35rem;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.page-item {
-  display: inline-block;
-}
-
-.glass-page-link {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 0.6rem 1rem;
-  min-width: 45px;
+.pg-btn {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 19px;
+  border: 1.5px solid rgba(255, 107, 53, 0.2);
+  background: rgba(255, 255, 255, 0.5);
   color: var(--warm-dark);
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
-  font-size: 0.95rem;
-  text-align: center;
-  border: none;
+  transition: all 0.18s ease;
+  padding: 0 0.75rem;
+  line-height: 1;
 }
 
-.glass-page-link:hover:not(:disabled):not(.disabled-ellipsis) {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+.pg-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
 }
 
-.page-item.active .glass-page-link {
+.pg-btn--active {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-color: transparent;
   color: white;
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
-  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(255, 107, 53, 0.35);
 }
 
-.disabled-ellipsis {
-  cursor: default;
-  background: transparent;
-  box-shadow: none;
-  border: none;
+.pg-btn--arrow {
+  font-size: 1.3rem;
+  font-weight: 400;
 }
 
-.page-item.disabled .glass-page-link {
-  opacity: 0.4;
+.pg-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
-  background: rgba(200, 200, 200, 0.2);
+  transform: none;
 }
 
-.glass-page-link:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background: rgba(200, 200, 200, 0.2);
+.pg-ellipsis {
+  color: var(--warm-dark);
+  opacity: 0.5;
+  padding: 0 0.2rem;
+  font-size: 1rem;
+  line-height: 38px;
+  user-select: none;
 }
 
 .pagination-info {
   text-align: center;
   color: var(--warm-dark);
-  font-size: 0.95rem;
-  font-weight: 500;
-  opacity: 0.8;
-}
-
-@media (max-width: 768px) {
-  .pagination-container {
-    margin-top: 2rem;
-    padding-bottom: 1.5rem;
-  }
-
-  .glass-pagination {
-    gap: 0.4rem;
-  }
-
-  .glass-page-link {
-    padding: 0.5rem 0.75rem;
-    min-width: 40px;
-    font-size: 0.9rem;
-  }
-
-  .pagination-info {
-    font-size: 0.85rem;
-  }
+  font-size: 0.85rem;
+  opacity: 0.65;
 }
 
 @media (max-width: 480px) {
-  .glass-pagination {
-    gap: 0.3rem;
-  }
-
-  .glass-page-link {
-    padding: 0.4rem 0.6rem;
-    min-width: 35px;
+  .pg-btn {
+    min-width: 34px;
+    height: 34px;
     font-size: 0.85rem;
-  }
-
-  .pagination-info {
-    font-size: 0.8rem;
-    padding: 0 1rem;
+    padding: 0 0.6rem;
   }
 }
 </style>

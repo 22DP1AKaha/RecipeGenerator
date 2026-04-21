@@ -97,6 +97,10 @@ class RecipeService
 
     private function applyFilters($query, array $filters): void
     {
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', '%' . $filters['search'] . '%');
+        }
+
         if (!empty($filters['meal_time'])) {
             $query->whereHas('mealTime', fn($q) => $q->where('name', $filters['meal_time']));
         }

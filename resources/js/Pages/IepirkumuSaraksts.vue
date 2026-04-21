@@ -130,7 +130,7 @@
     </div>
 
     <!-- Shopping list results -->
-    <div v-if="shoppingList.length > 0" class="glass-card results-card">
+    <div v-if="shoppingList.length > 0" class="glass-card results-card" ref="resultsCard">
       <div class="results-header">
         <h2 class="section-title" style="margin-bottom:0">Iepirkumu saraksts</h2>
         <button class="pdf-btn" @click="downloadPdf" :disabled="downloadingPdf">
@@ -243,6 +243,9 @@ export default {
           recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })),
         });
         this.shoppingList = data.list;
+        this.$nextTick(() => {
+          this.$refs.resultsCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
       } catch (e) {
         this.errorMsg = e.response?.data?.message ?? 'Kļūda ģenerējot sarakstu.';
       } finally {

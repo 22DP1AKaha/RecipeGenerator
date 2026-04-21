@@ -143,7 +143,7 @@
     <div class="category-title">{{ $group['category'] }}</div>
     @foreach($group['ingredients'] as $ingredient)
     <div class="ingredient-row">
-        <span class="ingredient-check">☐</span>
+        <span class="ingredient-check">[ ]</span>
         <span class="ingredient-qty">{{ $ingredient['quantity'] }} {{ $ingredient['unit'] }}</span>
         <span class="ingredient-name">{{ $ingredient['name'] }}</span>
     </div>

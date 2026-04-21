@@ -22,6 +22,7 @@ class RecipeController extends Controller
     {
         try {
             $filters = $request->only([
+                'search',
                 'meal_time',
                 'nutrition',
                 'protein_source',

@@ -14,6 +14,16 @@ const page = usePage();
 const modalOpen = ref(false);
 const confirmDeleteId = ref(null);
 
+const localRoles = ref(
+    Object.fromEntries(props.users.map(u => [u.id, u.role_id]))
+);
+
+function getRoleClass(userId) {
+    const roleId = localRoles.value[userId];
+    const role = props.roles.find(r => r.id == roleId);
+    return role?.name === 'Administrators' ? 'role-admin' : 'role-user';
+}
+
 const form = useForm({
     vards: '',
     email: '',
@@ -49,6 +59,7 @@ function submit() {
 async function updateUserRole(userId, roleId) {
     try {
         await axios.patch(route('admin.users.updateRole', userId), { role_id: roleId });
+        localRoles.value[userId] = Number(roleId);
         showToast('Loma atjaunināta.', 'success');
     } catch (e) {
         showToast(e.response?.data?.message ?? 'Kļūda atjauninot lomu.', 'error');
@@ -109,14 +120,14 @@ function formatDate(d) {
                             <td>
                                 <select
                                     v-if="!isSelf(user.id)"
-                                    :value="user.role_id"
+                                    :value="localRoles[user.id]"
                                     class="role-select"
-                                    :class="user.role?.name === 'Administrators' ? 'role-admin' : 'role-user'"
+                                    :class="getRoleClass(user.id)"
                                     @change="updateUserRole(user.id, $event.target.value)"
                                 >
                                     <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option>
                                 </select>
-                                <span v-else class="role-badge" :class="user.role?.name === 'Administrators' ? 'role-admin' : 'role-user'">
+                                <span v-else class="role-badge" :class="getRoleClass(user.id)">
                                     {{ user.role?.name ?? '—' }}
                                 </span>
                             </td>

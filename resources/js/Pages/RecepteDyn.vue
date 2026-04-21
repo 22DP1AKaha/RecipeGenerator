@@ -712,12 +712,14 @@ export default {
   color: var(--warm-dark);
 }
 
-:deep(ul) {
+.recipe-ingredients :deep(ul),
+.recipe-instructions :deep(ul) {
   padding-left: 0;
   margin-top: 1rem;
 }
 
-:deep(li) {
+.recipe-ingredients :deep(li),
+.recipe-instructions :deep(li) {
   list-style: none;
   padding: 0.5rem 0;
 }
