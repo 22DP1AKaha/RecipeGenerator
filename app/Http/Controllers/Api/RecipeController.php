@@ -7,7 +7,10 @@ use App\Http\Resources\RecipeResource;
 use App\Models\Image;
 use App\Services\RecipeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class RecipeController extends Controller
 {
@@ -83,15 +86,30 @@ class RecipeController extends Controller
     {
         try {
             $pdf      = $this->recipeService->generateRecipePdf($id);
-            $output   = $pdf->output();
+            $token    = (string) Str::uuid();
+            $filename = "recepte-{$id}.pdf";
 
-            return response()->json([
-                'pdf'      => base64_encode($output),
-                'filename' => 'recepte-' . $id . '.pdf',
-            ]);
+            Storage::put("pdf_temp/{$token}", $pdf->output());
+            Cache::put("pdf_dl:{$token}", $filename, now()->addMinutes(5));
+
+            return response()->json(['token' => $token]);
         } catch (\Exception $e) {
             Log::error('PDF generation error: ' . $e->getMessage());
             return response()->json(['error' => 'Kļūda ģenerējot PDF'], 500);
         }
+    }
+
+    public function servePdf(string $token)
+    {
+        $filename = Cache::pull("pdf_dl:{$token}");
+        abort_unless($filename, 404);
+
+        $path = storage_path("app/pdf_temp/{$token}");
+        abort_unless(file_exists($path), 404);
+
+        return response()->download($path, $filename, [
+            'Content-Type'  => 'application/pdf',
+            'Cache-Control' => 'no-store',
+        ])->deleteFileAfterSend(true);
     }
 }

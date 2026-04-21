@@ -34,6 +34,7 @@ Route::prefix('api')->group(function () {
     Route::post('/shopping-list', [ShoppingListController::class, 'generate']);
     Route::post('/shopping-list/pdf', [ShoppingListController::class, 'downloadPdf']);
     Route::get('/images/{id}', [RecipeController::class, 'serveImage'])->name('images.show');
+    Route::get('/pdf/serve/{token}', [RecipeController::class, 'servePdf'])->name('pdf.serve');
 });
 
 Route::get('/recepte/{id}', fn($id) => Inertia::render('RecepteDyn', ['id' => $id]))->name('recepte');

@@ -7,6 +7,9 @@ use App\Models\Recipe;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ShoppingListController extends Controller
 {
@@ -48,12 +51,13 @@ class ShoppingListController extends Controller
             'generatedAt' => now()->format('d.m.Y H:i'),
         ]);
 
-        $output = $pdf->output();
+        $token    = (string) Str::uuid();
+        $filename = 'iepirkumu-saraksts.pdf';
 
-        return response()->json([
-            'pdf'      => base64_encode($output),
-            'filename' => 'iepirkumu-saraksts.pdf',
-        ]);
+        Storage::put("pdf_temp/{$token}", $pdf->output());
+        Cache::put("pdf_dl:{$token}", $filename, now()->addMinutes(5));
+
+        return response()->json(['token' => $token]);
     }
 
     private function buildList(array $recipeItems): array
