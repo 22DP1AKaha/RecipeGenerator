@@ -363,8 +363,7 @@ export default {
           try {
               const { data } = await axios.get(`/api/recipes/${this.id}/pdf`);
               const link = document.createElement('a');
-              link.href = `/api/pdf/serve/${data.token}`;
-              link.setAttribute('download', `recepte-${this.id}.pdf`);
+              link.href = `/api/pdf/serve/${data.token}?fn=recepte-${this.id}.pdf`;
               document.body.appendChild(link);
               link.click();
               link.remove();

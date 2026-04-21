@@ -7,7 +7,6 @@ use App\Models\Recipe;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -51,11 +50,9 @@ class ShoppingListController extends Controller
             'generatedAt' => now()->format('d.m.Y H:i'),
         ]);
 
-        $token    = (string) Str::uuid();
-        $filename = 'iepirkumu-saraksts.pdf';
+        $token = (string) Str::uuid();
 
-        Storage::put("pdf_temp/{$token}", $pdf->output());
-        Cache::put("pdf_dl:{$token}", $filename, now()->addMinutes(5));
+        Storage::put("pdf_temp/{$token}.pdf", $pdf->output());
 
         return response()->json(['token' => $token]);
     }

@@ -7,7 +7,6 @@ use App\Http\Resources\RecipeResource;
 use App\Models\Image;
 use App\Services\RecipeService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -85,12 +84,10 @@ class RecipeController extends Controller
     public function downloadPdf($id)
     {
         try {
-            $pdf      = $this->recipeService->generateRecipePdf($id);
-            $token    = (string) Str::uuid();
-            $filename = "recepte-{$id}.pdf";
+            $pdf   = $this->recipeService->generateRecipePdf($id);
+            $token = (string) Str::uuid();
 
-            Storage::put("pdf_temp/{$token}", $pdf->output());
-            Cache::put("pdf_dl:{$token}", $filename, now()->addMinutes(5));
+            Storage::put("pdf_temp/{$token}.pdf", $pdf->output());
 
             return response()->json(['token' => $token]);
         } catch (\Exception $e) {
@@ -99,13 +96,24 @@ class RecipeController extends Controller
         }
     }
 
-    public function servePdf(string $token)
+    public function servePdf(Request $request, string $token)
     {
-        $filename = Cache::pull("pdf_dl:{$token}");
-        abort_unless($filename, 404);
+        if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $token)) {
+            abort(404);
+        }
 
-        $path = storage_path("app/pdf_temp/{$token}");
-        abort_unless(file_exists($path), 404);
+        $path = Storage::path("pdf_temp/{$token}.pdf");
+
+        if (!file_exists($path) || filemtime($path) < time() - 600) {
+            @unlink($path);
+            abort(404);
+        }
+
+        $raw      = $request->query('fn', 'dokuments.pdf');
+        $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '-', $raw);
+        if (!str_ends_with(strtolower($filename), '.pdf')) {
+            $filename .= '.pdf';
+        }
 
         return response()->download($path, $filename, [
             'Content-Type'  => 'application/pdf',

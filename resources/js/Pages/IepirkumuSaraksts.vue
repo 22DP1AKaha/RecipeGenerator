@@ -264,8 +264,7 @@ export default {
         );
 
         const link = document.createElement('a');
-        link.href = `/api/pdf/serve/${data.token}`;
-        link.setAttribute('download', 'iepirkumu-saraksts.pdf');
+        link.href = `/api/pdf/serve/${data.token}?fn=iepirkumu-saraksts.pdf`;
         document.body.appendChild(link);
         link.click();
         link.remove();
