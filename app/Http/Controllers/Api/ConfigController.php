@@ -27,7 +27,7 @@ class ConfigController extends Controller
                 ['value' => 'desc', 'label' => 'Dilstoši (Z-A)'],
             ],
             'filterLabels' => [
-                'allMealTimes' => 'Visas edienreizes',
+                'allMealTimes' => 'Visas ēdienreizes',
                 'allNutritionTypes' => 'Visi uztura veidi',
                 'allProteinSources' => 'Visi olbaltumvielu avoti',
                 'clearFilters' => 'Notīrīt filtrus',

@@ -167,6 +167,7 @@
 <script>
 import axios from 'axios';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { showToast } from '@/Composables/useToast';
 
 export default {
   name: 'IepirkumuSaraksts',
@@ -255,21 +256,22 @@ export default {
 
     async downloadPdf() {
       this.downloadingPdf = true;
-      this.errorMsg = '';
-
       try {
-        const { data } = await axios.post(
+        const response = await axios.post(
           '/api/shopping-list/pdf',
-          { recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })) }
+          { recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })) },
+          { responseType: 'blob' }
         );
-
+        const url  = window.URL.createObjectURL(response.data);
         const link = document.createElement('a');
-        link.href = `/api/pdf/serve/${data.token}?fn=iepirkumu-saraksts.pdf`;
+        link.href     = url;
+        link.download = 'iepirkumu-saraksts.pdf';
         document.body.appendChild(link);
         link.click();
         link.remove();
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
       } catch {
-        this.errorMsg = 'Kļūda lejupielādējot PDF.';
+        showToast('Kļūda lejupielādējot PDF. Lūdzu mēģiniet vēlreiz.', 'error');
       } finally {
         this.downloadingPdf = false;
       }

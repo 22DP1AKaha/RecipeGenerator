@@ -9,55 +9,31 @@
       <input
         v-model="searchQuery"
         type="text"
-        :placeholder="config.filterLabels.searchPlaceholder"
+        :placeholder="filterLabels.searchPlaceholder"
         class="search-bar"
       />
 
       <div class="filters">
         <select v-model="selectedMealTime" class="filter-dropdown">
-          <option value="">{{ config.filterLabels.allMealTimes }}</option>
-          <option
-            v-for="time in filterOptions.mealTimes"
-            :key="time"
-            :value="time"
-          >
-            {{ time }}
-          </option>
+          <option value="">{{ filterLabels.allMealTimes }}</option>
+          <option v-for="time in filterOptions.mealTimes" :key="time" :value="time">{{ time }}</option>
         </select>
 
         <select v-model="selectedNutritionType" class="filter-dropdown">
-          <option value="">{{ config.filterLabels.allNutritionTypes }}</option>
-          <option
-            v-for="nutrition in filterOptions.nutritionTypes"
-            :key="nutrition"
-            :value="nutrition"
-          >
-            {{ nutrition }}
-          </option>
+          <option value="">{{ filterLabels.allNutritionTypes }}</option>
+          <option v-for="nutrition in filterOptions.nutritionTypes" :key="nutrition" :value="nutrition">{{ nutrition }}</option>
         </select>
 
         <select v-model="selectedProteinSource" class="filter-dropdown">
-          <option value="">{{ config.filterLabels.allProteinSources }}</option>
-          <option
-            v-for="source in filterOptions.proteinSources"
-            :key="source"
-            :value="source"
-          >
-            {{ source }}
-          </option>
+          <option value="">{{ filterLabels.allProteinSources }}</option>
+          <option v-for="source in filterOptions.proteinSources" :key="source" :value="source">{{ source }}</option>
         </select>
 
-        <button @click="clearFilters" class="clear-filters">
-          {{ config.filterLabels.clearFilters }}
-        </button>
+        <button @click="clearFilters" class="clear-filters">{{ filterLabels.clearFilters }}</button>
       </div>
 
       <div v-if="hasFavorites" class="favorites-toggle">
-        <button
-          @click="toggleFavorites"
-          class="filter-chip"
-          :class="{ 'filter-chip--active': showFavoritesOnly }"
-        >
+        <button @click="toggleFavorites" class="filter-chip" :class="{ 'filter-chip--active': showFavoritesOnly }">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="chip-heart" :class="{ filled: showFavoritesOnly }">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
@@ -67,24 +43,12 @@
 
       <div class="sorting">
         <select v-model="sortBy" class="sort-dropdown">
-          <option value="">{{ config.filterLabels.sortBy }}</option>
-          <option
-            v-for="option in config.sortOptions"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
+          <option value="">{{ filterLabels.sortBy }}</option>
+          <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
         </select>
 
         <select v-model="sortDirection" class="sort-dropdown">
-          <option
-            v-for="direction in config.sortDirections"
-            :key="direction.value"
-            :value="direction.value"
-          >
-            {{ direction.label }}
-          </option>
+          <option v-for="direction in sortDirections" :key="direction.value" :value="direction.value">{{ direction.label }}</option>
         </select>
       </div>
 
@@ -98,12 +62,12 @@
       <div v-if="loading" class="spinner"></div>
 
       <div v-else class="recipe-grid">
-        <div v-if="filteredRecipes.length === 0" class="no-results">
+        <div v-if="recipes.length === 0" class="no-results">
           Nav atrastas receptes atbilstoši filtriem!
         </div>
 
         <div
-          v-for="recipe in filteredRecipes"
+          v-for="recipe in recipes"
           :key="recipe.id"
           class="recipe-card"
           @click="showRecipe(recipe.id)"
@@ -111,17 +75,9 @@
           @mouseleave="hoveredId = null"
         >
           <div class="image-container">
-            <img
-              :src="recipe.image"
-              :alt="recipe.title"
-              :class="{ 'img-dimmed': hoveredId === recipe.id }"
-            />
+            <img :src="recipe.image" :alt="recipe.title" :class="{ 'img-dimmed': hoveredId === recipe.id }" />
 
-            <div
-              class="favorite-heart"
-              @click.stop="handleFavorite(recipe, $event)"
-              :class="{ saved: recipe.is_saved }"
-            >
+            <div class="favorite-heart" @click.stop="handleFavorite(recipe, $event)" :class="{ saved: recipe.is_saved }">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
@@ -129,17 +85,12 @@
 
             <div class="rating-overlay" :class="{ 'rating-overlay--visible': hoveredId === recipe.id }">
               <div class="rating-stars">
-                <span
-                  v-for="star in 5"
-                  :key="star"
-                  class="star"
-                  :class="{ filled: star <= recipe.average_rating }"
-                >★</span>
+                <span v-for="star in 5" :key="star" class="star" :class="{ filled: star <= recipe.average_rating }">★</span>
               </div>
               <div class="rating-number">{{ recipe.average_rating.toFixed(1) }}</div>
             </div>
           </div>
-          
+
           <h2>{{ recipe.title }}</h2>
           <div class="recipe-tags">
             <span class="tag">{{ recipe.meal_time }}</span>
@@ -150,12 +101,7 @@
 
       <div v-if="!loading && total > perPage" class="pagination-container">
         <div class="pg-nav">
-          <button
-            class="pg-btn pg-btn--arrow"
-            @click="goToPage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            aria-label="Iepriekšējā lapa"
-          >&#8249;</button>
+          <button class="pg-btn pg-btn--arrow" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" aria-label="Iepriekšējā lapa">&#8249;</button>
 
           <template v-for="(page, index) in paginationPages" :key="index">
             <button
@@ -168,12 +114,7 @@
             <span v-else class="pg-ellipsis">&#x2026;</span>
           </template>
 
-          <button
-            class="pg-btn pg-btn--arrow"
-            @click="goToPage(currentPage + 1)"
-            :disabled="currentPage === lastPage"
-            aria-label="Nākamā lapa"
-          >&#8250;</button>
+          <button class="pg-btn pg-btn--arrow" @click="goToPage(currentPage + 1)" :disabled="currentPage === lastPage" aria-label="Nākamā lapa">&#8250;</button>
         </div>
 
         <div class="pagination-info">
@@ -184,263 +125,183 @@
   </MainLayout>
 </template>
 
-<script>
+<script setup>
 import MainLayout from "@/Layouts/MainLayout.vue";
-import axios from 'axios';
 import { showToast } from '@/Composables/useToast';
+import axios from 'axios';
+import { ref, computed, watch, onMounted } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
 
-export default {
-  name: 'Receptes',
-  components: {
-    MainLayout,
-  },
-  data() {
-    return {
-      searchQuery: "",
-      searchTimeout: null,
-      selectedMealTime: "",
-      selectedNutritionType: "",
-      selectedProteinSource: "",
-      hoveredId: null,
-      recipes: [],
-      filterOptions: {
-        mealTimes: [],
-        nutritionTypes: [],
-        proteinSources: []
-      },
-      config: {
-        sortOptions: [],
-        sortDirections: [],
-        filterLabels: {}
-      },
-      loading: true,
-      filterByPreferences: false,
-      showFavoritesOnly: false,
-      sortBy: '',
-      sortDirection: 'asc',
-      currentPage: 1,
-      lastPage: 1,
-      total: 0,
-      perPage: 12,
-    };
-  },
-  computed: {
-    filteredRecipes() {
-      return this.recipes;
-    },
-    isUserLoggedIn() {
-      return this.$page.props.auth.user !== null;
-    },
-    hasFavorites() {
-      return this.isUserLoggedIn && this.$page.props.auth.has_favorites;
-    },
-    hasPreferences() {
-      return this.isUserLoggedIn && this.$page.props.auth.has_preferences;
-    },
-    hasClientSideFilters() {
-      return false;
-    },
-    paginationPages() {
-      const pages = [];
-      const maxVisible = 7; // Show up to 7 page numbers
-      const current = this.currentPage;
-      const last = this.lastPage;
+const page = usePage();
 
-      if (last <= maxVisible) {
-        for (let i = 1; i <= last; i++) {
-          pages.push(i);
-        }
-      } else {
+const searchQuery = ref('');
+const searchTimeout = ref(null);
+const selectedMealTime = ref('');
+const selectedNutritionType = ref('');
+const selectedProteinSource = ref('');
+const hoveredId = ref(null);
+const recipes = ref([]);
+const filterOptions = ref({ mealTimes: [], nutritionTypes: [], proteinSources: [] });
+const sortOptions = ref([]);
+const sortDirections = ref([]);
+const filterLabels = ref({});
+const loading = ref(true);
+const filterByPreferences = ref(false);
+const showFavoritesOnly = ref(false);
+const sortBy = ref('');
+const sortDirection = ref('asc');
+const currentPage = ref(1);
+const lastPage = ref(1);
+const total = ref(0);
+const perPage = ref(12);
+
+const isUserLoggedIn = computed(() => page.props.auth.user !== null);
+const hasFavorites = computed(() => isUserLoggedIn.value && page.props.auth.has_favorites);
+const hasPreferences = computed(() => isUserLoggedIn.value && page.props.auth.has_preferences);
+
+const paginationPages = computed(() => {
+    const pages = [];
+    const maxVisible = 7;
+    const current = currentPage.value;
+    const last = lastPage.value;
+
+    if (last <= maxVisible) {
+        for (let i = 1; i <= last; i++) pages.push(i);
+    } else {
         pages.push(1);
-
         if (current <= 3) {
-          for (let i = 2; i <= Math.min(5, last - 1); i++) {
-            pages.push(i);
-          }
-          if (last > 5) {
-            pages.push('...');
-          }
+            for (let i = 2; i <= Math.min(5, last - 1); i++) pages.push(i);
+            if (last > 5) pages.push('...');
         } else if (current >= last - 2) {
-          pages.push('...');
-          for (let i = Math.max(2, last - 4); i < last; i++) {
-            pages.push(i);
-          }
+            pages.push('...');
+            for (let i = Math.max(2, last - 4); i < last; i++) pages.push(i);
         } else {
-          pages.push('...');
-          for (let i = current - 1; i <= current + 1; i++) {
-            pages.push(i);
-          }
-          pages.push('...');
+            pages.push('...');
+            for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+            pages.push('...');
         }
-
         pages.push(last);
-      }
+    }
+    return pages;
+});
 
-      return pages;
-    },
-  },
-  methods: {
-    async fetchData(page = 1) {
-      this.loading = true;
-      try {
+async function fetchRecipes(pg = 1) {
+    loading.value = true;
+    try {
         const params = {
-          sort_by: this.sortBy,
-          sort_direction: this.sortDirection,
-          page: page,
-          per_page: this.perPage
+            sort_by: sortBy.value,
+            sort_direction: sortDirection.value,
+            page: pg,
+            per_page: perPage.value,
         };
+        if (searchQuery.value) params.search = searchQuery.value;
+        if (selectedMealTime.value) params.meal_time = selectedMealTime.value;
+        if (selectedNutritionType.value) params.nutrition = selectedNutritionType.value;
+        if (selectedProteinSource.value) params.protein_source = selectedProteinSource.value;
+        if (filterByPreferences.value) params.filter_by_preferences = true;
+        if (showFavoritesOnly.value) params.favorites_only = true;
 
-        if (this.searchQuery) {
-          params.search = this.searchQuery;
-        }
+        const response = await axios.get('/api/recipes', { params, withCredentials: true });
+        recipes.value = response.data.data;
 
-        if (this.selectedMealTime) {
-          params.meal_time = this.selectedMealTime;
-        }
-        if (this.selectedNutritionType) {
-          params.nutrition = this.selectedNutritionType;
-        }
-        if (this.selectedProteinSource) {
-          params.protein_source = this.selectedProteinSource;
-        }
-
-        if (this.filterByPreferences) {
-          params.filter_by_preferences = true;
-        }
-
-        if (this.showFavoritesOnly) {
-          params.favorites_only = true;
-        }
-
-        const [recipesResponse, filtersResponse, configResponse] = await Promise.all([
-          axios.get('/api/recipes', { params, withCredentials: true }),
-          axios.get('/api/recipe-filters', { withCredentials: true }),
-          axios.get('/api/config', { withCredentials: true })
-        ]);
-
-        this.recipes = recipesResponse.data.data;
-
-        const meta = recipesResponse.data.meta;
+        const meta = response.data.meta;
         if (meta) {
-          this.currentPage = meta.current_page;
-          this.lastPage = meta.last_page;
-          this.total = meta.total;
-          this.perPage = meta.per_page;
+            currentPage.value = meta.current_page;
+            lastPage.value = meta.last_page;
+            total.value = meta.total;
+            perPage.value = meta.per_page;
         }
+    } finally {
+        loading.value = false;
+    }
+}
 
-        this.filterOptions = {
-          mealTimes: filtersResponse.data.mealTimes,
-          nutritionTypes: filtersResponse.data.nutritionTypes,
-          proteinSources: filtersResponse.data.proteinSources
-        };
-        this.config = {
-          sortOptions: configResponse.data.sortOptions,
-          sortDirections: configResponse.data.sortDirections,
-          filterLabels: configResponse.data.filterLabels
-        };
-      } finally {
-        this.loading = false;
-      }
-    },
-    goToPage(page) {
-      if (page >= 1 && page <= this.lastPage) {
-        this.fetchData(page);
+async function fetchStaticData() {
+    const [filtersRes, configRes] = await Promise.all([
+        axios.get('/api/recipe-filters', { withCredentials: true }),
+        axios.get('/api/config', { withCredentials: true }),
+    ]);
+    filterOptions.value = {
+        mealTimes: filtersRes.data.mealTimes,
+        nutritionTypes: filtersRes.data.nutritionTypes,
+        proteinSources: filtersRes.data.proteinSources,
+    };
+    sortOptions.value = configRes.data.sortOptions;
+    sortDirections.value = configRes.data.sortDirections;
+    filterLabels.value = configRes.data.filterLabels;
+}
+
+function goToPage(pg) {
+    if (pg >= 1 && pg <= lastPage.value) {
+        fetchRecipes(pg);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    },
-    clearFilters() {
-      this.searchQuery = '';
-      clearTimeout(this.searchTimeout);
-      this.selectedMealTime = '';
-      this.selectedNutritionType = '';
-      this.selectedProteinSource = '';
-      this.filterByPreferences = false;
-      this.showFavoritesOnly = false;
-      this.fetchData(1);
-    },
-    toggleFavorites() {
-      this.showFavoritesOnly = !this.showFavoritesOnly;
-      this.fetchData(1); // Trigger server-side filter
-    },
-    async handleFavorite(recipe, event) {
-      event.stopPropagation();
+    }
+}
 
-      try {
+function clearFilters() {
+    clearTimeout(searchTimeout.value);
+    searchQuery.value = '';
+    selectedMealTime.value = '';
+    selectedNutritionType.value = '';
+    selectedProteinSource.value = '';
+    filterByPreferences.value = false;
+    showFavoritesOnly.value = false;
+    fetchRecipes(1);
+}
+
+function toggleFavorites() {
+    showFavoritesOnly.value = !showFavoritesOnly.value;
+    fetchRecipes(1);
+}
+
+async function handleFavorite(recipe, event) {
+    event.stopPropagation();
+    try {
         if (recipe.is_saved) {
-          const response = await axios.delete(`/favorites/${recipe.id}`, {
-            withCredentials: true
-          });
-          recipe.is_saved = false;
-          this.$page.props.auth.has_favorites = response.data.has_favorites;
-          showToast('Recepte noņemta no favorītiem', 'success');
-
-          if (this.showFavoritesOnly && !this.recipes.some(r => r.is_saved)) {
-            this.showFavoritesOnly = false;
-            this.fetchData(1);
-          }
+            const response = await axios.delete(`/favorites/${recipe.id}`, { withCredentials: true });
+            recipe.is_saved = false;
+            page.props.auth.has_favorites = response.data.has_favorites;
+            showToast('Recepte noņemta no favorītiem', 'success');
+            if (showFavoritesOnly.value && !recipes.value.some(r => r.is_saved)) {
+                showFavoritesOnly.value = false;
+                fetchRecipes(1);
+            }
         } else {
-          const response = await axios.post('/favorites', {
-            recipe_id: recipe.id
-          }, {
-            withCredentials: true
-          });
-          recipe.is_saved = true;
-          this.$page.props.auth.has_favorites = response.data.has_favorites;
-          showToast('Recepte pievienota favorītiem!', 'success');
+            const response = await axios.post('/favorites', { recipe_id: recipe.id }, { withCredentials: true });
+            recipe.is_saved = true;
+            page.props.auth.has_favorites = response.data.has_favorites;
+            showToast('Recepte pievienota favorītiem!', 'success');
         }
-      } catch (error) {
-          if (error.response && error.response.status === 401) {
-              window.location.href = '/ienakt';
-          } else {
-              console.error('Kļūda apstrādājot favorītu:', error);
-
-              let errorMsg = 'Radās kļūda. Lūdzu, mēģiniet vēlreiz.';
-              if (error.response) {
-                errorMsg = error.response.data.error ||
-                          error.response.data.message ||
-                          `Servera kļūda: ${error.response.status}`;
-              } else if (error.request) {
-                errorMsg = 'Nav savienojuma ar serveri. Pārbaudiet savienojumu.';
-              } else if (error.message) {
-                errorMsg = error.message;
-              }
-
-              showToast(errorMsg, 'error');
-          }
+    } catch (error) {
+        if (error.response?.status === 401) {
+            window.location.href = '/ienakt';
+        } else {
+            const errorMsg = error.response?.data?.error
+                ?? error.response?.data?.message
+                ?? (error.request ? 'Nav savienojuma ar serveri. Pārbaudiet savienojumu.' : error.message)
+                ?? 'Radās kļūda. Lūdzu, mēģiniet vēlreiz.';
+            showToast(errorMsg, 'error');
         }
-    },
-    showRecipe(id) {
-      this.$inertia.visit(route('recepte', { id }));
     }
-  },
-  mounted() {
-    this.fetchData();
-  },
-  watch:  {
-    searchQuery() {
-      clearTimeout(this.searchTimeout);
-      this.searchTimeout = setTimeout(() => this.fetchData(1), 400);
-    },
-    sortBy() {
-      this.fetchData(1);
-    },
-    sortDirection() {
-      this.fetchData(1);
-    },
-    selectedMealTime() {
-      this.fetchData(1);
-    },
-    selectedNutritionType() {
-      this.fetchData(1);
-    },
-    selectedProteinSource() {
-      this.fetchData(1);
-    },
-    filterByPreferences() {
-      this.fetchData(1);
-    }
-  }
-};
+}
+
+function showRecipe(id) {
+    router.visit(route('recepte', { id }));
+}
+
+watch(searchQuery, () => {
+    clearTimeout(searchTimeout.value);
+    searchTimeout.value = setTimeout(() => fetchRecipes(1), 400);
+});
+
+watch([selectedMealTime, selectedNutritionType, selectedProteinSource, sortBy, sortDirection, filterByPreferences], () => {
+    fetchRecipes(1);
+});
+
+onMounted(() => {
+    fetchStaticData();
+    fetchRecipes();
+});
 </script>
 
 <style scoped>
@@ -639,6 +500,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: filter 0.3s ease;
 }
 
 .favorite-heart {
@@ -741,10 +603,6 @@ export default {
 
 .rating-overlay--visible {
   opacity: 1;
-}
-
-.image-container img {
-  transition: filter 0.3s ease;
 }
 
 .img-dimmed {
@@ -854,20 +712,6 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-.filter-info {
-  text-align: center;
-  padding: 1rem 2rem;
-  margin-top: 2rem;
-  font-size: 0.95rem;
-  color: var(--warm-dark);
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
 }
 
 .pagination-container {

@@ -8,8 +8,6 @@ use App\Models\Image;
 use App\Services\RecipeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class RecipeController extends Controller
 {
@@ -84,40 +82,11 @@ class RecipeController extends Controller
     public function downloadPdf($id)
     {
         try {
-            $pdf   = $this->recipeService->generateRecipePdf($id);
-            $token = (string) Str::uuid();
-
-            Storage::put("pdf_temp/{$token}.pdf", $pdf->output());
-
-            return response()->json(['token' => $token]);
+            $pdf = $this->recipeService->generateRecipePdf($id);
+            return $pdf->download("recepte-{$id}.pdf");
         } catch (\Exception $e) {
             Log::error('PDF generation error: ' . $e->getMessage());
             return response()->json(['error' => 'Kļūda ģenerējot PDF'], 500);
         }
-    }
-
-    public function servePdf(Request $request, string $token)
-    {
-        if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $token)) {
-            abort(404);
-        }
-
-        $path = Storage::path("pdf_temp/{$token}.pdf");
-
-        if (!file_exists($path) || filemtime($path) < time() - 600) {
-            @unlink($path);
-            abort(404);
-        }
-
-        $raw      = $request->query('fn', 'dokuments.pdf');
-        $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '-', $raw);
-        if (!str_ends_with(strtolower($filename), '.pdf')) {
-            $filename .= '.pdf';
-        }
-
-        return response()->download($path, $filename, [
-            'Content-Type'  => 'application/pdf',
-            'Cache-Control' => 'no-store',
-        ])->deleteFileAfterSend(true);
     }
 }

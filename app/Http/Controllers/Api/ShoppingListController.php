@@ -7,8 +7,7 @@ use App\Models\Recipe;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class ShoppingListController extends Controller
 {
@@ -28,33 +27,34 @@ class ShoppingListController extends Controller
     public function downloadPdf(Request $request)
     {
         $request->validate([
-            'recipes'                   => 'required|array|min:1|max:20',
-            'recipes.*.recipe_id'       => 'required|integer|exists:recipes,id',
-            'recipes.*.portions'        => 'required|numeric|min:0.5|max:100',
+            'recipes'             => 'required|array|min:1|max:20',
+            'recipes.*.recipe_id' => 'required|integer|exists:recipes,id',
+            'recipes.*.portions'  => 'required|numeric|min:0.5|max:100',
         ]);
 
-        $recipeItems = $request->input('recipes');
-        $list        = $this->buildList($recipeItems);
+        try {
+            $recipeItems = $request->input('recipes');
+            $list        = $this->buildList($recipeItems);
 
-        $recipeIds   = collect($recipeItems)->pluck('recipe_id');
-        $recipes     = Recipe::whereIn('id', $recipeIds)->get(['id', 'name'])->keyBy('id');
+            $recipeIds   = collect($recipeItems)->pluck('recipe_id');
+            $recipes     = Recipe::whereIn('id', $recipeIds)->get(['id', 'name'])->keyBy('id');
 
-        $recipeNames = collect($recipeItems)->map(fn($item) => [
-            'name'     => $recipes[$item['recipe_id']]?->name ?? 'Nezināma recepte',
-            'portions' => $item['portions'],
-        ]);
+            $recipeNames = collect($recipeItems)->map(fn($item) => [
+                'name'     => $recipes[$item['recipe_id']]?->name ?? 'Nezināma recepte',
+                'portions' => $item['portions'],
+            ]);
 
-        $pdf = Pdf::loadView('pdfs.shopping_list', [
-            'list'        => $list,
-            'recipeNames' => $recipeNames,
-            'generatedAt' => now()->format('d.m.Y H:i'),
-        ]);
+            $pdf = Pdf::loadView('pdfs.shopping_list', [
+                'list'        => $list,
+                'recipeNames' => $recipeNames,
+                'generatedAt' => now()->format('d.m.Y H:i'),
+            ]);
 
-        $token = (string) Str::uuid();
-
-        Storage::put("pdf_temp/{$token}.pdf", $pdf->output());
-
-        return response()->json(['token' => $token]);
+            return $pdf->download('iepirkumu-saraksts.pdf');
+        } catch (\Exception $e) {
+            Log::error('Shopping list PDF generation error: ' . $e->getMessage());
+            return response()->json(['error' => 'Kļūda ģenerējot PDF'], 500);
+        }
     }
 
     private function buildList(array $recipeItems): array
