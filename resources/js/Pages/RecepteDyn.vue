@@ -361,15 +361,16 @@ export default {
       async downloadPdf() {
           this.downloadingPdf = true;
           try {
-              const response = await axios.get(`/api/recipes/${this.id}/pdf`, { responseType: 'blob' });
-              const url  = window.URL.createObjectURL(response.data);
-              const link = document.createElement('a');
+              const { data } = await axios.get(`/api/recipes/${this.id}/pdf`);
+              const bytes = Uint8Array.from(atob(data.pdf), c => c.charCodeAt(0));
+              const url   = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+              const link  = document.createElement('a');
               link.href     = url;
-              link.download = `recepte-${this.id}.pdf`;
+              link.download = data.filename;
               document.body.appendChild(link);
               link.click();
               link.remove();
-              setTimeout(() => window.URL.revokeObjectURL(url), 100);
+              setTimeout(() => URL.revokeObjectURL(url), 100);
           } catch {
               showToast('Kļūda lejupielādējot PDF. Lūdzu mēģiniet vēlreiz.', 'error');
           } finally {

@@ -50,7 +50,10 @@ class ShoppingListController extends Controller
                 'generatedAt' => now()->format('d.m.Y H:i'),
             ]);
 
-            return $pdf->download('iepirkumu-saraksts.pdf');
+            return response()->json([
+                'pdf'      => base64_encode($pdf->output()),
+                'filename' => 'iepirkumu-saraksts.pdf',
+            ]);
         } catch (\Exception $e) {
             Log::error('Shopping list PDF generation error: ' . $e->getMessage());
             return response()->json(['error' => 'Kļūda ģenerējot PDF'], 500);

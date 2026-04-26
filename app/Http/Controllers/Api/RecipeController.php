@@ -83,7 +83,10 @@ class RecipeController extends Controller
     {
         try {
             $pdf = $this->recipeService->generateRecipePdf($id);
-            return $pdf->download("recepte-{$id}.pdf");
+            return response()->json([
+                'pdf'      => base64_encode($pdf->output()),
+                'filename' => "recepte-{$id}.pdf",
+            ]);
         } catch (\Exception $e) {
             Log::error('PDF generation error: ' . $e->getMessage());
             return response()->json(['error' => 'Kļūda ģenerējot PDF'], 500);

@@ -257,19 +257,19 @@ export default {
     async downloadPdf() {
       this.downloadingPdf = true;
       try {
-        const response = await axios.post(
+        const { data } = await axios.post(
           '/api/shopping-list/pdf',
-          { recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })) },
-          { responseType: 'blob' }
+          { recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })) }
         );
-        const url  = window.URL.createObjectURL(response.data);
-        const link = document.createElement('a');
+        const bytes = Uint8Array.from(atob(data.pdf), c => c.charCodeAt(0));
+        const url   = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+        const link  = document.createElement('a');
         link.href     = url;
-        link.download = 'iepirkumu-saraksts.pdf';
+        link.download = data.filename;
         document.body.appendChild(link);
         link.click();
         link.remove();
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
       } catch {
         showToast('Kļūda lejupielādējot PDF. Lūdzu mēģiniet vēlreiz.', 'error');
       } finally {
