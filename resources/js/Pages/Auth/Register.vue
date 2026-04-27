@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const form = useForm({
   vards: '',
@@ -8,7 +9,17 @@ const form = useForm({
   password_confirmation: '',
 });
 
+const passwordRules = computed(() => [
+  { label: 'Vismaz 8 rakstzīmes',         met: form.password.length >= 8 },
+  { label: 'Vismaz viens lielais burts',   met: /[A-Z]/.test(form.password) },
+  { label: 'Vismaz viens mazais burts',    met: /[a-z]/.test(form.password) },
+  { label: 'Vismaz viens cipars',          met: /[0-9]/.test(form.password) },
+]);
+
+const passwordValid = computed(() => passwordRules.value.every(r => r.met));
+
 const submit = () => {
+  if (!passwordValid.value) return;
   form.post(route('register.post'), {
     onSuccess: () => form.reset('password', 'password_confirmation'),
   });
@@ -79,6 +90,12 @@ const submit = () => {
                 <div v-if="form.errors.password" class="invalid-feedback d-block">
                   {{ Array.isArray(form.errors.password) ? form.errors.password[0] : form.errors.password }}
                 </div>
+                <ul v-if="form.password.length > 0" class="password-rules">
+                  <li v-for="rule in passwordRules" :key="rule.label" :class="rule.met ? 'rule-met' : 'rule-unmet'">
+                    <span class="rule-icon">{{ rule.met ? '✓' : '✗' }}</span>
+                    {{ rule.label }}
+                  </li>
+                </ul>
               </div>
 
               <div class="mb-4">
@@ -181,6 +198,40 @@ const submit = () => {
 .link-warm:hover {
   color: var(--secondary-color);
   text-decoration: underline;
+}
+
+.password-rules {
+  list-style: none;
+  padding: 0.5rem 0 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.password-rules li {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s ease;
+}
+
+.rule-met {
+  color: #2ecc71;
+}
+
+.rule-unmet {
+  color: var(--warm-dark);
+  opacity: 0.55;
+}
+
+.rule-icon {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .is-invalid {

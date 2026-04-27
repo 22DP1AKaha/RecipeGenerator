@@ -67,12 +67,15 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getForbiddenIngredientIds()
     {
+        // Ielasam aizliegtās sastāvdaļas no uztura ierobežojumiem
         $dietIngredients = $this->dietaryRestrictions
             ->flatMap(fn($diet) => $diet->restrictedIngredients->pluck('id'));
 
+        // Ielasam aizliegtās sastāvdaļas no alerģijām
         $allergyIngredients = $this->allergies
             ->flatMap(fn($allergy) => $allergy->allergicIngredients->pluck('id'));
 
+        // Apvienojam un atgriežam unikālo ID sarakstu
         return $dietIngredients->merge($allergyIngredients)->unique()->values()->toArray();
     }
 }

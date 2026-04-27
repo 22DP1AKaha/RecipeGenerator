@@ -14,6 +14,7 @@ class AIRecipeGeneratorService
 
     public function __construct()
     {
+        // Ielasam API atslēgu no konfigurācijas
         $this->apiKey = config('services.deepseek.api_key', env('DEEPSEEK_API_KEY'));
 
         if (!$this->apiKey) {
@@ -23,30 +24,33 @@ class AIRecipeGeneratorService
 
     public function generateRecipe(string $ingredients, array $options = []): array
     {
+        // Veidojam uzvedni (prompt) ar sastāvdaļām un preferencēm
         $prompt = $this->buildPrompt($ingredients, $options);
 
         try {
+            // Sūtam pieprasījumu uz DeepSeek API
             $response = $this->callAPI($prompt);
 
             return [
                 'success' => true,
-                'recipe' => $response['choices'][0]['message']['content'] ?? '',
+                'recipe'  => $response['choices'][0]['message']['content'] ?? '',
             ];
         } catch (\Exception $e) {
             Log::error('Recipe generation error', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace'   => $e->getTraceAsString()
             ]);
 
             return [
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ];
         }
     }
 
     private function buildPrompt(string $ingredients, array $options): string
     {
+        // Veidojam bāzes uzvedni ar norādītajām sastāvdaļām
         $basePrompt = "Izveido vienu īsu recepti no šiem produktiem (nav obligāti jāizmanto visas sastāvdaļas): {$ingredients} (Nav pieejama neviena cita sastāvdaļa).
 
 Formāts (OBLIGĀTI JĀIEVĒRO):
@@ -65,10 +69,12 @@ Pagatavošana:
 
 SVARĪGI: Katrs pagatavošanas solis JĀBŪT atsevišķā rindā ar numuru. Neraksti visus soļus vienā rindā. Neizmanto markdown formātus.";
 
+        // Pievienojam uztura ierobežojumus, ja tādi ir norādīti
         if (!empty($options['dietary_restrictions'])) {
             $basePrompt .= " Ievēro šādus ierobežojumus: " . implode(', ', $options['dietary_restrictions']) . ".";
         }
 
+        // Pievienojam alerģijas, ja tādas ir norādītas
         if (!empty($options['allergies'])) {
             $basePrompt .= " Izvairīties no: " . implode(', ', $options['allergies']) . ".";
         }
@@ -78,6 +84,7 @@ SVARĪGI: Katrs pagatavošanas solis JĀBŪT atsevišķā rindā ar numuru. Nera
 
     private function callAPI(string $prompt): array
     {
+        // Sūtam HTTP pieprasījumu uz DeepSeek API ar atkārtošanu kļūdu gadījumā
         $response = Http::timeout(60)
             ->retry(2, 1000)
             ->withHeaders([
@@ -85,27 +92,29 @@ SVARĪGI: Katrs pagatavošanas solis JĀBŪT atsevišķā rindā ar numuru. Nera
                 'Content-Type'  => 'application/json',
             ])
             ->post($this->apiUrl, [
-                'model' => $this->model,
+                'model'    => $this->model,
                 'messages' => [
                     [
-                        'role' => 'system',
+                        'role'    => 'system',
                         'content' => 'Tu esi pavārs. Atbildi tikai latviski.'
                     ],
                     [
-                        'role' => 'user',
+                        'role'    => 'user',
                         'content' => $prompt
                     ],
                 ],
                 'temperature' => $this->temperature,
-                'max_tokens' => 1500,
+                'max_tokens'  => 1500,
             ]);
 
+        // Pārbaudām vai pieprasījums bija veiksmīgs
         if ($response->failed()) {
             throw new \RuntimeException(
                 'DeepSeek API request failed: ' . $response->status() . ' - ' . $response->body()
             );
         }
 
+        // Atgriežam JSON atbildi
         return $response->json();
     }
 

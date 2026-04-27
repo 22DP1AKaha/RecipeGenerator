@@ -12,13 +12,16 @@ class IngredientResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
+            'id'       => $this->id,
+            'name'     => $this->name,
             'category' => $this->category?->name,
+
+            // Formatējam daudzumu ar mērvienību, ja ir pivot dati
             'quantity' => $this->when(isset($this->pivot), function () {
-                $qty = $this->pivot->quantity;
+                $qty   = $this->pivot->quantity;
+                // Ielasam mērvienību nosaukumus no kešatmiņas
                 $units = Cache::remember('units_map', 3600, fn() => Unit::pluck('name', 'id'));
-                $unit = $units[$this->pivot->unit_id] ?? null;
+                $unit  = $units[$this->pivot->unit_id] ?? null;
                 return $unit ? "{$qty} {$unit}" : (string) $qty;
             }),
         ];

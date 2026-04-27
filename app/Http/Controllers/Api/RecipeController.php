@@ -21,6 +21,7 @@ class RecipeController extends Controller
     public function index(Request $request)
     {
         try {
+            // Ielasam filtrus un kārtošanas parametrus no pieprasījuma
             $filters = $request->only([
                 'search',
                 'meal_time',
@@ -31,10 +32,11 @@ class RecipeController extends Controller
                 'filter_by_preferences',
                 'favorites_only'
             ]);
-            $sortBy = $request->input('sort_by');
+            $sortBy        = $request->input('sort_by');
             $sortDirection = $request->input('sort_direction', 'asc');
-            $perPage = $request->input('per_page', 10);
+            $perPage       = $request->input('per_page', 10);
 
+            // Iegūstam receptes ar filtriem un kārtošanu
             $recipes = $this->recipeService->getRecipes($filters, $sortBy, $sortDirection, $perPage);
 
             return RecipeResource::collection($recipes);
@@ -47,6 +49,7 @@ class RecipeController extends Controller
     public function getFilters()
     {
         try {
+            // Atgriežam pieejamās filtru opcijas
             return response()->json($this->recipeService->getFilters());
         } catch (\Exception $e) {
             Log::error('Filter fetch error: ' . $e->getMessage());
@@ -57,6 +60,7 @@ class RecipeController extends Controller
     public function show($id)
     {
         try {
+            // Meklējam recepti pēc ID
             $recipe = $this->recipeService->getRecipeById($id);
 
             if (!$recipe) {
@@ -72,8 +76,10 @@ class RecipeController extends Controller
 
     public function serveImage($id)
     {
+        // Ielasam attēlu no datubāzes
         $image = Image::findOrFail($id);
 
+        // Atgriežam attēla bināros datus ar kešošanas galvenēm
         return response($image->base64_data_raw, 200)
             ->header('Content-Type', $image->mime_type)
             ->header('Cache-Control', 'public, max-age=31536000, immutable');
@@ -82,7 +88,10 @@ class RecipeController extends Controller
     public function downloadPdf($id)
     {
         try {
+            // Ģenerējam receptes PDF
             $pdf = $this->recipeService->generateRecipePdf($id);
+
+            // Kodējam PDF base64 formātā un atgriežam kā JSON
             return response()->json([
                 'pdf'      => base64_encode($pdf->output()),
                 'filename' => "recepte-{$id}.pdf",

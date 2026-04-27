@@ -19,6 +19,7 @@ class DeepSeekRecipeController extends Controller
     public function generateRecipe(Request $request)
     {
         try {
+            // Validējam pieprasījuma datus
             $request->validate([
                 'ingredients'     => 'required|string',
                 'use_preferences' => 'boolean',
@@ -26,6 +27,7 @@ class DeepSeekRecipeController extends Controller
 
             $options = [];
 
+            // Ielasam lietotāja uztura preferences, ja tas ir pierakstījies
             if (auth()->check() && $request->boolean('use_preferences', true)) {
                 $user = auth()->user()->load(['dietaryRestrictions', 'allergies']);
 
@@ -38,11 +40,12 @@ class DeepSeekRecipeController extends Controller
                 }
             }
 
+            // Ģenerējam recepti ar AI servisu
             $result = $this->aiService->generateRecipe($request->ingredients, $options);
 
             if (!$result['success']) {
                 return response()->json([
-                    'error' => 'Recipe generation failed',
+                    'error'   => 'Recipe generation failed',
                     'message' => $result['error'] ?? 'Unknown error'
                 ], 500);
             }
@@ -54,11 +57,11 @@ class DeepSeekRecipeController extends Controller
         } catch (\Throwable $e) {
             Log::error('Recipe generation error', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace'   => $e->getTraceAsString()
             ]);
 
             return response()->json([
-                'error' => 'Internal server error',
+                'error'   => 'Internal server error',
                 'message' => $e->getMessage()
             ], 500);
         }

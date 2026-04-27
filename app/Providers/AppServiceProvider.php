@@ -6,6 +6,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
                 ->line('Ja jūs nereģistrējāties FOODYML, ignorējiet šo e-pastu.')
                 ->salutation('Ar cieņu, FOODYML komanda');
         });
+
+        // Uzstādām paroles drošības prasības visai lietotnei
+        Password::defaults(fn() => Password::min(8)->mixedCase()->numbers());
 
         Vite::prefetch(concurrency: 3);
         Inertia::share([

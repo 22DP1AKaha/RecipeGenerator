@@ -14,11 +14,12 @@ class ShoppingListController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'recipes'                   => 'required|array|min:1|max:20',
-            'recipes.*.recipe_id'       => 'required|integer|exists:recipes,id',
-            'recipes.*.portions'        => 'required|numeric|min:0.5|max:100',
+            'recipes'             => 'required|array|min:1|max:20',
+            'recipes.*.recipe_id' => 'required|integer|exists:recipes,id',
+            'recipes.*.portions'  => 'required|numeric|min:0.5|max:100',
         ]);
 
+        // Veidojam apvienoto iepirkumu sarakstu
         $list = $this->buildList($request->input('recipes'));
 
         return response()->json(['list' => $list]);
@@ -33,9 +34,11 @@ class ShoppingListController extends Controller
         ]);
 
         try {
+            // Veidojam iepirkumu sarakstu
             $recipeItems = $request->input('recipes');
             $list        = $this->buildList($recipeItems);
 
+            // Ielasam recepšu nosaukumus PDF galvenei
             $recipeIds   = collect($recipeItems)->pluck('recipe_id');
             $recipes     = Recipe::whereIn('id', $recipeIds)->get(['id', 'name'])->keyBy('id');
 
@@ -44,12 +47,14 @@ class ShoppingListController extends Controller
                 'portions' => $item['portions'],
             ]);
 
+            // Ģenerējam PDF no Blade šablona
             $pdf = Pdf::loadView('pdfs.shopping_list', [
                 'list'        => $list,
                 'recipeNames' => $recipeNames,
                 'generatedAt' => now()->format('d.m.Y H:i'),
             ]);
 
+            // Kodējam PDF base64 formātā un atgriežam kā JSON
             return response()->json([
                 'pdf'      => base64_encode($pdf->output()),
                 'filename' => 'iepirkumu-saraksts.pdf',
@@ -62,15 +67,17 @@ class ShoppingListController extends Controller
 
     private function buildList(array $recipeItems): array
     {
-        $recipeIds  = collect($recipeItems)->pluck('recipe_id');
+        $recipeIds   = collect($recipeItems)->pluck('recipe_id');
         $portionsMap = collect($recipeItems)->keyBy('recipe_id')->map(fn($i) => floatval($i['portions']));
 
+        // Ielasam receptes ar sastāvdaļām un to kategorijām
         $recipes = Recipe::whereIn('id', $recipeIds)
             ->with(['ingredients' => fn($q) => $q->with('category')])
             ->get();
 
         $combined = [];
 
+        // Aprēķinam kopējos daudzumus, apvienojot vienādas sastāvdaļas
         foreach ($recipes as $recipe) {
             $portions = $portionsMap[$recipe->id] ?? 1;
 
@@ -92,6 +99,7 @@ class ShoppingListController extends Controller
             }
         }
 
+        // Ielasam mērvienību nosaukumus un piesaistām katrai sastāvdaļai
         $unitIds = collect($combined)->pluck('unit_id')->unique()->filter();
         $units   = Unit::whereIn('id', $unitIds)->pluck('name', 'id');
 
@@ -101,6 +109,7 @@ class ShoppingListController extends Controller
         }
         unset($item);
 
+        // Grupējam sastāvdaļas pēc kategorijas un kārtojam alfabētiski
         return collect($combined)
             ->groupBy('category')
             ->map(fn($items, $category) => [

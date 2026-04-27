@@ -19,6 +19,7 @@ class AdminRecipeController extends Controller
 {
     public function index(Request $request)
     {
+        // Veidojam receptes vaicājumu ar visiem saistītajiem datiem
         $query = Recipe::with([
             'difficultyLevel',
             'mealTime',
@@ -30,6 +31,7 @@ class AdminRecipeController extends Controller
             'images',
         ]);
 
+        // Pielietojam meklēšanas filtrus
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
@@ -46,13 +48,16 @@ class AdminRecipeController extends Controller
             $query->where('protein_source_id', $request->protein_source_id);
         }
 
+        // Kārtojam rezultātus pēc izvēlētā lauka
         $allowedSorts = ['name', 'cooking_time', 'created_at'];
-        $sortBy = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'name';
+        $sortBy  = in_array($request->get('sort_by'), $allowedSorts) ? $request->get('sort_by') : 'name';
         $sortDir = $request->get('sort_direction') === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortBy, $sortDir);
 
+        // Sadalam lapās rezultātus un saglabājam vaicājuma parametrus
         $recipes = $query->paginate(12)->withQueryString();
 
+        // Atgriežam administrācijas lapu ar visiem nepieciešamajiem datiem
         return Inertia::render('Admin/Receptes', [
             'recipes'          => $recipes,
             'difficultyLevels' => DifficultyLevel::all(),
@@ -68,26 +73,28 @@ class AdminRecipeController extends Controller
 
     public function store(Request $request)
     {
+        // Validējam receptes datus
         $data = $request->validate([
-            'name'               => 'required|string|max:255',
-            'description'        => 'required|string',
-            'cooking_time'       => 'required|integer|min:1',
-            'difficulty_level_id'=> 'required|exists:difficulty_levels,id',
-            'meal_time_id'       => 'required|exists:meal_times,id',
-            'nutrition_type_id'  => 'required|exists:nutrition_types,id',
-            'diet_type_id'       => 'required|exists:diet_types,id',
-            'protein_source_id'  => 'nullable|exists:protein_sources,id',
-            'is_public'          => 'boolean',
-            'ingredients'        => 'array',
+            'name'                        => 'required|string|max:255',
+            'description'                 => 'required|string',
+            'cooking_time'                => 'required|integer|min:1',
+            'difficulty_level_id'         => 'required|exists:difficulty_levels,id',
+            'meal_time_id'                => 'required|exists:meal_times,id',
+            'nutrition_type_id'           => 'required|exists:nutrition_types,id',
+            'diet_type_id'                => 'required|exists:diet_types,id',
+            'protein_source_id'           => 'nullable|exists:protein_sources,id',
+            'is_public'                   => 'boolean',
+            'ingredients'                 => 'array',
             'ingredients.*.ingredient_id' => 'required|exists:ingredients,id',
             'ingredients.*.quantity'      => 'required|numeric|min:0',
             'ingredients.*.unit_id'       => 'required|exists:units,id',
-            'instructions'       => 'array',
+            'instructions'                => 'array',
             'instructions.*.description'  => 'required|string',
-            'images'             => 'nullable|array|max:5',
-            'images.*'           => 'image|max:5120',
+            'images'                      => 'nullable|array|max:5',
+            'images.*'                    => 'image|max:5120',
         ]);
 
+        // Izveidojam jaunu recepti
         $recipe = Recipe::create([
             'name'               => $data['name'],
             'description'        => $data['description'],
@@ -100,6 +107,7 @@ class AdminRecipeController extends Controller
             'is_public'          => $data['is_public'] ?? true,
         ]);
 
+        // Pievienojam sastāvdaļas ar daudzumiem
         foreach ($data['ingredients'] ?? [] as $ing) {
             $recipe->ingredients()->attach($ing['ingredient_id'], [
                 'quantity' => $ing['quantity'],
@@ -107,6 +115,7 @@ class AdminRecipeController extends Controller
             ]);
         }
 
+        // Saglabājam pagatavošanas soļus
         foreach ($data['instructions'] ?? [] as $i => $step) {
             $recipe->instructions()->create([
                 'step_number' => $i + 1,
@@ -114,6 +123,7 @@ class AdminRecipeController extends Controller
             ]);
         }
 
+        // Saglabājam augšupielādētos attēlus kā base64
         foreach ($request->file('images') ?? [] as $file) {
             $recipe->images()->create([
                 'base64_data'       => base64_encode($file->get()),
@@ -129,28 +139,30 @@ class AdminRecipeController extends Controller
 
     public function update(Request $request, Recipe $recipe)
     {
+        // Validējam atjauninātos receptes datus
         $data = $request->validate([
-            'name'               => 'required|string|max:255',
-            'description'        => 'required|string',
-            'cooking_time'       => 'required|integer|min:1',
-            'difficulty_level_id'=> 'required|exists:difficulty_levels,id',
-            'meal_time_id'       => 'required|exists:meal_times,id',
-            'nutrition_type_id'  => 'required|exists:nutrition_types,id',
-            'diet_type_id'       => 'required|exists:diet_types,id',
-            'protein_source_id'  => 'nullable|exists:protein_sources,id',
-            'is_public'          => 'boolean',
-            'ingredients'        => 'array',
+            'name'                        => 'required|string|max:255',
+            'description'                 => 'required|string',
+            'cooking_time'                => 'required|integer|min:1',
+            'difficulty_level_id'         => 'required|exists:difficulty_levels,id',
+            'meal_time_id'                => 'required|exists:meal_times,id',
+            'nutrition_type_id'           => 'required|exists:nutrition_types,id',
+            'diet_type_id'                => 'required|exists:diet_types,id',
+            'protein_source_id'           => 'nullable|exists:protein_sources,id',
+            'is_public'                   => 'boolean',
+            'ingredients'                 => 'array',
             'ingredients.*.ingredient_id' => 'required|exists:ingredients,id',
             'ingredients.*.quantity'      => 'required|numeric|min:0',
             'ingredients.*.unit_id'       => 'required|exists:units,id',
-            'instructions'       => 'array',
+            'instructions'                => 'array',
             'instructions.*.description'  => 'required|string',
-            'images'             => 'nullable|array|max:5',
-            'images.*'           => 'image|max:5120',
-            'deleted_image_ids'  => 'nullable|array',
-            'deleted_image_ids.*'=> 'integer',
+            'images'                      => 'nullable|array|max:5',
+            'images.*'                    => 'image|max:5120',
+            'deleted_image_ids'           => 'nullable|array',
+            'deleted_image_ids.*'         => 'integer',
         ]);
 
+        // Atjauninām receptes pamata datus
         $recipe->update([
             'name'               => $data['name'],
             'description'        => $data['description'],
@@ -163,6 +175,7 @@ class AdminRecipeController extends Controller
             'is_public'          => $data['is_public'] ?? true,
         ]);
 
+        // Sinhronizējam sastāvdaļas ar jaunajiem daudzumiem
         $syncData = [];
         foreach ($data['ingredients'] ?? [] as $ing) {
             $syncData[$ing['ingredient_id']] = [
@@ -172,6 +185,7 @@ class AdminRecipeController extends Controller
         }
         $recipe->ingredients()->sync($syncData);
 
+        // Dzēšam vecos soļus un saglabājam jaunos
         $recipe->instructions()->delete();
         foreach ($data['instructions'] ?? [] as $i => $step) {
             $recipe->instructions()->create([
@@ -180,10 +194,12 @@ class AdminRecipeController extends Controller
             ]);
         }
 
+        // Dzēšam atzīmētos attēlus
         if (!empty($data['deleted_image_ids'])) {
             $recipe->images()->whereIn('id', $data['deleted_image_ids'])->delete();
         }
 
+        // Saglabājam jaunizvēlētos attēlus kā base64
         foreach ($request->file('images') ?? [] as $file) {
             $recipe->images()->create([
                 'base64_data'       => base64_encode($file->get()),
@@ -199,6 +215,7 @@ class AdminRecipeController extends Controller
 
     public function destroy(Recipe $recipe)
     {
+        // Dzēšam recepti no datubāzes
         $recipe->delete();
 
         return redirect()->route('admin.recipes.index')

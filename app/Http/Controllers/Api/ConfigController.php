@@ -9,6 +9,7 @@ class ConfigController extends Controller
 {
     public function getAppConfig()
     {
+        // Atgriežam lietojumprogrammas konfigurācijas datus priekšgalam
         return response()->json([
             'portionSizes' => [
                 ['value' => 1, 'label' => '1 porcija'],
@@ -18,20 +19,20 @@ class ConfigController extends Controller
                 ['value' => 5, 'label' => '5 porcijas'],
             ],
             'sortOptions' => [
-                ['value' => 'rating', 'label' => 'Vērtējuma'],
-                ['value' => 'difficulty', 'label' => 'Grūtības pakāpes'],
+                ['value' => 'rating',       'label' => 'Vērtējuma'],
+                ['value' => 'difficulty',   'label' => 'Grūtības pakāpes'],
                 ['value' => 'cooking_time', 'label' => 'Gatavošanas laika'],
             ],
             'sortDirections' => [
-                ['value' => 'asc', 'label' => 'Augoši (A-Z)'],
+                ['value' => 'asc',  'label' => 'Augoši (A-Z)'],
                 ['value' => 'desc', 'label' => 'Dilstoši (Z-A)'],
             ],
             'filterLabels' => [
-                'allMealTimes' => 'Visas ēdienreizes',
+                'allMealTimes'      => 'Visas ēdienreizes',
                 'allNutritionTypes' => 'Visi uztura veidi',
                 'allProteinSources' => 'Visi olbaltumvielu avoti',
-                'clearFilters' => 'Notīrīt filtrus',
-                'sortBy' => 'Kārtot pēc...',
+                'clearFilters'      => 'Notīrīt filtrus',
+                'sortBy'            => 'Kārtot pēc...',
                 'searchPlaceholder' => 'Meklēt recepti...',
             ],
         ]);
