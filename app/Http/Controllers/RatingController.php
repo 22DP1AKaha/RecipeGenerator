@@ -7,24 +7,24 @@ use App\Models\Rating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class RatingController extends Controller
+class RatingController extends Controller // Recepšu vērtēšana un komentāri
 {
     public function store(Request $request)
     {
-        // Validējam vērtējuma datus
+        // Vērtējumam jābūt no 1 līdz 5, komentārs neobligāts
         $data = $request->validate([
             'recipe_id' => 'required|exists:recipes,id',
             'rating'    => 'required|integer|min:1|max:5',
             'comment'   => 'nullable|string',
         ]);
 
-        // Saglabājam vai atjauninām lietotāja vērtējumu
+        // updateOrCreate - ja jau bija novērtējis, atjaunina; ja nē, izveido jaunu
         $rating = Rating::updateOrCreate(
             ['user_id' => Auth::id(), 'recipe_id' => $data['recipe_id']],
             ['rating'  => $data['rating'], 'comment' => $data['comment'] ?? null]
         );
 
-        // Aprēķinam jauno vidējo vērtējumu
+        // Pārrēķinām vidējo, lai uzreiz var parādīt jauno vērtējumu
         $average = Rating::where('recipe_id', $data['recipe_id'])->avg('rating');
 
         return response()->json([
@@ -35,7 +35,7 @@ class RatingController extends Controller
 
     public function destroy(int $recipeId)
     {
-        // Dzēšam lietotāja vērtējumu
+        // Lietotājs var atsaukt savu vērtējumu
         $deleted = Rating::where('user_id', Auth::id())
             ->where('recipe_id', $recipeId)
             ->delete();
@@ -44,7 +44,7 @@ class RatingController extends Controller
             return response()->json(['message' => 'Vērtējums nav atrasts.'], 404);
         }
 
-        // Aprēķinam jauno vidējo vērtējumu pēc dzēšanas
+        // Bez šī vērtējuma vidējais var mainīties - pārrēķinām
         $average = Rating::where('recipe_id', $recipeId)->avg('rating');
 
         return response()->json([

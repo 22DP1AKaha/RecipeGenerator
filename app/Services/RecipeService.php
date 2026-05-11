@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class RecipeService
+class RecipeService // Recepšu galvenā loģika - kontrolieri tikai sauc servisu
 {
     public function getRecipes(array $filters = [], ?string $sortBy = null, ?string $sortDirection = 'asc', int $perPage = 10)
     {
-        // Ielasam receptes ar visiem saistītajiem datiem
+        // ielādējam visu, kas vajadzīgs
         $query = Recipe::with([
             'ingredients.category',
             'ratings',
@@ -31,21 +31,21 @@ class RecipeService
         ->select('recipes.*')
         ->withAvg('ratings as average_rating', 'rating');
 
-        // Pielietojam meklēšanas filtrus
+        // Filtri, ja kādi ir
         $this->applyFilters($query, $filters);
 
-        // Kārtojam rezultātus pēc izvēlētā parametra
+        // Sortēšana, ja norādīta
         if ($sortBy && $sortDirection) {
             $query = $this->applySorting($query, $sortBy, $sortDirection);
         }
 
-        // Atgriežam lapotos rezultātus
+        // sadalam lapās
         return $query->paginate($perPage);
     }
 
     private function applySorting($query, string $sortBy, string $sortDirection)
     {
-        // Izvēlamies kārtošanas veidu atbilstoši pieprasītajam laukam
+        // match - atkarībā no sortBy izvēlamies sortēšanas loģiku
         match ($sortBy) {
             'rating', 'average_rating' => $query->orderBy('average_rating', $sortDirection),
             'cooking_time'             => $query->orderBy('cooking_time', $sortDirection),
@@ -59,7 +59,7 @@ class RecipeService
 
     public function getRecipeById(int $id): ?Recipe
     {
-        // Ielasam recepti pēc ID ar visiem saistītajiem datiem
+        // Vienas receptes detaļas
         return Recipe::with([
             'instructions',
             'ingredients.category',
@@ -79,7 +79,7 @@ class RecipeService
 
     public function getFilters(): array
     {
-        // Ielasam filtru opcijas no kešatmiņas (vai datubāzes, ja kešs nav pieejams)
+        // Filtri reti mainās - kešojam stundu
         return Cache::remember('recipe_filters', 3600, function() {
             return [
                 'mealTimes'      => MealTime::pluck('name')->values(),
@@ -93,12 +93,12 @@ class RecipeService
     {
         $userId = $userId ?? Auth::id();
 
-        // Ja lietotājs nav pierakstījies, atgriežam tukšu masīvu
+        // Anonīmiem lietotājiem favorītu nav
         if (!$userId) {
             return [];
         }
 
-        // Ielasam lietotāja saglabāto recepšu ID sarakstu
+        // Tikai ID, vairāk šeit nekas nav vajadzīgs
         return Favorite::where('user_id', $userId)
             ->pluck('recipe_id')
             ->toArray();
@@ -106,37 +106,37 @@ class RecipeService
 
     private function applyFilters($query, array $filters): void
     {
-        // Filtrējam pēc nosaukuma
+        // Meklēšana pēc nosaukuma
         if (!empty($filters['search'])) {
             $query->where('name', 'like', '%' . $filters['search'] . '%');
         }
 
-        // Filtrējam pēc ēdienreizes
+        // Brokastis / pusdienas / vakariņas
         if (!empty($filters['meal_time'])) {
             $query->whereHas('mealTime', fn($q) => $q->where('name', $filters['meal_time']));
         }
 
-        // Filtrējam pēc uztura veida
+        // Vegānisks, veģetārs utt.
         if (!empty($filters['nutrition'])) {
             $query->whereHas('nutritionType', fn($q) => $q->where('name', $filters['nutrition']));
         }
 
-        // Filtrējam pēc olbaltumvielu avota
+        // Olbaltumvielu avots
         if (!empty($filters['protein_source'])) {
             $query->whereHas('proteinSource', fn($q) => $q->where('name', $filters['protein_source']));
         }
 
-        // Filtrējam pēc diētas veida
+        // Diētas tips
         if (!empty($filters['diet_type'])) {
             $query->whereHas('dietType', fn($q) => $q->where('name', $filters['diet_type']));
         }
 
-        // Filtrējam pēc grūtības pakāpes
+        // Cik grūta recepte
         if (!empty($filters['difficulty'])) {
             $query->whereHas('difficultyLevel', fn($q) => $q->where('name', $filters['difficulty']));
         }
 
-        // Izslēdzam receptes ar aizliegtajām sastāvdaļām atbilstoši lietotāja preferencēm
+        // Ja lietotājs grib, lai sistēma ņem vērā viņa profila ierobežojumus - izņemam visu, kas neder
         if (!empty($filters['filter_by_preferences']) && Auth::check()) {
             $user = Auth::user()->load(['dietaryRestrictions.restrictedIngredients', 'allergies.allergicIngredients']);
             $forbiddenIds = $user->getForbiddenIngredientIds();
@@ -148,7 +148,7 @@ class RecipeService
             }
         }
 
-        // Rādām tikai lietotāja saglabātās receptes
+        // "Tikai favorīti" filtrs
         if (!empty($filters['favorites_only']) && Auth::check()) {
             $favoriteIds = $this->getUserFavoriteIds(Auth::id());
             $query->whereIn('id', $favoriteIds);
@@ -157,7 +157,7 @@ class RecipeService
 
     public function generateRecipePdf(int $recipeId)
     {
-        // Ielasam recepti ar visiem PDF renderēšanai nepieciešamajiem datiem
+        // Visa receptes info PDF vajadzībām
         $recipe = Recipe::with([
             'instructions',
             'ingredients.category',
@@ -171,10 +171,10 @@ class RecipeService
         ->withAvg('ratings as average_rating', 'rating')
         ->findOrFail($recipeId);
 
-        // Ielasam mērvienību nosaukumus no kešatmiņas
+        // Mērvienības tāpat kešojam - tās praktiski nemainās
         $unitNames = Cache::remember('units_map', 3600, fn() => Unit::pluck('name', 'id'));
 
-        // Ģenerējam PDF no Blade šablona
+        // PDF no Blade šablona, A4 portrait
         $pdf = Pdf::loadView('pdfs.recipe', compact('recipe', 'unitNames'));
         $pdf->setPaper('A4', 'portrait');
 

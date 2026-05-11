@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class ConfigController extends Controller
+class ConfigController extends Controller // Endpoint, kur frontends paņem savas konfigurācijas vērtības
 {
     public function getAppConfig()
     {
-        // Atgriežam lietojumprogrammas konfigurācijas datus priekšgalam
+        // Visi tie izvēlnes elementi un vērtības, ko izmanto frontends centralizēti vienā vietā
         return response()->json([
             'portionSizes' => [
                 ['value' => 1, 'label' => '1 porcija'],

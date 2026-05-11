@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
-class AdminUserController extends Controller
+class AdminUserController extends Controller // Lietotāju pārvaldība administratora panelī
 {
     public function index()
     {
-        // Ielasam visus lietotājus ar lomām, kārtotus pēc vārda
+        // Visi lietotāji ar savām lomām, sakārtoti alfabēta secībā
         return Inertia::render('Admin/Lietotaji', [
             'users' => User::with('role')->orderBy('vards')->get(),
             'roles' => Role::all(),
@@ -22,7 +22,7 @@ class AdminUserController extends Controller
 
     public function store(Request $request)
     {
-        // Validējam jauna lietotāja datus
+        // Pārbaudām, vai admins ir aizpildījis visus laukus
         $data = $request->validate([
             'vards'                 => 'required|string|max:255',
             'email'                 => 'required|email|unique:users,email',
@@ -31,7 +31,7 @@ class AdminUserController extends Controller
             'role_id'               => 'required|exists:roles,id',
         ]);
 
-        // Izveidojam jaunu lietotāju ar šifrētu paroli
+        // Veidojam kontu paroli šifrējam ar Hash, lai DB nebūtu plain teksta veidā
         $user = User::create([
             'vards'                => $data['vards'],
             'email'                => $data['email'],
@@ -41,7 +41,7 @@ class AdminUserController extends Controller
             'pedeja_pieteiksanas'  => now(),
         ]);
 
-        // Automātiski apstiprinām e-pasta adresi
+        // Tā kā admins to izveido, e-pastu uzreiz uzskatām par verificētu
         $user->markEmailAsVerified();
 
         return redirect()->route('admin.users.index')
@@ -50,7 +50,7 @@ class AdminUserController extends Controller
 
     public function updateRole(Request $request, User $user)
     {
-        // Validējam un atjauninām lietotāja lomu
+        // Lomas maiņa to var izdarīt tikai admins
         $data = $request->validate([
             'role_id' => 'required|exists:roles,id',
         ]);
@@ -62,12 +62,12 @@ class AdminUserController extends Controller
 
     public function destroy(Request $request, User $user)
     {
-        // Neļaujam administratoram dzēst savu kontu
+        // Drošības pasākums
         if ($user->id === $request->user()->id) {
             abort(403, 'Nevar dzēst savu kontu.');
         }
 
-        // Dzēšam lietotāju no datubāzes
+        // Tagad var dzēst
         $user->delete();
 
         return redirect()->route('admin.users.index')

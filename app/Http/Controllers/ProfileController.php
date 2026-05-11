@@ -13,17 +13,17 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ProfileController extends Controller
+class ProfileController extends Controller // Lietotāja profila iestatījumi
 {
     public function edit(Request $request): Response
     {
-        // Ielasam lietotāja profilu ar uztura ierobežojumiem un alerģijām
+        // Paņemam lietotāju kopā ar diētām un alerģijām
         $user = $request->user()->load([
             'dietaryRestrictions.restrictedIngredients',
             'allergies.allergicIngredients'
         ]);
 
-        // Atgriežam profila rediģēšanas lapu ar visiem nepieciešamajiem datiem
+        // Sūtām uz frontu visu, kas vajadzīgs profila lapai
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail'  => $user instanceof MustVerifyEmail,
             'status'           => session('status'),
@@ -44,18 +44,18 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // Aizpildām lietotāja datus ar validētajiem laukiem
+        // Atjauninām vārdu un e-pastu
         $user->fill($request->validated());
 
-        // Ja e-pasts mainīts, noņemam apstiprinājuma atzīmi
+        // Ja mainīja e-pastu tas atkal jāverificē, bet frontā tas ir aizliegts
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
-        // Saglabājam profila izmaiņas
+        // Saglabājam
         $user->save();
 
-        // Sinhronizējam uztura ierobežojumus un alerģijas
+        // Diētas un alerģijas sync sakārto tabulas
         $user->dietaryRestrictions()->sync($request->input('dietas_ierobezojumi', []));
         $user->allergies()->sync($request->input('alergijas', []));
 
@@ -66,14 +66,14 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // Pārbaudām paroli (izņemot Google lietotājiem)
+        // Parastiem lietotājiem pirms dzēšanas jāievada parole. Google lietotājiem tās vienkārši nav
         if (!$user->social_provider) {
             $request->validate([
                 'password' => ['required', 'current_password'],
             ]);
         }
 
-        // Izlogoties, dzēšam kontu un invalidējam sesiju
+        // Iziet, dzēst kontu, sesiju kill, jaunu tokenu un atgriezt uz home
         Auth::logout();
         $user->delete();
         $request->session()->invalidate();

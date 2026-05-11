@@ -7,19 +7,21 @@ use App\Services\AIRecipeGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+// Šeit nokļūst pieprasījumi, kad lietotājs grib, lai AI izdomā recepti
 class DeepSeekRecipeController extends Controller
 {
     private AIRecipeGeneratorService $aiService;
 
     public function __construct(AIRecipeGeneratorService $aiService)
     {
+        // Servisu Laravel injecto pats tā ērtāk testēt
         $this->aiService = $aiService;
     }
 
     public function generateRecipe(Request $request)
     {
         try {
-            // Validējam pieprasījuma datus
+            // Sastāvdaļas obligātas, preferences pēc vēlēšanās
             $request->validate([
                 'ingredients'     => 'required|string',
                 'use_preferences' => 'boolean',
@@ -27,22 +29,25 @@ class DeepSeekRecipeController extends Controller
 
             $options = [];
 
-            // Ielasam lietotāja uztura preferences, ja tas ir pierakstījies
+            // Ja lietotājs ielogojies un grib, lai AI ņem vērā viņa diētas vai alerģijas
             if (auth()->check() && $request->boolean('use_preferences', true)) {
                 $user = auth()->user()->load(['dietaryRestrictions', 'allergies']);
 
+                // ja ir diētas, paņemam tās
                 if ($user->dietaryRestrictions->isNotEmpty()) {
                     $options['dietary_restrictions'] = $user->dietaryRestrictions->pluck('name')->toArray();
                 }
 
+                // Tāpat ar alerģijām, lai AI nesabojā
                 if ($user->allergies->isNotEmpty()) {
                     $options['allergies'] = $user->allergies->pluck('name')->toArray();
                 }
             }
 
-            // Ģenerējam recepti ar AI servisu
+            // Pasaucam servisu un gaidām atbildi
             $result = $this->aiService->generateRecipe($request->ingredients, $options);
 
+            // Ja kaut kas nogāja greizi - pasakām lietotājam
             if (!$result['success']) {
                 return response()->json([
                     'error'   => 'Recipe generation failed',
@@ -50,11 +55,13 @@ class DeepSeekRecipeController extends Controller
                 ], 500);
             }
 
+            // Visi laimīgi, sūtam atpakaļ recepti
             return response()->json([
                 'recipe' => $result['recipe']
             ]);
 
         } catch (\Throwable $e) {
+            // Kaut kas pavisam slikts, rakstam logā un atbildam ar kļūdu
             Log::error('Recipe generation error', [
                 'message' => $e->getMessage(),
                 'trace'   => $e->getTraceAsString()

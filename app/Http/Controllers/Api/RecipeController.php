@@ -9,7 +9,7 @@ use App\Services\RecipeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class RecipeController extends Controller
+class RecipeController extends Controller // Galvenais recepšu API kontrolieris
 {
     private RecipeService $recipeService;
 
@@ -21,7 +21,7 @@ class RecipeController extends Controller
     public function index(Request $request)
     {
         try {
-            // Ielasam filtrus un kārtošanas parametrus no pieprasījuma
+            // Visi iespējamie filtru parametri no URL
             $filters = $request->only([
                 'search',
                 'meal_time',
@@ -36,7 +36,7 @@ class RecipeController extends Controller
             $sortDirection = $request->input('sort_direction', 'asc');
             $perPage       = $request->input('per_page', 10);
 
-            // Iegūstam receptes ar filtriem un kārtošanu
+            // Pārējo darbu dara serviss
             $recipes = $this->recipeService->getRecipes($filters, $sortBy, $sortDirection, $perPage);
 
             return RecipeResource::collection($recipes);
@@ -49,7 +49,7 @@ class RecipeController extends Controller
     public function getFilters()
     {
         try {
-            // Atgriežam pieejamās filtru opcijas
+            // Apgādājam frontu ar filtru opcijām
             return response()->json($this->recipeService->getFilters());
         } catch (\Exception $e) {
             Log::error('Filter fetch error: ' . $e->getMessage());
@@ -60,7 +60,7 @@ class RecipeController extends Controller
     public function show($id)
     {
         try {
-            // Meklējam recepti pēc ID
+            // Vienas receptes detaļas
             $recipe = $this->recipeService->getRecipeById($id);
 
             if (!$recipe) {
@@ -76,10 +76,10 @@ class RecipeController extends Controller
 
     public function serveImage($id)
     {
-        // Ielasam attēlu no datubāzes
+        // Bilde glabājas DB kā base64
         $image = Image::findOrFail($id);
 
-        // Atgriežam attēla bināros datus ar kešošanas galvenēm
+        // Atgriežam neapstrādātos baitus ar kešošanas headeriem
         return response($image->base64_data_raw, 200)
             ->header('Content-Type', $image->mime_type)
             ->header('Cache-Control', 'public, max-age=31536000, immutable');
@@ -88,10 +88,10 @@ class RecipeController extends Controller
     public function downloadPdf($id)
     {
         try {
-            // Ģenerējam receptes PDF
+            // Receptes PDF lejupielādei
             $pdf = $this->recipeService->generateRecipePdf($id);
 
-            // Kodējam PDF base64 formātā un atgriežam kā JSON
+            // Kodējam base64 JS tad var izveidot lejupielādes saiti
             return response()->json([
                 'pdf'      => base64_encode($pdf->output()),
                 'filename' => "recepte-{$id}.pdf",

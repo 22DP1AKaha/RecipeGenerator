@@ -7,19 +7,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class FavoriteController extends Controller
+class FavoriteController extends Controller // Saglabāto recepšu pārvaldība
 {
     public function store(Request $request)
     {
         try {
-            // Validējam pieprasījuma datus
+            // Vajadzīgs tikai recipe_id
             $data = $request->validate([
                 'recipe_id' => 'required|exists:recipes,id',
             ]);
 
             $userId = Auth::id();
 
-            // Pārbaudām vai recepte jau ir saglabāta
+            // Pārbaudām, lai nedublētos - viena recepte favorītos var būt tikai vienreiz
             $exists = Favorite::where('user_id', $userId)
                 ->where('recipe_id', $data['recipe_id'])
                 ->exists();
@@ -28,7 +28,7 @@ class FavoriteController extends Controller
                 return response()->json(['error' => 'Recipe is already saved'], 409);
             }
 
-            // Pievienojam recepti favorītiem
+            // Aiziet favorītos
             Favorite::create([
                 'user_id'   => $userId,
                 'recipe_id' => $data['recipe_id'],
@@ -50,7 +50,7 @@ class FavoriteController extends Controller
         try {
             $userId = Auth::id();
 
-            // Meklējam favorītu ierakstu
+            // Atrodam ierakstu
             $favorite = Favorite::where('user_id', $userId)
                 ->where('recipe_id', $recipeId)
                 ->first();
@@ -59,10 +59,10 @@ class FavoriteController extends Controller
                 return response()->json(['error' => 'Favorite not found'], 404);
             }
 
-            // Dzēšam recepti no favorītiem
+            // Un dzēšam
             $favorite->delete();
 
-            // Pārbaudām vai lietotājam vēl ir saglabātas receptes
+            // lai parādītu/slēptu sarakstu
             $hasFavorites = Favorite::where('user_id', $userId)->exists();
 
             return response()->json(['saved' => false, 'has_favorites' => $hasFavorites], 200);

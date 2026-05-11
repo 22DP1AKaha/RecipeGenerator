@@ -8,24 +8,24 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
-class SocialAuthController extends Controller
+class SocialAuthController extends Controller // Pieslēgšanās caur Google kontu
 {
     public function redirect()
     {
-        // Novirzām lietotāju uz Google autentifikācijas lapu
+        // Aizsūtām uz Google, lai cilvēks tur autorizējas
         return Socialite::driver('google')->redirect();
     }
 
     public function callback()
     {
-        // Iegūstam Google lietotāja datus pēc autentifikācijas
+        // Atpakaļ no Google ar lietotāja datiem
         $googleUser = Socialite::driver('google')->user();
 
-        // Meklējam esošu lietotāju pēc e-pasta
+        // Vai mums jau ir tāds e-pasts datubāzē?
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
-            // Piesaistām Google kontu esošajam lietotājam, ja vēl nav piesaistīts
+            // Ja jā, bet vēl nav saistīts ar Google, sasienam abus kopā
             if (!$user->social_id) {
                 $user->update([
                     'social_provider'   => 'google',
@@ -34,7 +34,7 @@ class SocialAuthController extends Controller
                 ]);
             }
         } else {
-            // Izveidojam jaunu lietotāju ar standarta lomu
+            // Pavisam jauns lietotājs - veidojam no nulles ar standarta lomu
             $role = Role::where('name', 'Lietotājs')->first();
 
             $user = User::create([
@@ -49,7 +49,7 @@ class SocialAuthController extends Controller
             ]);
         }
 
-        // Pieslēdzam lietotāju un novirzām uz sākumlapu
+        // Iekšā un mājup
         Auth::login($user);
 
         return redirect()->route('home');

@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
-class AdminMailController extends Controller
+class AdminMailController extends Controller // Lapa, kur admins var sūtīt e-pastus lietotājiem
 {
     public function index()
     {
-        // Ielasam verificētos lietotājus kā iespējamos saņēmējus
+        // Paņemam visus, kas apstiprinājuši savu e-pastu
         $users = User::whereNotNull('email_verified_at')
             ->orderBy('vards')
             ->get(['id', 'vards', 'email']);
@@ -25,7 +25,7 @@ class AdminMailController extends Controller
 
     public function send(Request $request)
     {
-        // Validējam vēstules datus un saņēmēju sarakstu
+        // Pārliecināmies, ka viss ir aizpildīts kā nākas
         $data = $request->validate([
             'subject'         => 'required|string|max:255',
             'body'            => 'required|string|max:5000',
@@ -33,12 +33,12 @@ class AdminMailController extends Controller
             'recipient_ids.*' => 'integer|exists:users,id',
         ]);
 
-        // Ielasam tikai verificētos saņēmējus
+        // Nedaudz drošībai
         $users = User::whereIn('id', $data['recipient_ids'])
             ->whereNotNull('email_verified_at')
             ->get();
 
-        // Sūtam e-pasta vēstuli katram saņēmējam
+        // Liekam vēstules rindā, lai netraucētu galveno plūsmu
         foreach ($users as $user) {
             Mail::to($user->email)
                 ->queue(new AdminBroadcast($data['subject'], $data['body']));
