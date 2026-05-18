@@ -75,7 +75,7 @@
           @mouseleave="hoveredId = null"
         >
           <div class="image-container">
-            <img :src="recipe.image" :alt="recipe.title" :class="{ 'img-dimmed': hoveredId === recipe.id }" />
+            <img :src="recipe.image" :alt="recipe.title" :class="{ 'img-dimmed': hoveredId === recipe.id }" loading="lazy" />
 
             <div class="favorite-heart" @click.stop="handleFavorite(recipe, $event)" :class="{ saved: recipe.is_saved }">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

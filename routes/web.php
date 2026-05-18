@@ -34,6 +34,8 @@ Route::prefix('api')->group(function () {
     Route::post('/shopping-list', [ShoppingListController::class, 'generate']);
     Route::post('/shopping-list/pdf', [ShoppingListController::class, 'downloadPdf']);
     Route::get('/images/{id}', [RecipeController::class, 'serveImage'])->name('images.show');
+    Route::get('/units', fn() => response()->json(\App\Models\Unit::orderBy('name')->get(['id', 'name'])));
+    Route::get('/admin/ingredients', fn() => response()->json(\App\Models\Ingredient::orderBy('name')->get(['id', 'name'])));
 });
 
 Route::get('/recepte/{id}', fn($id) => Inertia::render('RecepteDyn', ['id' => $id]))->name('recepte');

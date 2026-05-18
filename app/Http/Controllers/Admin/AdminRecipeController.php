@@ -65,8 +65,6 @@ class AdminRecipeController extends Controller // Šeit notiek visa recepšu adm
             'nutritionTypes'   => NutritionType::all(),
             'dietTypes'        => DietType::all(),
             'proteinSources'   => ProteinSource::all(),
-            'ingredients'      => Ingredient::orderBy('name')->get(),
-            'units'            => Unit::all(),
             'filters'          => $request->only(['search', 'meal_time_id', 'nutrition_type_id', 'protein_source_id', 'sort_by', 'sort_direction']),
         ]);
     }

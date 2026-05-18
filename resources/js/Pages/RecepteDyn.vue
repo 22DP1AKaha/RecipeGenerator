@@ -55,7 +55,7 @@
 
           <div class="recipe-gallery" v-if="galleryImages.length > 0">
             <div class="gallery-main" @click="openLightbox(currentImageIndex)">
-              <img :src="galleryImages[currentImageIndex]" :alt="recipe.title" class="gallery-image" />
+              <img :src="galleryImages[currentImageIndex]" :alt="recipe.title" class="gallery-image" loading="lazy" />
               <button
                 v-if="galleryImages.length > 1 && currentImageIndex > 0"
                 class="gallery-arrow gallery-arrow--prev"
@@ -76,7 +76,7 @@
 
             <div v-if="galleryImages.length > 1" class="gallery-dots">
               <button
-                v-for="(img, i) in galleryImages"
+                v-for="(_, i) in galleryImages"
                 :key="i"
                 class="gallery-dot"
                 :class="{ active: i === currentImageIndex }"

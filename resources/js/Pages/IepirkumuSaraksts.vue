@@ -30,7 +30,7 @@
           <span>Ielādē receptes...</span>
         </div>
 
-        <div v-else-if="filteredRecipes.length === 0" class="empty-state">
+        <div v-else-if="allRecipes.length === 0" class="empty-state">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -40,14 +40,14 @@
 
         <div v-else class="recipe-list">
           <div
-            v-for="recipe in filteredRecipes"
+            v-for="recipe in allRecipes"
             :key="recipe.id"
             class="recipe-row"
             :class="{ 'recipe-row--added': isSelected(recipe.id) }"
             @click="toggleRecipe(recipe)"
           >
             <div class="recipe-thumb">
-              <img v-if="recipe.image" :src="recipe.image" :alt="recipe.title" />
+              <img v-if="recipe.image" :src="recipe.image" :alt="recipe.title" loading="lazy" />
               <div v-else class="recipe-thumb-placeholder">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -177,6 +177,7 @@ export default {
     return {
       allRecipes: [],
       searchQuery: '',
+      searchTimeout: null,
       selectedRecipes: [],
       shoppingList: [],
       loadingRecipes: true,
@@ -186,11 +187,10 @@ export default {
     };
   },
 
-  computed: {
-    filteredRecipes() {
-      const q = this.searchQuery.trim().toLowerCase();
-      if (!q) return this.allRecipes;
-      return this.allRecipes.filter(r => r.title.toLowerCase().includes(q));
+  watch: {
+    searchQuery(val) {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(() => this.loadRecipes(val), 400);
     },
   },
 
@@ -199,9 +199,12 @@ export default {
   },
 
   methods: {
-    async loadRecipes() {
+    async loadRecipes(search = '') {
+      this.loadingRecipes = true;
       try {
-        const { data } = await axios.get('/api/recipes', { params: { per_page: 200 } });
+        const params = { per_page: 30 };
+        if (search) params.search = search;
+        const { data } = await axios.get('/api/recipes', { params });
         this.allRecipes = data.data ?? [];
       } catch {
         this.errorMsg = 'Neizdevās ielādēt receptes.';
@@ -244,6 +247,8 @@ export default {
           recipes: this.selectedRecipes.map(r => ({ recipe_id: r.id, portions: r.portions })),
         });
         this.shoppingList = data.list;
+        const uid = this.$page.props.auth.user?.id;
+        if (uid) localStorage.setItem(`foodyml_list_${uid}`, '1');
         this.$nextTick(() => {
           this.$refs.resultsCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });

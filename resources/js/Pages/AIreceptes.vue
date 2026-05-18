@@ -262,6 +262,8 @@ export default {
             if (response.status >= 200 && response.status < 300) {
                 this.generatedRecipe = response.data.recipe;
                 this.parseRecipe();
+                const uid = this.$page.props.auth.user?.id;
+                if (uid) localStorage.setItem(`foodyml_ai_${uid}`, '1');
             } else {
                 throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
             }

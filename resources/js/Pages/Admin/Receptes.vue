@@ -12,10 +12,23 @@ const props = defineProps({
     nutritionTypes: Array,
     dietTypes: Array,
     proteinSources: Array,
-    ingredients: Array,
-    units: Array,
     filters: Object,
 });
+
+const formIngredients = ref([]);
+const formUnits = ref([]);
+let formDataLoaded = false;
+
+async function loadFormData() {
+    if (formDataLoaded) return;
+    const [ingRes, unitsRes] = await Promise.all([
+        axios.get('/api/admin/ingredients'),
+        axios.get('/api/units'),
+    ]);
+    formIngredients.value = ingRes.data;
+    formUnits.value = unitsRes.data;
+    formDataLoaded = true;
+}
 
 // Filter state (initialised from current URL filters)
 const search = ref(props.filters?.search ?? '');
@@ -131,6 +144,7 @@ function openCreate() {
     deletedImageIds.value = [];
     newImageFiles.value = [];
     newImagePreviews.value = [];
+    loadFormData();
     drawerOpen.value = true;
 }
 
@@ -158,6 +172,7 @@ function openEdit(recipe) {
     newImageFiles.value = [];
     newImagePreviews.value = [];
     errors.value = {};
+    loadFormData();
     drawerOpen.value = true;
 }
 
@@ -336,7 +351,7 @@ function labelFor(list, id, field = 'name') {
             <div class="recipe-grid">
                 <div v-for="recipe in recipes.data" :key="recipe.id" class="recipe-card glass-card">
                     <div class="recipe-thumb" v-if="recipe.images?.length">
-                        <img :src="recipe.images[0].data_url ?? recipe.images[0].url" :alt="recipe.name" />
+                        <img :src="recipe.images[0].data_url ?? recipe.images[0].url" :alt="recipe.name" loading="lazy" />
                         <span v-if="recipe.images.length > 1" class="img-count">+{{ recipe.images.length - 1 }}</span>
                     </div>
                     <div class="recipe-card-body">
@@ -527,12 +542,12 @@ function labelFor(list, id, field = 'name') {
                         <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
                             <select v-model="ing.ingredient_id" class="form-control glass-input ing-select">
                                 <option value="">Sastāvdaļa</option>
-                                <option v-for="item in ingredients" :key="item.id" :value="item.id">{{ item.name }}</option>
+                                <option v-for="item in formIngredients" :key="item.id" :value="item.id">{{ item.name }}</option>
                             </select>
                             <input v-model.number="ing.quantity" type="number" min="0" step="0.01" placeholder="Daudzums" class="form-control glass-input ing-qty" />
                             <select v-model="ing.unit_id" class="form-control glass-input ing-unit">
                                 <option value="">Vienība</option>
-                                <option v-for="u in units" :key="u.id" :value="u.id">{{ u.name }}</option>
+                                <option v-for="u in formUnits" :key="u.id" :value="u.id">{{ u.name }}</option>
                             </select>
                             <button class="remove-btn" @click="removeIngredient(i)">✕</button>
                         </div>
